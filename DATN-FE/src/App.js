@@ -1,32 +1,26 @@
-import React, { Fragment } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { routes } from "./routes";
-import HeaderComponent from "./components/HeaderComponent/HeaderComponent";
-import DefaultComponent from "./components/DefaultComponent/DefaultComponent";
+import{ Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { routers } from './router/index.js'
+import Hearder from './components/Headers/Hearder.tsx';
+
+
 function App() {
+
+
   return (
     <div>
-      <HeaderComponent />
-      <Router>
-        <Routes>
-          {routes.map((route) => {
-            const Layout = route.isShowHeader ? DefaultComponent : Fragment;
-            const Page = route.page;
-            return (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={
-                  <Layout>
-                    <Page />
-                  </Layout>
-                }
-              />
-            );
-          })}
-        </Routes>
-      </Router>
+      <Hearder />
+        <Router>
+          <Routes>
+            {routers.map((route) => {
+              const Page = route.page;
+              return (
+              <Route path={route.path} element={<Page/>}/>
+              )
+            })}
+          </Routes>
+        </Router>
     </div>
   );
 }
+
 export default App;
