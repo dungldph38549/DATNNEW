@@ -1,6 +1,7 @@
 import{ Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { routers } from './router/index.js'
 import Hearder from './components/Headers/Hearder.tsx';
+import FooterComponent from './components/FooterComponent/FooterComponent.jsx';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             })}
           </Routes>
         </Router>
+        <FooterComponent/>
     </div>
   );
 }
