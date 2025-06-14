@@ -1,3 +1,4 @@
+import Category from "../pages/Category/Category";
 import HomePage from "../pages/HomePage/HomePage";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
 import OrderPage from "../pages/OrderPage/OrderPage";
@@ -12,6 +13,11 @@ export const routes = [
   {
     path: "/order",
     page: OrderPage,
+    isShowHeader: true,
+  },
+  {
+    path: "/category",
+    page: Category,
     isShowHeader: true,
   },
   {
