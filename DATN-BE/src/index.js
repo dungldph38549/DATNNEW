@@ -1,25 +1,21 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
+import express from 'express';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import chat_lieu_router from './routess/chat_lieu.js';
+
+
 dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.send("Hello");
-});
-mongoose
-  .connect(
-    // `mongodb+srv://dungldph38549: ${process.env.MONGO_DB}@cluster0.gyc0fo3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
-    `${process.env.MONGO_DB}`
-  )
+app.use(express.json());
+
+app.use('/api/chat-lieu', chat_lieu_router);
+
+
+mongoose.connect("mongodb://localhost:27017/datn_su25_database")
   .then(() => {
-    console.log("Connected to MongoDB");
+    console.log('Kết nối db thành công');
+    app.listen(PORT, () => console.log(`Server đang chạy tại http://localhost:${PORT}`));
   })
-  .catch((err) => {
-    console.log(err);
-  });
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+  .catch(err => console.error('Lỗi db:', err));
