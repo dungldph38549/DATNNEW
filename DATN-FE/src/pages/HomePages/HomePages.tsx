@@ -77,7 +77,7 @@ const HomePages = () => {
       <div className="p-4 space-y-1">
         <h3 className="text-gray-800 font-semibold text-sm">Áo Real Madrid 2024</h3>
         <p className="text-blue-600 font-bold">480.000đ</p>
-        <button className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Mua ngay</button>
+        <button className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700"><a href="/detail">Mua ngay</a></button>
       </div>
       
     </div>
