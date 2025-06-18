@@ -1,25 +1,40 @@
-import{ Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { routers } from './router/index.js'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { routers } from './router/index.js';
 import Hearder from './components/Headers/Hearder.tsx';
-
+import FooterComponent from './components/FooterComponent/FooterComponent.jsx';
 
 function App() {
-
-
   return (
-    <div>
-      <Hearder />
-        <Router>
+    <Router>
+      <div className="min-h-screen flex flex-col">
+        <Hearder />
+
+        <main className="flex-grow">
           <Routes>
-            {routers.map((route) => {
+            {routers.map((route, index) => {
               const Page = route.page;
               return (
-              <Route path={route.path} element={<Page/>}/>
-              )
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={
+                    route.isShowHeader === false ? (
+                      <Page />
+                    ) : (
+                      <>
+                        <Page />
+                      </>
+                    )
+                  }
+                />
+              );
             })}
           </Routes>
-        </Router>
-    </div>
+        </main>
+
+        <FooterComponent />
+      </div>
+    </Router>
   );
 }
 
