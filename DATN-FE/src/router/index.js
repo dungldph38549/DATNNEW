@@ -5,6 +5,7 @@ import NotFoundPage from "../pages/NotFoundPage/NotFoundPage.jsx";
 import HomePages from "../pages/HomePages/HomePages.tsx";
 import Login from "../pages/Login/Login.jsx";
 import Register from "../pages/Register/Register.jsx";
+import CartPage from "../pages/CartPage/CartPage.tsx";
 
 export const routers = [
     {
@@ -25,6 +26,11 @@ export const routers = [
     {
         path: "/checkout",
         page: Checkout,
+        isShowHeader: true,
+    },
+    {
+        path: "/cart",
+        page: CartPage,
         isShowHeader: true,
     },
     {
