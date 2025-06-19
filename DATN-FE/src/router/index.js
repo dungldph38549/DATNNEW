@@ -6,6 +6,7 @@ import HomePages from "../pages/HomePages/HomePages.tsx";
 import Login from "../pages/Login/Login.jsx";
 import Register from "../pages/Register/Register.jsx";
 import CartPage from "../pages/CartPage/CartPage.tsx";
+import AdminPage from "../admin/AdminPage.tsx";
 
 export const routers = [
     {
@@ -44,9 +45,14 @@ export const routers = [
         isShowHeader: true,
     },
     {
-        path : "*",
+        path: "*",
         page: NotFoundPage,
         isShowHeader: false,
+    },
+    {
+        path: "/admin",
+        page: AdminPage,
+        isShowHeader: true,
     }
 
 ]
