@@ -8,6 +8,7 @@ import Register from "../pages/Register/Register.jsx";
 import CartPage from "../pages/CartPage/CartPage.tsx";
 import AdminPage from "../admin/AdminPage.tsx";
 import CheckoutPage from "../pages/CheckoutPage/checkOutPage.tsx";
+import OrderPage from "../pages/OrderPage/OrderPage.jsx";
 
 export const routers = [
     {
@@ -58,6 +59,11 @@ export const routers = [
     {
         path: "/checkoutpage",
         page: CheckoutPage,
+        isShowHeader: true,
+    },
+    {
+        path: "/oder",
+        page: OrderPage,
         isShowHeader: true,
     }
 
