@@ -7,6 +7,7 @@ import Login from "../pages/Login/Login.jsx";
 import Register from "../pages/Register/Register.jsx";
 import CartPage from "../pages/CartPage/CartPage.tsx";
 import AdminPage from "../admin/AdminPage.tsx";
+import CheckoutPage from "../pages/CheckoutPage/checkOutPage.tsx";
 
 export const routers = [
     {
@@ -52,6 +53,11 @@ export const routers = [
     {
         path: "/admin",
         page: AdminPage,
+        isShowHeader: true,
+    },
+    {
+        path: "/checkoutpage",
+        page: CheckoutPage,
         isShowHeader: true,
     }
 
