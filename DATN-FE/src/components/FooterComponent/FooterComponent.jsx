@@ -1,26 +1,40 @@
 import {
-  FaMapMarkerAlt,FaPhone,FaEnvelope,FaFacebookF,FaTwitter,FaGooglePlusG,FaRss,FaPinterestP,FaLinkedinIn,FaYoutube,FaPaypal,FaCcVisa,FaCcMastercard,FaCcDiscover,
-} from 'react-icons/fa';
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaFacebookF,
+  FaTwitter,
+  FaGooglePlusG,
+  FaRss,
+  FaPinterestP,
+  FaLinkedinIn,
+  FaYoutube,
+  FaPaypal,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcDiscover,
+} from "react-icons/fa";
 
 const FooterComponent = () => {
   return (
     <footer className="bg-zinc-900 text-gray-300 py-10 px-4 sm:px-12">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-8">
-
         {/* Contact Us */}
         <div>
           <h2 className="text-lg font-semibold mb-4">CONTACT US</h2>
           <div className="flex items-start gap-3 mb-4">
             <FaMapMarkerAlt className="text-xl mt-1 text-white" />
             <p>
-              Đường Trịnh Văn Bô<br />
+              Đường Trịnh Văn Bô
+              <br />
               Trường Cao Đẳng FPT Polytechnic
             </p>
           </div>
           <div className="flex items-start gap-3 mb-4">
             <FaPhone className="text-xl mt-1 text-white" />
             <p>
-              +(84) 123-4567<br />
+              +(84) 123-4567
+              <br />
               +(84) 456-7890
             </p>
           </div>
@@ -34,11 +48,31 @@ const FooterComponent = () => {
         <div>
           <h2 className="text-lg font-semibold mb-4">CUSTOMER SERVICE</h2>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:text-white">My Account</a></li>
-            <li><a href="#" className="hover:text-white">Order History</a></li>
-            <li><a href="#" className="hover:text-white">FAQ</a></li>
-            <li><a href="#" className="hover:text-white">Specials</a></li>
-            <li><a href="#" className="hover:text-white">Help Center</a></li>
+            <li>
+              <a href="#" className="hover:text-white">
+                My Account
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Order History
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                FAQ
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Specials
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Help Center
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -46,11 +80,31 @@ const FooterComponent = () => {
         <div>
           <h2 className="text-lg font-semibold mb-4">CORPORATION</h2>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:text-white">About us</a></li>
-            <li><a href="#" className="hover:text-white">Customer Service</a></li>
-            <li><a href="#" className="hover:text-white">Company</a></li>
-            <li><a href="#" className="hover:text-white">Investor Relations</a></li>
-            <li><a href="#" className="hover:text-white">Advanced Search</a></li>
+            <li>
+              <a href="#" className="hover:text-white">
+                About us
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Customer Service
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Company
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Investor Relations
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Advanced Search
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -58,11 +112,31 @@ const FooterComponent = () => {
         <div>
           <h2 className="text-lg font-semibold mb-4">WHY CHOOSE US</h2>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:text-white">Shopping Guide</a></li>
-            <li><a href="#" className="hover:text-white">Blog</a></li>
-            <li><a href="#" className="hover:text-white">Company</a></li>
-            <li><a href="#" className="hover:text-white">Investor Relations</a></li>
-            <li><a href="#" className="hover:text-white">Contact Us</a></li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Shopping Guide
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Blog
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Company
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Investor Relations
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white">
+                Contact Us
+              </a>
+            </li>
           </ul>
         </div>
       </div>
