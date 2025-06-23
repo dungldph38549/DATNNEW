@@ -9,50 +9,49 @@ import CartPage from "../pages/CartPage/CartPage.tsx";
 import AdminPage from "../admin/AdminPage.tsx";
 
 export const routers = [
-    {
-        path: "/",
-        page: HomePages,
-        isShowHeader: true,
-    },
-    {
-        path: "/category",
-        page: Category,
-        isShowHeader: true,
-    },
-    {
-        path: "/detail",
-        page: Detail,
-        isShowHeader: true,
-    },
-    {
-        path: "/checkout",
-        page: Checkout,
-        isShowHeader: true,
-    },
-    {
-        path: "/cart",
-        page: CartPage,
-        isShowHeader: true,
-    },
-    {
-        path: "/login",
-        page: Login,
-        isShowHeader: true,
-    },
-    {
-        path: "/register",
-        page: Register,
-        isShowHeader: true,
-    },
-    {
-        path: "*",
-        page: NotFoundPage,
-        isShowHeader: false,
-    },
-    {
-        path: "/admin",
-        page: AdminPage,
-        isShowHeader: true,
-    }
-
-]
+  {
+    path: "/",
+    page: HomePages,
+    isShowHeader: true,
+  },
+  {
+    path: "/category",
+    page: Category,
+    isShowHeader: true,
+  },
+  {
+    path: "/detail",
+    page: Detail,
+    isShowHeader: true,
+  },
+  {
+    path: "/checkout",
+    page: Checkout,
+    isShowHeader: true,
+  },
+  {
+    path: "/cart",
+    page: CartPage,
+    isShowHeader: true,
+  },
+  {
+    path: "/login",
+    page: Login,
+    isShowHeader: true,
+  },
+  {
+    path: "/register",
+    page: Register,
+    isShowHeader: true,
+  },
+  {
+    path: "*",
+    page: NotFoundPage,
+    isShowHeader: false,
+  },
+  {
+    path: "/admin",
+    page: AdminPage,
+    isShowHeader: true,
+  },
+];

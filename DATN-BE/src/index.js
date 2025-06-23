@@ -1,25 +1,26 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import chat_lieu_router from './routess/chat_lieu.js';
-import banner_router from './routess/banner.js';
-import review_router from './routess/review.js';
-
+const express = require("express");
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const routes = require("./routes"); // <== Đúng rồi
 
 dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
-app.use(express.json());
+app.use(bodyParser.json());
+routes(app); // <== Gọi ở đây
 
-app.use('/api/chat-lieu', chat_lieu_router);
-app.use('/api/banners', banner_router);
-app.use('/api/reviews', review_router);
-
-
-mongoose.connect("mongodb://localhost:27017/datn_su25_database")
+mongoose
+  .connect(process.env.MONGO_DB)
   .then(() => {
-    console.log('Kết nối db thành công');
-    app.listen(PORT, () => console.log(`Server đang chạy tại http://localhost:${PORT}`));
+    console.log("Connected to MongoDB");
   })
-  .catch(err => console.error('Lỗi db:', err));
+  .catch((err) => {
+    console.log(err);
+  });
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
