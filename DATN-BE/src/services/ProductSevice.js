@@ -14,7 +14,32 @@ const createProduct = async (data) => {
   return await Product.create(data);
 };
 
-const getAllProducts = async () => await Product.find();
+const getAllProducts = (limit = 2, page = 0, sort = "asc") => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const totalProduct = await Product.countDocuments();
+
+      // Chuyển sort thành số: 1 (asc) hoặc -1 (desc)
+      const sortValue = sort === "desc" ? -1 : 1;
+
+      const allProduct = await Product.find()
+        .limit(limit)
+        .skip(page * limit)
+        .sort({ name: sortValue }); // Sắp xếp theo tên, có thể đổi sang "price" nếu cần
+
+      resolve({
+        status: "ok",
+        message: "Successfully fetched all products",
+        data: allProduct,
+        total: totalProduct,
+        pageCurrent: page + 1,
+        totalPage: Math.ceil(totalProduct / limit),
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
 
 const getProductById = async (id) => {
   const product = await Product.findById(id);

@@ -27,7 +27,13 @@ exports.createProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await ProductService.getAllProducts();
+    const { limit, page, sort, filter } = req.query;
+    const products = await ProductService.getAllProducts(
+      Number(limit) || 8,
+      Number(page) || 0,
+      sort,
+      filter
+    );
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
