@@ -54,7 +54,7 @@ export const routers = [
     {
         path: "/admin",
         page: AdminPage,
-        isShowHeader: true,
+        isShowHeader: false,
     },
     {
         path: "/checkoutpage",
