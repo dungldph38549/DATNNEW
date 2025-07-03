@@ -1,30 +1,124 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const AdminPage = () => {
+    const [selectedMenu, setSelectedMenu] = useState('');
+
+    const renderContent = () => {
+        switch (selectedMenu) {
+            case 'products':
+                return (
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-4">📦 Danh sách Sản phẩm</h2>
+                        <table className="min-w-full bg-white border rounded shadow">
+                            <thead>
+                                <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                                    <th className="px-4 py-2">STT</th>
+                                    <th className="px-4 py-2">Tên sản phẩm</th>
+                                    <th className="px-4 py-2">Giá</th>
+                                    <th className="px-4 py-2">Tồn kho</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">1</td>
+                                    <td className="px-4 py-2">Áo Thun</td>
+                                    <td className="px-4 py-2">150.000₫</td>
+                                    <td className="px-4 py-2">20</td>
+                                </tr>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">2</td>
+                                    <td className="px-4 py-2">Quần Jean</td>
+                                    <td className="px-4 py-2">300.000₫</td>
+                                    <td className="px-4 py-2">15</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                );
+
+            case 'orders':
+                return (
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-4">🧾 Danh sách Đơn hàng</h2>
+                        <table className="min-w-full bg-white border rounded shadow">
+                            <thead>
+                                <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                                    <th className="px-4 py-2">Mã đơn</th>
+                                    <th className="px-4 py-2">Khách hàng</th>
+                                    <th className="px-4 py-2">Tổng tiền</th>
+                                    <th className="px-4 py-2">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">#001</td>
+                                    <td className="px-4 py-2">Nguyễn Văn A</td>
+                                    <td className="px-4 py-2">450.000₫</td>
+                                    <td className="px-4 py-2">Đã giao</td>
+                                </tr>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">#002</td>
+                                    <td className="px-4 py-2">Trần Thị B</td>
+                                    <td className="px-4 py-2">300.000₫</td>
+                                    <td className="px-4 py-2">Chờ xử lý</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                );
+
+            case 'users':
+                return (
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-4">👤 Danh sách Người dùng</h2>
+                        <table className="min-w-full bg-white border rounded shadow">
+                            <thead>
+                                <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                                    <th className="px-4 py-2">STT</th>
+                                    <th className="px-4 py-2">Tên</th>
+                                    <th className="px-4 py-2">Email</th>
+                                    <th className="px-4 py-2">Vai trò</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">1</td>
+                                    <td className="px-4 py-2">Admin</td>
+                                    <td className="px-4 py-2">admin@example.com</td>
+                                    <td className="px-4 py-2">Quản trị viên</td>
+                                </tr>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">2</td>
+                                    <td className="px-4 py-2">Người dùng A</td>
+                                    <td className="px-4 py-2">userA@example.com</td>
+                                    <td className="px-4 py-2">Khách hàng</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                );
+
+            default:
+                return <p className="text-gray-600">📋 Chọn mục bên trái để xem nội dung</p>;
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6 text-gray-800">👩‍💼 Trang quản trị</h1>
+        <div className="flex">
+            {/* Sidebar */}
+            <div className="w-[20rem] h-screen bg-white p-4 shadow-xl">
+                <h2 className="text-2xl font-semibold mb-6">Trang Admin</h2>
+                <nav className="flex flex-col gap-2">
+                    <button onClick={() => setSelectedMenu('products')} className="text-left p-3 rounded hover:bg-blue-100">Quản lý sản phẩm</button>
+                    <button onClick={() => setSelectedMenu('orders')} className="text-left p-3 rounded hover:bg-blue-100">Quản lý đơn hàng</button>
+                    <button onClick={() => setSelectedMenu('users')} className="text-left p-3 rounded hover:bg-blue-100">Quản lý người dùng</button>
+                    <button onClick={() => alert('Đã đăng xuất')} className="text-left p-3 rounded hover:bg-red-100 text-red-600">Đăng xuất</button>
+                </nav>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold mb-2">Sản phẩm</h2>
-                        <p className="text-gray-600 mb-4">Quản lý danh sách sản phẩm trong cửa hàng.</p>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Xem chi tiết</button>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold mb-2">Người dùng</h2>
-                        <p className="text-gray-600 mb-4">Quản lý tài khoản người dùng.</p>
-                        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Xem chi tiết</button>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-xl font-semibold mb-2">Đơn hàng</h2>
-                        <p className="text-gray-600 mb-4">Theo dõi và xử lý đơn hàng.</p>
-                        <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Xem chi tiết</button>
-                    </div>
-                </div>
+            {/* Main Content */}
+            <div className="flex-1 p-6 bg-gray-50 min-h-screen">
+                {renderContent()}
             </div>
         </div>
     );

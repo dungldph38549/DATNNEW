@@ -1,55 +1,41 @@
-import axios from "axios";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { routers } from "./router/index.js";
-import Hearder from "./components/Headers/Hearder.tsx";
-import FooterComponent from "./components/FooterComponent/FooterComponent.jsx";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { routers } from './router/index.js';
+import Hearder from './components/Headers/Hearder.tsx';
+import FooterComponent from './components/FooterComponent/FooterComponent.jsx';
+import { useMemo } from 'react';
 
-function App() {
-  // Gọi API khi component mount
-  // useEffect(() => {
-  //   fetchApi();
-  // }, []);
+function AppContent() {
+  const location = useLocation();
 
-  // HÀM GỌI API
-  const fetchApi = async () => {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/product/getAll`
-    );
-    return res.data;
-  };
-  const query = useQuery({ queryKey: ["todos"], queryFn: fetchApi });
-  console.log("query", query);
+  // Tìm route hiện tại
+  const currentRoute = useMemo(() => {
+    return routers.find((route) => route.path === location.pathname);
+  }, [location.pathname]);
+
+  const showHeaderFooter = currentRoute?.isShowHeader !== false;
 
   return (
+    <div className="min-h-screen flex flex-col">
+      {showHeaderFooter && <Hearder />}
+
+      <main className="flex-grow">
+        <Routes>
+          {routers.map((route, index) => {
+            const Page = route.page;
+            return <Route key={index} path={route.path} element={<Page />} />;
+          })}
+        </Routes>
+      </main>
+
+      {showHeaderFooter && <FooterComponent />}
+    </div>
+  );
+}
+
+function App() {
+  return (
     <Router>
-      <div className="min-h-screen flex flex-col">
-        <Hearder />
-        <main className="flex-grow">
-          <Routes>
-            {routers.map((route, index) => {
-              const Page = route.page;
-              return (
-                <Route
-                  key={index}
-                  path={route.path}
-                  element={
-                    route.isShowHeader === false ? (
-                      <Page />
-                    ) : (
-                      <>
-                        <Page />
-                      </>
-                    )
-                  }
-                />
-              );
-            })}
-          </Routes>
-        </main>
-        <FooterComponent />
-      </div>
+      <AppContent />
     </Router>
   );
 }
