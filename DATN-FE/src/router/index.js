@@ -9,6 +9,7 @@ import CartPage from "../pages/CartPage/CartPage.tsx";
 import AdminPage from "../admin/AdminPage.tsx";
 import CheckoutPage from "../pages/CheckoutPage/checkOutPage.tsx";
 import OrderPage from "../pages/OrderPage/OrderPage.jsx";
+import OrderDetailPage from "../pages/OrderDetailPage/OrderDetailPage.jsx";
 
 export const routers = [
     {
@@ -22,7 +23,7 @@ export const routers = [
         isShowHeader: true,
     },
     {
-        path: "/detail",
+        path: "/detail/:id",
         page: Detail,
         isShowHeader: true,
     },
@@ -62,9 +63,13 @@ export const routers = [
         isShowHeader: true,
     },
     {
-        path: "/oder",
+        path: "/orders",
         page: OrderPage,
         isShowHeader: true,
+    },
+    {
+        path: "/order/:id",
+        page: OrderDetailPage,
+        isShowHeader: true,
     }
-
 ]

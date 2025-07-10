@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom';
 
 const Hearder = () => {
   const [topMenuOpen, setTopMenuOpen] = useState(false)
@@ -13,7 +14,7 @@ const Hearder = () => {
         <div className="bg-[#0274be] text-white text-sm">
           <div className="max-w-screen-xl mx-auto px-6 py-2 flex flex-wrap justify-end items-center space-x-2">
             {/* Dropdown tiền tệ, ngôn ngữ - ẩn trên điện thoại */}
-            <div className="relative group hidden sm:block">
+            {/* <div className="relative group hidden sm:block">
               <button className="bg-[#0274be] text-white px-2 py-1 rounded">
                 USD ▼
               </button>
@@ -31,23 +32,23 @@ const Hearder = () => {
                 <div className="px-3 py-1 hover:bg-gray-100 cursor-pointer">Tiếng Việt</div>
                 <div className="px-3 py-1 hover:bg-gray-100 cursor-pointer">Franch</div>
               </div>
-            </div>
+            </div> */}
 
             {/* Các nút ẩn trên điện thoại */}
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <span className="flex items-center gap-1">👤 My Account</span>
+              <span className="flex items-center gap-1">👤 Tài khoản</span>
             </button>
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <span className="flex items-center gap-1">💙 Wishlist</span>
+              <span className="flex items-center gap-1">💙 Sản phẩm yêu thích</span>
             </button>
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <span className="flex items-center gap-1">🛒 My Cart</span>
+              <Link className="flex items-center gap-1" to="/cart" >🛒 Giỏ hàng</Link>
             </button>
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <span className="flex items-center gap-1">✔ Checkout</span>
+              <Link className="flex items-center gap-1" to="/orders">✔ Đơn hàng</Link>
             </button>
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <span className="flex items-center gap-1">🔒 Login</span>
+              <Link className="flex items-center gap-1" to="/login">🔒 Đăng nhập</Link>
             </button>
 
             {/* Nút menu trên điện thoại */}
