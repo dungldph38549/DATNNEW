@@ -1,9 +1,11 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import Swal from 'sweetalert2';
 import { useDispatch } from "react-redux";
 import { fetchProducts } from '../../api/index';
-import { setProduct } from "../../redux/checkout/checkoutSlice";
+import { addProduct as addProductCheckout } from "../../redux/checkout/checkoutSlice";
+import { addProduct } from "../../redux/cart/cartSlice";
 
 const HomePages = () => {
   const navigate = useNavigate();
@@ -15,10 +17,20 @@ const HomePages = () => {
   });
 
   const handleCheckout = (item) => {
-    dispatch(setProduct(item));
+    dispatch(addProductCheckout(item));
     navigate('/checkoutpage');
   };
 
+  const handleAddToCart = (item) => {
+    dispatch(addProduct(item));
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã thêm vào giỏ hàng',
+      text: `"${item.name}" đã được thêm vào giỏ hàng.`,
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  };
   return (
     <div>
       <main className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4 py-8 bg-gray-100">
@@ -102,7 +114,7 @@ const HomePages = () => {
               <div className="p-4 space-y-1">
                 <h3 className="text-gray-800 font-semibold text-sm">{product.name}</h3>
                 <p className="text-blue-600 font-bold">{product.price}đ</p>
-                <button onClick={(e) =>{e.stopPropagation(); navigate('/cart')} } className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Thêm vào giỏ</button>
+                <button onClick={(e) =>{e.stopPropagation(); handleAddToCart(product)} } className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Thêm vào giỏ</button>
                 <button onClick={(e)=> {e.stopPropagation(); handleCheckout(product)}} className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Mua ngay</button>
               </div>
             </div>

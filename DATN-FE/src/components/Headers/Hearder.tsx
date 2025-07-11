@@ -47,6 +47,9 @@ const Hearder = () => {
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
               <Link className="flex items-center gap-1" to="/orders">✔ Đơn hàng</Link>
             </button>
+             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
+              <Link className="flex items-center gap-1" to="/checkoutpage">✔ Thanh toán</Link>
+            </button>
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
               <Link className="flex items-center gap-1" to="/login">🔒 Đăng nhập</Link>
             </button>

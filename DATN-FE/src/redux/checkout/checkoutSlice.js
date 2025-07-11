@@ -18,12 +18,24 @@ const checkoutSlice = createSlice({
   initialState,
   reducers: {
     addProduct: (state, action) => {
-      const existing = state.products.find((p) => p._id === action.payload.id);
+      const existing = state.products.find((p) => p._id === action.payload._id);
       if (existing) {
         existing.quantity += 1;
       } else {
         state.products.push({ ...action.payload, quantity: 1 });
       }
+    },
+    setMultiProducts: (state, action) => {
+      if(action.payload?.length) {
+        action.payload.forEach(product => {
+          const existing = state.products.find((p) => p._id === product._id);
+          if (existing) {
+            existing.quantity += product.quantity;
+          } else {
+            state.products.push({ ...product, quantity: product.quantity });
+          }
+        });
+      } 
     },
     removeProduct: (state, action) => {
       state.products = state.products.filter((p) => p._id !== action.payload);
@@ -34,10 +46,6 @@ const checkoutSlice = createSlice({
       if (product) {
         product.quantity = Math.max(1, product.quantity + delta);
       }
-    },
-    setProduct: (state, action) => {
-      const product = action.payload;
-      state.products = [{...product, quantity: 1}];
     },
     setQuantity: (state, action) => {
       const { id, quantity } = action.payload;
@@ -58,7 +66,7 @@ export const {
   changeQuantity,
   setQuantity,
   clearProduct,
-  setProduct,
+  setMultiProducts,
 } = checkoutSlice.actions;
 
 export default checkoutSlice.reducer;
