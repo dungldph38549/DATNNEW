@@ -32,3 +32,14 @@ export const deleteOrderById = async ({ id }) => {
   const res = await axiosInstance.delete(`/order/${id}`);
   return res.data;
 };
+
+// admin
+export const getAllOrders = async () => {
+  const res = await axiosInstance.get('/order');
+  return res.data;
+};
+
+export const updateOrderInfo  = async (id, data) => {
+  const res = await axiosInstance.put(`/order/${id}`, data);
+  return res.data;
+}
