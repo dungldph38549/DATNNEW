@@ -3,11 +3,48 @@ const Order = require('../models/order.js');
 // Tạo mới Order
 exports.createOrder = async (req, res) => {
   try {
-    const { userId, products, totalAmount } = req.body;
+    const { 
+      userId,
+      guestId,
+      address,
+      fullName,
+      paymentMethod,
+      shippingMethod,
+      phone,
+      email,
+      products,
+    } = req.body;
+
+    if(
+      !(userId || guestId) ||
+      !address ||
+      !fullName ||
+      !paymentMethod ||
+      !shippingMethod ||
+      !phone ||
+      !email ||
+      !products
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const subtotal = products.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    const mapProducts = products.map((item) => ({ productId: item._id, quantity: item.quantity }));
+    
+    const shippingFee = shippingMethod === "fast" ? 30000 : 0;
+    const totalAmount = subtotal + shippingFee;
     const newOrder = new Order({
       userId,
-      products,
-      totalAmount
+      guestId,
+      address,
+      fullName,
+      paymentMethod,
+      shippingMethod,
+      phone,
+      email,
+      products: mapProducts,
+      totalAmount,
+      status: 'pending',
     });
     const savedOrder = await newOrder.save();
     res.status(201).json(savedOrder);
@@ -16,8 +53,38 @@ exports.createOrder = async (req, res) => {
   }
 };
 
+exports.getOrdersByUserOrGuest = async (req, res) => {
+  const { userId, guestId } = req.query;
+
+  try {
+    if (!userId && !guestId) {
+      return res.status(400).json({ message: 'Thiếu userId hoặc guestId' });
+    }
+
+    const query = userId ? { userId } : { guestId };
+
+    const orders = await Order.find(query)
+      .populate('userId')
+      .populate('products.productId');
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Lấy tất cả Order
 exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('userId')
+      .populate('products.productId');
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate('userId')
@@ -52,6 +119,40 @@ exports.updateOrder = async (req, res) => {
     if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
     res.status(200).json(updatedOrder);
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// câp nhật order từ user
+exports.updateOrderById = async (req, res) => {
+  const { id } = req.params;
+  const { fullName, email, phone, address, status } = req.body;
+
+  try {
+    const order = await Order.findById(id);
+
+    if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+
+    // Nếu đơn đã xử lý → không được sửa nữa
+    if (order.status !== 'pending') {
+      return res.status(400).json({ message: 'Đơn hàng đã xử lý, không thể chỉnh sửa' });
+    }
+
+    // Cập nhật thông tin người nhận
+    if (fullName) order.fullName = fullName;
+    if (email) order.email = email;
+    if (phone) order.phone = phone;
+    if (address) order.address = address;
+
+    // Hủy đơn
+    if (status === 'canceled') {
+      order.status = 'canceled';
+    }
+
+    const updated = await order.save();
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error('Lỗi update đơn hàng:', err);
     res.status(500).json({ message: err.message });
   }
 };
