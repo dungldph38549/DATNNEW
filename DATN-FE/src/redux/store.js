@@ -1,13 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import counterReducer from "./sildes/counterSlide";
 import checkoutReducer from "./checkout/checkoutSlice"; 
+import cartReducer from "./cart/cartSlice"; 
 import userReducer from "./user/index"; 
 
 export const store = configureStore({
     reducer: {
         checkout: checkoutReducer,
         counter: counterReducer,
-        user: userReducer
+        user: userReducer,
+        cart: cartReducer
     },
 })
 
@@ -16,6 +18,9 @@ store.subscribe(() => {
     const state = store.getState();
     const products = state.checkout.products;
     localStorage.setItem("checkout_products", JSON.stringify(products));
+    
+    const cart = state.cart.products;
+    localStorage.setItem("cart", JSON.stringify(cart));
   } catch (e) {
     console.error("Không thể lưu vào localStorage", e);
   }

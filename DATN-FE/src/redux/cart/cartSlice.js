@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const loadFromLocalStorage = () => {
   try {
-    const data = localStorage.getItem("checkout_products");
+    const data = localStorage.getItem("cart");
     return data ? JSON.parse(data) : [];
   } catch {
     return [];
@@ -13,12 +13,14 @@ const initialState = {
   products: loadFromLocalStorage(),
 };
 
-const checkoutSlice = createSlice({
-  name: "checkout",
+const cartSlice = createSlice({
+  name: "cart",
   initialState,
   reducers: {
     addProduct: (state, action) => {
-      const existing = state.products.find((p) => p._id === action.payload.id);
+      const existing = state.products.find((p) => p._id === action.payload._id);
+      console.log(action.payload);
+      
       if (existing) {
         existing.quantity += 1;
       } else {
@@ -42,9 +44,6 @@ const checkoutSlice = createSlice({
         product.quantity = quantity;
       }
     },
-    clearProduct: (state) => {
-      state.products = [];
-    },
   },
 });
 
@@ -53,7 +52,6 @@ export const {
   removeProduct,
   changeQuantity,
   setQuantity,
-  clearProduct,
-} = checkoutSlice.actions;
+} = cartSlice.actions;
 
-export default checkoutSlice.reducer;
+export default cartSlice.reducer;

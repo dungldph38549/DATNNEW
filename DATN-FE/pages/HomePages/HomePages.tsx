@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from "react-redux";
 import { fetchProducts } from '../../api/index';
-import { setProduct } from "../../redux/checkout/checkoutSlice";
+import { addProduct } from "../../redux/checkout/checkoutSlice";
 
 const HomePages = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const HomePages = () => {
   });
 
   const handleCheckout = (item) => {
-    dispatch(setProduct(item));
+    dispatch(addProduct(item));
     navigate('/checkoutpage');
   };
 

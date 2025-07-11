@@ -1,9 +1,10 @@
 const Order = require('../models/order.js');
+const Product = require("../models/ProductModel.js");
 
 // Tạo mới Order
 exports.createOrder = async (req, res) => {
   try {
-    const { 
+    const {
       userId,
       guestId,
       address,
@@ -15,24 +16,52 @@ exports.createOrder = async (req, res) => {
       products,
     } = req.body;
 
-    if(
-      !(userId || guestId) ||
-      !address ||
-      !fullName ||
-      !paymentMethod ||
-      !shippingMethod ||
-      !phone ||
-      !email ||
-      !products
-    ) {
-      return res.status(400).json({ message: "Missing required fields" });
+    // 1. Validate đầu vào
+    
+    if (!(userId || guestId)) {
+      return res.status(422).json({ message: "Thiếu userId hoặc guestId" });
     }
 
-    const subtotal = products.reduce((sum, item) => sum + item.quantity * item.price, 0);
-    const mapProducts = products.map((item) => ({ productId: item._id, quantity: item.quantity }));
-    
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(422).json({ message: "Danh sách sản phẩm không hợp lệ" });
+    }
+
+    const requiredFields = { address, fullName, paymentMethod, shippingMethod, phone, email };
+    for (let key in requiredFields) {
+      if (!requiredFields[key]) {
+        return res.status(422).json({ message: `Thiếu trường bắt buộc: ${key}` });
+      }
+    }
+
+    // 2. Validate sản phẩm và tính toán tổng tiền
+    let subtotal = 0;
+    const mapProducts = [];
+
+    for (const item of products) {
+      const product = await Product.findById(item._id);
+
+      if (!product) {
+        return res.status(404).json({ message: `Không tìm thấy sản phẩm: ${item._id}` });
+      }
+
+      if (item.quantity <= 0) {
+        return res.status(400).json({ message: `Số lượng sản phẩm ${product.name} không hợp lệ` });
+      }
+
+      if (item.quantity > product.countInStock) {
+        return res.status(400).json({
+          message: `Sản phẩm ${product.name} chỉ còn ${product.countInStock} trong kho`,
+        });
+      }
+
+      subtotal += item.quantity * product.price;
+      mapProducts.push({ productId: item._id, quantity: item.quantity });
+    }
+
     const shippingFee = shippingMethod === "fast" ? 30000 : 0;
     const totalAmount = subtotal + shippingFee;
+
+    // 3. Tạo đơn hàng
     const newOrder = new Order({
       userId,
       guestId,
@@ -44,12 +73,22 @@ exports.createOrder = async (req, res) => {
       email,
       products: mapProducts,
       totalAmount,
-      status: 'pending',
+      status: "pending",
     });
+
     const savedOrder = await newOrder.save();
+
+    // 4. Trừ số lượng tồn kho
+    for (const item of products) {
+      await Product.findByIdAndUpdate(item._id, {
+        $inc: { countInStock: -item.quantity },
+      });
+    }
+
     res.status(201).json(savedOrder);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Create Order Error:", err);
+    res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
 
@@ -65,7 +104,8 @@ exports.getOrdersByUserOrGuest = async (req, res) => {
 
     const orders = await Order.find(query)
       .populate('userId')
-      .populate('products.productId');
+      .populate('products.productId')
+      .sort({ createdAt: -1 }); 
     res.status(200).json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
