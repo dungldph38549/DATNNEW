@@ -87,18 +87,3 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-exports.deleteMany = async (req, res) => {
-  try {
-    const ids = res.body;
-    if (!ids) {
-      return res.status(200).json({
-        status: "ERR",
-        message: "No products to delete",
-      });
-    }
-    const response = await ProductService.deleteMany(ids);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({ message: e.message });
-  }
-};
