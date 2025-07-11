@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 
+import Order from './Order';
+
 const AdminPage = () => {
-    const [selectedMenu, setSelectedMenu] = useState('');
+   
+    const [selectedMenu, setSelectedMenu] = useState('orders');
 
     const renderContent = () => {
         switch (selectedMenu) {
@@ -37,35 +40,7 @@ const AdminPage = () => {
                 );
 
             case 'orders':
-                return (
-                    <div>
-                        <h2 className="text-2xl font-semibold mb-4">🧾 Danh sách Đơn hàng</h2>
-                        <table className="min-w-full bg-white border rounded shadow">
-                            <thead>
-                                <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
-                                    <th className="px-4 py-2">Mã đơn</th>
-                                    <th className="px-4 py-2">Khách hàng</th>
-                                    <th className="px-4 py-2">Tổng tiền</th>
-                                    <th className="px-4 py-2">Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-4 py-2">#001</td>
-                                    <td className="px-4 py-2">Nguyễn Văn A</td>
-                                    <td className="px-4 py-2">450.000₫</td>
-                                    <td className="px-4 py-2">Đã giao</td>
-                                </tr>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-4 py-2">#002</td>
-                                    <td className="px-4 py-2">Trần Thị B</td>
-                                    <td className="px-4 py-2">300.000₫</td>
-                                    <td className="px-4 py-2">Chờ xử lý</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                );
+                return ( <Order />);
 
             case 'users':
                 return (
@@ -109,9 +84,9 @@ const AdminPage = () => {
             <div className="w-[20rem] h-screen bg-white p-4 shadow-xl">
                 <h2 className="text-2xl font-semibold mb-6">Trang Admin</h2>
                 <nav className="flex flex-col gap-2">
-                    <button onClick={() => setSelectedMenu('products')} className="text-left p-3 rounded hover:bg-blue-100">Quản lý sản phẩm</button>
-                    <button onClick={() => setSelectedMenu('orders')} className="text-left p-3 rounded hover:bg-blue-100">Quản lý đơn hàng</button>
-                    <button onClick={() => setSelectedMenu('users')} className="text-left p-3 rounded hover:bg-blue-100">Quản lý người dùng</button>
+                    <button onClick={() => setSelectedMenu('products')} className={`text-left p-3 rounded ${selectedMenu === 'products' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý sản phẩm</button>
+                    <button onClick={() => setSelectedMenu('orders')} className={`text-left p-3 rounded ${selectedMenu === 'orders' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý đơn hàng</button>
+                    <button onClick={() => setSelectedMenu('users')} className={`text-left p-3 rounded ${selectedMenu === 'users' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý người dùng</button>
                     <button onClick={() => alert('Đã đăng xuất')} className="text-left p-3 rounded hover:bg-red-100 text-red-600">Đăng xuất</button>
                 </nav>
             </div>

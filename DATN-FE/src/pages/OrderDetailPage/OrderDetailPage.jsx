@@ -158,7 +158,7 @@ const OrderDetailPage = () => {
           {order.products.map((item, idx) => (
             <div key={idx} className="flex justify-between items-center py-2">
               <div className="flex items-center space-x-4">
-                <img src={item.productId.image} className="w-16 h-16 rounded border" />
+                <img src={item.productId.image} alt={item.productId.name} className="w-16 h-16 rounded border" />
                 <div>
                   <p className="font-semibold">{item.productId.name}</p>
                   <p className="text-sm text-gray-500">x{item.quantity}</p>
@@ -169,6 +169,11 @@ const OrderDetailPage = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="flex justify-between text-l mt-4 pt-2 border-t">
+          <span>Phí ship:</span>
+          <span className="text-green-600">{order.shippingMethod === 'fast' ? '30,000' : 0}₫</span>
         </div>
 
         <div className="flex justify-between font-bold text-lg mt-4 pt-2 border-t">

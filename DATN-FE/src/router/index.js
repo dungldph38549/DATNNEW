@@ -10,6 +10,7 @@ import AdminPage from "../admin/AdminPage.tsx";
 import CheckoutPage from "../pages/CheckoutPage/checkOutPage.tsx";
 import OrderPage from "../pages/OrderPage/OrderPage.jsx";
 import OrderDetailPage from "../pages/OrderDetailPage/OrderDetailPage.jsx";
+import AdminOrderDetailPage from "../admin/AdminOrderDetail.jsx";
 
 export const routers = [
     {
@@ -71,5 +72,10 @@ export const routers = [
         path: "/order/:id",
         page: OrderDetailPage,
         isShowHeader: true,
-    }
+    },
+    {
+        path: "/admin/order/:id",
+        page: AdminOrderDetailPage,
+        isShowHeader: false,
+    },
 ]

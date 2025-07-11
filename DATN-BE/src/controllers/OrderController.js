@@ -148,18 +148,86 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
-// Cập nhật trạng thái Order
+// Cập nhật Order từ admin
+const statusLabels = {
+  pending: 'Đang xử lý',
+  confirmed: 'Đã xác nhận',
+  shipped: 'Đang giao',
+  delivered: 'Đã giao',
+  canceled: 'Đã hủy',
+}
 exports.updateOrder = async (req, res) => {
   try {
+    const {
+      status,
+      fullName,
+      email,
+      phone,
+      address,
+    } = req.body;
+
+    const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'canceled'];
+    const TRANSITIONS = {
+      pending: ['confirmed', 'canceled'],
+      confirmed: ['shipped', 'canceled'],
+      shipped: ['delivered'],
+      delivered: [],
+      canceled: [],
+    };
+
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+
+    // Nếu muốn thay đổi status, validate trạng thái mới
+    if (status && !VALID_STATUSES.includes(status)) {
+      return res.status(422).json({ message: 'Trạng thái không hợp lệ' });
+    }
+
+    // Nếu status được cập nhật, validate chuyển trạng thái
+    if (status && status !== order.status) {
+      const allowedNext = TRANSITIONS[order.status] || [];
+      if (!allowedNext.includes(status)) {
+        return res.status(422).json({
+          message: `Không thể chuyển từ "${statusLabels[order.status]}" sang "${statusLabels[status]}".`,
+        });
+      }
+    }
+
+    // Không cho phép chỉnh sửa thông tin khác nếu trạng thái hiện tại là "shipping", "delivered" hoặc "canceled"
+    const NON_EDITABLE_STATUSES = ['shipped', 'delivered', 'canceled'];
+    const isLockedStatus = NON_EDITABLE_STATUSES.includes(order.status);
+    const tryingToEditOtherFields = fullName || email || phone || address;
+
+    if (isLockedStatus && tryingToEditOtherFields) {
+      return res.status(403).json({
+        message: `Không thể chỉnh sửa thông tin khi đơn hàng đang ở trạng thái "${statusLabels[order.status]}".`,
+      });
+    }
+
+    const updateFields = {};
+
+    if (status && status !== order.status) updateFields.status = status;
+    if (!isLockedStatus) {
+      if (fullName) updateFields.fullName = fullName;
+      if (email) updateFields.email = email;
+      if (phone) updateFields.phone = phone;
+      if (address) updateFields.address = address;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(422).json({ message: 'Không có thông tin nào để cập nhật' });
+    }
+
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
-      { status: req.body.status },
+      updateFields,
       { new: true }
-    );
-    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
+    ).populate('products.productId');
+
     res.status(200).json(updatedOrder);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error(err);
+    res.status(500).json({ message: 'Đã xảy ra lỗi máy chủ' });
   }
 };
 

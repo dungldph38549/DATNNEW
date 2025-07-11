@@ -28,3 +28,4 @@ export const PAYMENT_METHOD: Record<string, string> = {
   cod: 'COD',
   vnpay: 'VNPay',
 };
+
