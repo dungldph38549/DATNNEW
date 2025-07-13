@@ -49,7 +49,7 @@ const AdminOrderDetailPage = ({id, onClose}) => {
       queryClient.invalidateQueries(['admin-order-detail', id]);
     },
     onError: (error) => {
-      if(error.response.data.message) return Swal.fire('Lỗi', error.response.data.message, 'error');
+      if(error.response.data.message) return Swal.fire('Thất bại', error.response.data.message, 'warning');
       Swal.fire('Lỗi', 'Không thể cập nhật đơn hàng.', 'error');
     },
   });

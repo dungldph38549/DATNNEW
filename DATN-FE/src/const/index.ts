@@ -29,3 +29,6 @@ export const PAYMENT_METHOD: Record<string, string> = {
   vnpay: 'VNPay',
 };
 
+export const GET_IMAGE = (path_name: string) => {
+  return process.env.REACT_APP_API_URL_BACKEND + '/image/' + path_name;
+};
