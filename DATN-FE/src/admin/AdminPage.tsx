@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-
 import Order from './Order';
+import Products from './Products';
 
 const AdminPage = () => {
    
@@ -9,35 +9,7 @@ const AdminPage = () => {
     const renderContent = () => {
         switch (selectedMenu) {
             case 'products':
-                return (
-                    <div>
-                        <h2 className="text-2xl font-semibold mb-4">📦 Danh sách Sản phẩm</h2>
-                        <table className="min-w-full bg-white border rounded shadow">
-                            <thead>
-                                <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
-                                    <th className="px-4 py-2">STT</th>
-                                    <th className="px-4 py-2">Tên sản phẩm</th>
-                                    <th className="px-4 py-2">Giá</th>
-                                    <th className="px-4 py-2">Tồn kho</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-4 py-2">1</td>
-                                    <td className="px-4 py-2">Áo Thun</td>
-                                    <td className="px-4 py-2">150.000₫</td>
-                                    <td className="px-4 py-2">20</td>
-                                </tr>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-4 py-2">2</td>
-                                    <td className="px-4 py-2">Quần Jean</td>
-                                    <td className="px-4 py-2">300.000₫</td>
-                                    <td className="px-4 py-2">15</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                );
+                return (<Products />);
 
             case 'orders':
                 return ( <Order />);
