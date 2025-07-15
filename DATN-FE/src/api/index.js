@@ -9,6 +9,31 @@ export const uploadImages = async (payload) => {
   return res.data;
 };
 
+// User
+export const loginUser = async (payload) => {
+  const res = await axiosInstance.post('/user/login', payload);
+  return res.data;
+};
+export const registerUser = async (payload) => {
+  const res = await axiosInstance.post('/user/register', payload);
+  return res.data;
+};
+
+export const getUserById = async (id) => {
+  const res = await axiosInstance.get('/user/' + id);
+  return res.data;
+};
+
+export const updateUserById = async (id, payload) => {
+  const res = await axiosInstance.put('/user/update/' + id, payload);
+  return res.data;
+};
+
+export const getAllUser = async (page, limit) => {
+  const res = await axiosInstance.get(`/user/list?page=${page}&limit=${limit}`);
+  return res.data;
+};
+
 // Product
 export const fetchProducts = async (page, limit) => {
   const res = await axiosInstance.get(`/product/user/list?page=${page}&limit=${limit}`);

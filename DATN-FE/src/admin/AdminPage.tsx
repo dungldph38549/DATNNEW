@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Order from './Order';
 import Products from './Products';
+import Users from './Users';
+import { useNavigate } from 'react-router-dom';
+import { clearUser } from '../redux/user';
 
 const AdminPage = () => {
-   
-    const [selectedMenu, setSelectedMenu] = useState('orders');
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const user = useSelector((state: any) => state.user);
+    const [selectedMenu, setSelectedMenu] = useState('products');
+
+    const handleMenuClick = (menu: string) => {
+        if(user.isAdmin && user.login) {
+            setSelectedMenu(menu);
+        }
+    }
+
+    useEffect(() => {
+        if (!user.isAdmin || !user.login) {
+            navigate('/login'); 
+        }
+    }, [user.isAdmin, user.login]);
 
     const renderContent = () => {
         switch (selectedMenu) {
@@ -15,36 +33,7 @@ const AdminPage = () => {
                 return ( <Order />);
 
             case 'users':
-                return (
-                    <div>
-                        <h2 className="text-2xl font-semibold mb-4">👤 Danh sách Người dùng</h2>
-                        <table className="min-w-full bg-white border rounded shadow">
-                            <thead>
-                                <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
-                                    <th className="px-4 py-2">STT</th>
-                                    <th className="px-4 py-2">Tên</th>
-                                    <th className="px-4 py-2">Email</th>
-                                    <th className="px-4 py-2">Vai trò</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-4 py-2">1</td>
-                                    <td className="px-4 py-2">Admin</td>
-                                    <td className="px-4 py-2">admin@example.com</td>
-                                    <td className="px-4 py-2">Quản trị viên</td>
-                                </tr>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-4 py-2">2</td>
-                                    <td className="px-4 py-2">Người dùng A</td>
-                                    <td className="px-4 py-2">userA@example.com</td>
-                                    <td className="px-4 py-2">Khách hàng</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                );
-
+                return (<Users />);
             default:
                 return <p className="text-gray-600">📋 Chọn mục bên trái để xem nội dung</p>;
         }
@@ -53,13 +42,18 @@ const AdminPage = () => {
     return (
         <div className="flex">
             {/* Sidebar */}
-            <div className="w-[20rem] h-screen bg-white p-4 shadow-xl">
+            <div className="w-[20rem] h-screen bg-white p-4 shadow-xl" style={{ minWidth: '150px' }}>
                 <h2 className="text-2xl font-semibold mb-6">Trang Admin</h2>
                 <nav className="flex flex-col gap-2">
-                    <button onClick={() => setSelectedMenu('products')} className={`text-left p-3 rounded ${selectedMenu === 'products' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý sản phẩm</button>
-                    <button onClick={() => setSelectedMenu('orders')} className={`text-left p-3 rounded ${selectedMenu === 'orders' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý đơn hàng</button>
-                    <button onClick={() => setSelectedMenu('users')} className={`text-left p-3 rounded ${selectedMenu === 'users' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý người dùng</button>
-                    <button onClick={() => alert('Đã đăng xuất')} className="text-left p-3 rounded hover:bg-red-100 text-red-600">Đăng xuất</button>
+                    <button onClick={() => handleMenuClick('products')} className={`text-left p-3 rounded ${selectedMenu === 'products' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý sản phẩm</button>
+                    <button onClick={() => handleMenuClick('orders')} className={`text-left p-3 rounded ${selectedMenu === 'orders' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý đơn hàng</button>
+                    <button onClick={() => handleMenuClick('users')} className={`text-left p-3 rounded ${selectedMenu === 'users' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý người dùng</button>
+                    <button onClick={() => {
+                        dispatch(clearUser());
+                        navigate('/login');
+                    }} className={`text-left p-3 rounded hover:bg-red-100 text-red-600`}>
+                        Đăng xuất
+                    </button>
                 </nav>
             </div>
 
