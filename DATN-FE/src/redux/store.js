@@ -19,6 +19,9 @@ store.subscribe(() => {
     const products = state.checkout.products;
     localStorage.setItem("checkout_products", JSON.stringify(products));
     
+    const user = state.user;
+    localStorage.setItem("user", JSON.stringify(user));
+
     const cart = state.cart.products;
     localStorage.setItem("cart", JSON.stringify(cart));
   } catch (e) {

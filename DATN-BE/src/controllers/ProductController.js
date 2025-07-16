@@ -2,20 +2,14 @@ const ProductService = require("../services/ProductSevice");
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, image, type, price, countInStock, rating, description } =
-      req.body;
-
-    // Kiểm tra trường bắt buộc
+    const { name, image, price, countInStock } = req.body;
     if (
       !name ||
       !image ||
-      !type ||
       !price ||
-      !countInStock ||
-      !rating ||
-      !description
+      !countInStock
     ) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(422).json({ message: "Missing required fields" });
     }
 
     const newProduct = await ProductService.createProduct(req.body);
@@ -25,13 +19,27 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-exports.getAllProducts = async (req, res) => {
+exports.getProducts = async (req, res) => {
   try {
     const { limit, page, sort, filter } = req.query;
-    const products = await ProductService.getAllProducts(
-      Number(limit) || 8,
+    const products = await ProductService.getProducts(
+      Number(limit) || 10,
       Number(page) || 0,
       sort,
+      filter
+    );
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getAllProducts = async (req, res) => {
+  try {
+    const { limit, page, filter } = req.query;
+    const products = await ProductService.getAllProducts(
+      Number(limit) || 10,
+      Number(page) || 0,
       filter
     );
     res.json(products);
@@ -43,9 +51,9 @@ exports.getAllProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid product ID" });
-    }
+    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    //   return res.status(400).json({ message: "Invalid product ID" });
+    // }
 
     const product = await ProductService.getProductById(id);
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -72,7 +80,53 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+exports.deleteProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    //   return res.status(400).json({ message: "Invalid product ID" });
+    // }
+    const deleted = await ProductService.deleteProduct(id);
+    if (!deleted) return res.status(404).json({ message: "Product not found" });
+
+    res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.restoreProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    //   return res.status(400).json({ message: "Invalid product ID" });
+    // }
+    const deleted = await ProductService.restoreProductById(id);
+    if (!deleted) return res.status(404).json({ message: "Product not found" });
+
+    res.json({ message: "Product restored" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+
+    const deleted = await ProductService.deleteProduct(id);
+    if (!deleted) return res.status(404).json({ message: "Product not found" });
+
+    res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.uploadImage = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {

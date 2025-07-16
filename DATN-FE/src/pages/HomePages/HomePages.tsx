@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
@@ -6,20 +5,43 @@ import { useDispatch } from "react-redux";
 import { fetchProducts } from '../../api/index';
 import { addProduct as addProductCheckout } from "../../redux/checkout/checkoutSlice";
 import { addProduct } from "../../redux/cart/cartSlice";
+import { useEffect, useState } from 'react';
 
 const HomePages = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+  const [data, setData] = useState([]);
+
+  const [page, setPage] = useState(0);
   const { data: products, isLoading } = useQuery({
-    queryKey: ['list-products'],
-    queryFn: fetchProducts,
+    queryKey: ['list-products', page],
+    queryFn: () => {
+      return fetchProducts(page, 10);
+    },
   });
+
+  useEffect(() => {
+    if (products?.data?.length) {
+      if(!data) setData(products.data);
+      else setData(prev => {
+          const newIds = new Set(prev.map(p => p._id));
+          const filtered = products.data.filter(p => !newIds.has(p._id));
+          return [...prev, ...filtered];
+        });
+    }
+  }, [products, page]);
+
+  const handleLoadMore = () => {
+    console.log(page);
+    
+    setPage(page + 1);
+  };
 
   const handleCheckout = (item) => {
     dispatch(addProductCheckout(item));
     navigate('/checkoutpage');
   };
+
 
   const handleAddToCart = (item) => {
     dispatch(addProduct(item));
@@ -70,7 +92,7 @@ const HomePages = () => {
           <div className="bg-white p-4 rounded shadow space-y-4">
             <div className="text-sm italic text-gray-700">"Áo chất lượng, giao hàng nhanh!"</div>
             <div className="flex items-center space-x-2">
-              <img src="https://via.placeholder.com/40" className="rounded-full" />
+              <img  className="rounded-full" />
               <div>
                 <div className="font-bold text-sm">John Doe</div>
                 <div className="text-xs text-gray-500">Công ty ABC</div>
@@ -104,16 +126,16 @@ const HomePages = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
             </div>
           )}
-          {products && products.data.length > 0 && products.data.map((product) => (
+          {data && data?.length > 0 && data.map((product) => (
             <div key={product._id} onClick={()=> navigate(`/detail/${product._id}`)} className="group relative bg-white border rounded-lg overflow-hidden shadow hover:shadow-lg transition">
               <img
-                src={product.image}
+                src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${product.image}`}
                 alt={product.name}
                 className="w-full h-60 object-cover"
               />
               <div className="p-4 space-y-1">
                 <h3 className="text-gray-800 font-semibold text-sm">{product.name}</h3>
-                <p className="text-blue-600 font-bold">{product.price}đ</p>
+                <p className="text-blue-600 font-bold">{product.price}₫</p>
                 <button onClick={(e) =>{e.stopPropagation(); handleAddToCart(product)} } className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Thêm vào giỏ</button>
                 <button onClick={(e)=> {e.stopPropagation(); handleCheckout(product)}} className="mt-2 w-full text-sm bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Mua ngay</button>
               </div>
@@ -122,11 +144,13 @@ const HomePages = () => {
         </div>
 
         {/* Nút Xem thêm */}
-      <div className="flex justify-center mt-4">
-        <button className="border border-black bg-white text-black px-6 py-2 rounded hover:bg-black hover:text-white transition text-sm">
-          Xem thêm sản phẩm
-        </button>
-      </div>
+        { products?.pageCurrent < products?.totalPage && (
+          <div className="flex justify-center mt-4">
+            <button onClick={handleLoadMore} className="border border-black bg-white text-black px-6 py-2 rounded hover:bg-black hover:text-white transition text-sm">
+              Xem thêm sản phẩm
+            </button>
+          </div>
+        )}
       </div>
           
           {/* Sản phẩm nổi bật */}

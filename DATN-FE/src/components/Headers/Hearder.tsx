@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 
 const Hearder = () => {
   const [topMenuOpen, setTopMenuOpen] = useState(false)
@@ -7,6 +7,40 @@ const Hearder = () => {
   const [currencyOpen, setCurrencyOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
 
+  const menu = [
+    {
+      name: 'Trang chủ',
+      link: '/'
+    },
+    {
+      name: 'CLOTHING',
+      link: '/1'
+    },
+    {
+      name: 'ELECTRONICS',
+      link: '/2'
+    },
+    {
+      name: 'WATCHES',
+      link: '/3'
+    },
+    {
+      name: 'JEWELLERY',
+      link: '/4'
+    },
+    {
+      name: 'SHOES',
+      link: '/5'
+    },
+    {
+      name: 'KIDS &amp; GIRLS',
+      link: '/6'
+    },
+    {
+      name: 'PAGES',
+      link: '/7'
+    },
+  ]
   return (
     <div>
       <div>
@@ -148,15 +182,19 @@ const Hearder = () => {
         <div className="max-w-screen-xl mx-auto px-4 flex justify-between items-center">
           {/* Menu ngang ẩn trên điện thoại */}
           <ul className="hidden sm:flex justify-center items-center space-x-1">
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">HOME</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">CLOTHING</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">ELECTRONICS</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">WATCHES</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">JEWELLERY</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">SHOES</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">KIDS &amp; GIRLS</li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">PAGES</li>
-            <li className="relative px-4 py-3 text-yellow-400 hover:bg-[#0865a4] cursor-pointer">TODAYS OFFER</li>
+            {
+              menu.map((item, index) => (
+                <NavLink 
+                  key={index}
+                  to={item.link} 
+                  className={({ isActive }) =>
+                    `relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer ${isActive ? 'bg-[#0865a4] text-white font-semibold' : ''}`
+                  }
+                >
+                  {item.name}
+                </NavLink>
+              ))
+            }
           </ul>
 
           {/* Nút menu trên điện thoại */}

@@ -1,16 +1,41 @@
-import React from 'react'
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import { useDispatch } from "react-redux";
+import { getProductById } from '../../api/index';
+import { GET_IMAGE } from '../../const/index.ts';
+import { addProduct } from "../../redux/cart/cartSlice";
 
 const Detail = () => {
+    const { id } = useParams();
+    const dispatch = useDispatch();
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['product-detail', id],
+        queryFn: () => getProductById(id),
+    });
+     const handleAddToCart = (item) => {
+        dispatch(addProduct(item));
+        Swal.fire({
+          icon: 'success',
+          title: 'Đã thêm vào giỏ hàng',
+          text: `"${item.name}" đã được thêm vào giỏ hàng.`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      };
+       
+    if(isLoading) return <div>Loading...</div>;
+    if(isError) return <div>Error</div>;
     return (
         <div className="bg-gray-100 min-h-screen py-6 px-2">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Sidebar */}
                 <div className="md:col-span-3 space-y-6">
                     {/* Download App */}
-                    <div className="bg-yellow-400 rounded-lg p-4 flex flex-col items-center">
+                    {/* <div className="bg-yellow-400 rounded-lg p-4 flex flex-col items-center">
                         <img src="https://i.imgur.com/3ZQ3Z5L.png" alt="Download App" className="w-28 h-28 object-contain mb-2" />
                         <button className="bg-white text-gray-800 font-semibold px-4 py-2 rounded shadow">Download Flipmart App</button>
-                    </div>
+                    </div> */}
                     {/* Hot Deals */}
                     <div className="bg-white rounded-lg shadow p-4">
                         <h3 className="font-semibold text-gray-700 mb-4">HOT DEALS</h3>
@@ -47,21 +72,21 @@ const Detail = () => {
                         </div>
                     </div>
                     {/* Newsletter */}
-                    <div className="bg-white rounded-lg shadow p-4">
+                    {/* <div className="bg-white rounded-lg shadow p-4">
                         <h3 className="font-semibold text-gray-700 mb-2">NEWSLETTERS</h3>
                         <p className="text-xs text-gray-500 mb-2">Sign Up for Our Newsletter!</p>
                         <input type="email" placeholder="Subscribe to our newsletter" className="w-full border rounded px-2 py-1 mb-2 text-sm" />
                         <button className="w-full bg-blue-500 text-white py-1 rounded hover:bg-blue-600 transition">Subscribe</button>
-                    </div>
+                    </div> */}
                     {/* Testimonial */}
-                    <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    {/* <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
                         <img src="https://i.imgur.com/8Km9tLL.png" alt="John Doe" className="w-14 h-14 rounded-full mb-2 object-cover" />
                         <p className="text-xs text-gray-600 text-center mb-2">
                             "Vtae sodales aliq uam morbi non sem lacus port mollis. Nunc condime tum metus eud molest sed consectetuer."
                         </p>
                         <div className="text-sm font-semibold text-gray-700">John Doe</div>
                         <div className="text-xs text-gray-400">Abc Company</div>
-                    </div>
+                    </div> */}
                 </div>
                 {/* Main Content */}
                 <div className="md:col-span-9 space-y-6">
@@ -69,44 +94,57 @@ const Detail = () => {
                     <div className="bg-white rounded-lg shadow p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
                         {/* Product Image */}
                         <div className="lg:col-span-4 flex flex-col items-center">
-                            <img src="https://i.imgur.com/1zQZ1Zm.jpg" alt="Product" className="w-64 h-64 object-cover rounded-lg mb-4" />
+                            <img src={GET_IMAGE(data?.image)} alt={data?.name} className="w-64 h-64 object-cover rounded-lg mb-4" />
                             <div className="flex space-x-2">
-                                <img src="https://i.imgur.com/1zQZ1Zm.jpg" alt="Thumb1" className="w-12 h-12 object-cover border-2 border-blue-500 rounded" />
-                                <img src="https://i.imgur.com/3ZQ3Z5L.png" alt="Thumb2" className="w-12 h-12 object-cover border rounded" />
-                                <img src="https://i.imgur.com/1Q9Z1Zm.png" alt="Thumb3" className="w-12 h-12 object-cover border rounded" />
-                                <img src="https://i.imgur.com/8Km9tLL.png" alt="Thumb4" className="w-12 h-12 object-cover border rounded" />
+                                {
+                                    data?.srcImages.map((image, index) => (
+                                        <img key={index} src={GET_IMAGE(image)} alt={data?.name} className="w-12 h-12 object-cover border-2 border-white rounded" />
+                                    ))
+                                }
                             </div>
-                            <div className="flex space-x-1 mt-2">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
-                                <span className="w-2 h-2 bg-gray-300 rounded-full inline-block"></span>
-                                <span className="w-2 h-2 bg-gray-300 rounded-full inline-block"></span>
-                            </div>
+                            {/* <div className="flex space-x-1 mt-2">
+                                {
+                                    data?.srcImages.map((image, index) => (
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                                    ))
+                                }
+                            </div> */}
                         </div>
                         {/* Product Info */}
                         <div className="lg:col-span-8">
-                            <h1 className="text-2xl font-bold text-gray-800 mb-2">Floral Print Buttoned</h1>
+                            <h1 className="text-2xl font-bold text-gray-800 mb-2">{data.name}</h1>
                             <div className="flex items-center text-yellow-400 text-sm mb-1">
-                                ★★★★☆
-                                <span className="text-xs text-gray-500 ml-2">(13 Reviews)</span>
+                                {
+                                    !data?.rating ? 'Chưa có đánh giá' : 
+                                    data.rating >= 5 ? <span>★★★★★</span> : 
+                                    data.rating >= 4 ? <span>★★★★☆</span> : 
+                                    data.rating >= 3 ? <span>★★★☆☆</span> : 
+                                    data.rating >= 2 ? <span>★★☆☆☆</span> : 
+                                    <span>☆</span>
+                                }
+                                {/* <span className="text-xs text-gray-500 ml-2">(13 Đánh giá)</span> */}
                             </div>
                             <div className="text-sm text-gray-600 mb-2">
-                                Availability: <span className="text-red-500 font-semibold">In Stock</span>
+                                Danh muc: <span className="text-red-500 font-semibold">{ data.type }</span>
+                            </div>
+                            <div className="text-sm text-gray-600 mb-2">
+                                Còn: <span className="text-red-500 font-semibold">{ data.countInStock }</span>
                             </div>
                             <p className="text-gray-600 mb-4">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                {data.sortDescription}
                             </p>
                             <div className="flex items-center mb-4">
-                                <span className="text-3xl font-bold text-red-500 mr-3">$800.00</span>
-                                <span className="line-through text-gray-400 text-lg">$900.00</span>
+                                <span className="text-3xl font-bold text-red-500 mr-3">{data.price}₫</span>
+                                {/* <span className="line-through text-gray-400 text-lg">$900.00</span> */}
                             </div>
                             <div className="flex items-center mb-4 flex-wrap gap-2">
-                                <span>QTY :</span>
+                                {/* <span>QTY :</span>
                                 <select className="border rounded px-2 py-1">
                                     <option>1</option>
                                     <option>2</option>
                                     <option>3</option>
-                                </select>
-                                <button className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">ADD TO CART</button>
+                                </select> */}
+                                <button onClick={() => handleAddToCart(data)} className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">Thêm vào giỏ hàng </button>
                             </div>
                         </div>
                     </div>
@@ -118,7 +156,7 @@ const Detail = () => {
                             <button className="px-4 py-2 text-gray-500">TAGS</button>
                         </div>
                         <div className="text-gray-600 text-sm">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            {data.description}
                         </div>
                     </div>
                     {/* Upsell Products */}

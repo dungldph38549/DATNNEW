@@ -1,6 +1,6 @@
-
 import { useState } from 'react';
-import { useQueryClient , useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { Table, Button, Tag, Spin  } from 'antd';
 import Swal from 'sweetalert2';
 import { getAllOrders, deleteOrderById } from './../api/index';
 import { ORDER_STATUS_LABELS } from '../const/index.ts';
@@ -9,13 +9,15 @@ import AdminOrderDetailPage from './AdminOrderDetail.jsx';
 export default function Order() {
   const queryClient = useQueryClient();
   const [orderSelected, setOrderSelected] = useState(null);
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
-  const { data: orders, isLoading, isError } = useQuery({
-      queryKey: ['admin-orders'],
-      queryFn: () => {
-        return getAllOrders();
-      },
-    });
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['admin-orders', page],
+    queryFn: () => getAllOrders(page-1, limit),
+    keepPreviousData: true,
+  });
+
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Bạn có chắc muốn xoá đơn hàng này?',
@@ -39,87 +41,102 @@ export default function Order() {
     }
   };
 
+  const columns = [
+    {
+      title: 'Mã đơn',
+      dataIndex: '_id',
+      key: '_id',
+    },
+    {
+      title: 'Khách hàng',
+      dataIndex: 'fullName',
+      key: 'fullName',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'SĐT',
+      dataIndex: 'phone',
+      key: 'phone',
+    },
+    {
+      title: 'Tổng tiền',
+      dataIndex: 'totalAmount',
+      key: 'totalAmount',
+      render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString()}₫</span>,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => {
+        let color = 'red';
+        if (status === 'pending') color = 'gold';
+        else if (status === 'confirmed') color = 'blue';
+        else if (status === 'shipped') color = 'purple';
+        else if (status === 'delivered') color = 'green';
+
+        return <Tag color={color}>{ORDER_STATUS_LABELS[status] || status}</Tag>;
+      },
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (value) => new Date(value).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Hành động',
+      key: 'actions',
+      render: (_, record) => (
+        <div className="flex gap-2">
+          <Button
+            type="link"
+            onClick={() => {
+              setOrderSelected(record._id);
+            }}
+          >
+            Sửa
+          </Button>
+          <Button
+            type="link"
+            danger
+            onClick={() => handleDelete(record._id)}
+          >
+            Xoá
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  if (orderSelected) {
+    return <AdminOrderDetailPage id={orderSelected} onClose={() => setOrderSelected(null)} />;
+  }
+
   return (
     <div>
-      {
-        orderSelected ? (
-          <AdminOrderDetailPage id={orderSelected} onClose={() => setOrderSelected(null)} />
-        ) : (
-          <div>
-            <h2 className="text-2xl font-semibold mb-4">🧾 Danh sách Đơn hàng</h2>
-            {isLoading ? (
-              <p>Đang tải đơn hàng...</p>
-              ) : isError ? (
-                <p className="text-red-500">Lỗi khi tải danh sách đơn hàng</p>
-              ) : 
-              (
-                <table className="min-w-full bg-white border rounded shadow text-sm">
-                  <thead>
-                    <tr className="bg-gray-100 text-gray-700">
-                      <th className="px-4 py-2 text-left">Mã đơn</th>
-                      <th className="px-4 py-2 text-left">Khách hàng</th>
-                      <th className="px-4 py-2">Email</th>
-                      <th className="px-4 py-2">SĐT</th>
-                      <th className="px-4 py-2">Tổng tiền</th>
-                      <th className="px-4 py-2">Trạng thái</th>
-                      <th className="px-4 py-2">Ngày tạo</th>
-                      <th className="px-4 py-2 text-center">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders?.map((order) => (
-                      <tr key={order._id} className="hover:bg-gray-50 border-b">
-                          <td className="px-4 py-2">{order._id}</td>
-                          <td className="px-4 py-2">{order.fullName}</td>
-                          <td className="px-4 py-2">{order.email}</td>
-                          <td className="px-4 py-2">{order.phone}</td>
-                          <td className="px-4 py-2 text-green-600 font-semibold">
-                              {order.totalAmount.toLocaleString()}₫
-                          </td>
-                          <td className="px-4 py-2">
-                              <span className={
-                                  "px-2 py-1 rounded text-white text-xs " +
-                                  (order.status === 'pending'
-                                      ? 'bg-yellow-500'
-                                      : order.status === 'confirmed'
-                                      ? 'bg-blue-500'
-                                      : order.status === 'shipped'
-                                      ? 'bg-purple-500'
-                                      : order.status === 'delivered'
-                                      ? 'bg-green-600'
-                                      : 'bg-red-500')
-                              }>
-                                  {ORDER_STATUS_LABELS[order.status] || order.status}
-                              </span>
-                          </td>
-                          <td className="px-4 py-2">
-                              {new Date(order.createdAt).toLocaleDateString('vi-VN')}
-                          </td>
-                          <td className="px-4 py-2 flex gap-2 justify-center">
-                              <button
-                                className="text-blue-600 hover:underline"
-                                onClick={() => {
-                                  setOrderSelected(order._id);
-                                }}
-                              >
-                                Sửa
-                              </button>
-                              <button
-                                className="text-red-600 hover:underline"
-                                onClick={() => handleDelete(order._id)}
-                              >
-                                Xoá
-                              </button>
-                          </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )
-            }
-          </div>
-        )
-      }
-      
+      <h2 className="text-2xl font-semibold mb-4">Danh sách Đơn hàng</h2>
+      {isLoading ? (
+        <Spin tip="Đang tải đơn hàng..." />
+      ) : isError ? (
+        <p className="text-red-500">Lỗi khi tải danh sách đơn hàng</p>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
+          pagination={{
+            current: page,
+            total: data.total,
+            pageSize: limit,
+            onChange: (newPage) => setPage(newPage),
+          }}
+          bordered
+        />
+      )}
     </div>
-)}
+  );
+}

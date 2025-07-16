@@ -99,7 +99,7 @@ const CartPage = () => {
 
               {/* Image */}
               <img
-                src={item.image}
+                src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${item.image}`}
                 alt={item.name}
                 className="w-20 h-20 object-cover rounded mx-auto"
               />
