@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Order from './Order';
@@ -5,6 +6,11 @@ import Products from './Products';
 import Users from './Users';
 import { useNavigate } from 'react-router-dom';
 import { clearUser } from '../redux/user';
+=======
+import React, { useState } from 'react';
+import Order from './Order';
+import Products from './Products';
+>>>>>>> 6594ca09ba3844f0e8abef8a456871988b2e59c5
 
 const AdminPage = () => {
     const navigate = useNavigate();

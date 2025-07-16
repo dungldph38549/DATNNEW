@@ -3,12 +3,7 @@ const ProductService = require("../services/ProductSevice");
 exports.createProduct = async (req, res) => {
   try {
     const { name, image, price, countInStock } = req.body;
-    if (
-      !name ||
-      !image ||
-      !price ||
-      !countInStock
-    ) {
+    if (!name || !image || !price || !countInStock) {
       return res.status(422).json({ message: "Missing required fields" });
     }
 

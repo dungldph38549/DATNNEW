@@ -1,31 +1,35 @@
 import axiosInstance from "./axiosConfig";
 
 export const uploadImage = async (payload) => {
-  const res = await axiosInstance.post('/upload', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+  const res = await axiosInstance.post("/upload", payload, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
 export const uploadImages = async (payload) => {
-  const res = await axiosInstance.post('/uploads/multiple', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+  const res = await axiosInstance.post("/uploads/multiple", payload, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
 
 // User
 export const loginUser = async (payload) => {
-  const res = await axiosInstance.post('/user/login', payload);
+  const res = await axiosInstance.post("/user/login", payload);
   return res.data;
 };
 export const registerUser = async (payload) => {
-  const res = await axiosInstance.post('/user/register', payload);
+  const res = await axiosInstance.post("/user/register", payload);
   return res.data;
 };
 
 export const getUserById = async (id) => {
-  const res = await axiosInstance.get('/user/' + id);
+  const res = await axiosInstance.get("/user/" + id);
   return res.data;
 };
 
 export const updateUserById = async (id, payload) => {
-  const res = await axiosInstance.put('/user/update/' + id, payload);
+  const res = await axiosInstance.put("/user/update/" + id, payload);
   return res.data;
 };
 
@@ -36,48 +40,54 @@ export const getAllUser = async (page, limit) => {
 
 // Product
 export const fetchProducts = async (page, limit) => {
-  const res = await axiosInstance.get(`/product/user/list?page=${page}&limit=${limit}`);
+  const res = await axiosInstance.get(
+    `/product/user/list?page=${page}&limit=${limit}`
+  );
   return res.data;
 };
 
 export const getProductById = async (id) => {
-  const res = await axiosInstance.get('/product/' + id);
+  const res = await axiosInstance.get("/product/" + id);
   return res.data;
 };
 
-export const createProduct = async (payload) => { // admin
-  const res = await axiosInstance.post('/product/create', payload);
+export const createProduct = async (payload) => {
+  // admin
+  const res = await axiosInstance.post("/product/create", payload);
   return res.data;
 };
 
-export const updateProduct = async ({ id, payload }) => { // admin
-  const res = await axiosInstance.put('/product/update/' + id, payload);
+export const updateProduct = async ({ id, payload }) => {
+  // admin
+  const res = await axiosInstance.put("/product/update/" + id, payload);
   return res.data;
 };
 
 export const getAllProducts = async ({ page, limit }) => {
-  const res = await axiosInstance.get(`/product/getAll?page=${page}&limit=${limit}`);
+  const res = await axiosInstance.get(
+    `/product/getAll?page=${page}&limit=${limit}`
+  );
   return res.data;
 };
 
 export const deleteProductById = async ({ id }) => {
-  const res = await axiosInstance.delete('/product/delete/' + id);
+  const res = await axiosInstance.delete("/product/delete/" + id);
   return res.data;
 };
 
 export const restoreProductById = async ({ id }) => {
-  const res = await axiosInstance.put('/product/restore/' + id);
+  const res = await axiosInstance.put("/product/restore/" + id);
   return res.data;
 };
 
 // Order
 export const createOrder = async (payload) => {
-  const res = await axiosInstance.post('/order', payload);
+  const res = await axiosInstance.post("/order", payload);
   return res.data;
 };
 
 export const getOrdersByUserOrGuest = async ({ id, isGuest }) => {
-  const paramName = isGuest ? 'guestId' : 'userId';
+  const paramName = isGuest ? "guestId" : "userId";
   const res = await axiosInstance.get(`/order/user?${paramName}=${id}`);
   return res.data;
 };
@@ -97,12 +107,14 @@ export const deleteOrderById = async ({ id }) => {
   return res.data;
 };
 
-export const getAllOrders = async (page, limit) => { // admin
+export const getAllOrders = async (page, limit) => {
+  // admin
   const res = await axiosInstance.get(`/order?page=${page}&limit=${limit}`);
   return res.data;
 };
 
-export const updateOrderInfo  = async (id, data) => {  // admin
+export const updateOrderInfo = async (id, data) => {
+  // admin
   const res = await axiosInstance.put(`/order/${id}`, data);
   return res.data;
-}
+};

@@ -20,7 +20,7 @@ const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
 
       const allProduct = await Product.find()
         .limit(limit)
-        .skip((page) * limit)
+        .skip(page * limit);
 
       resolve({
         status: "ok",
@@ -45,8 +45,8 @@ const getProducts = (limit = 2, page = 0, sort = "asc") => {
       const sortValue = sort === "desc" ? -1 : 1;
 
       const allProduct = await Product.find({
-          deletedAt: null
-        })
+        deletedAt: null,
+      })
         .limit(limit)
         .skip(page * limit)
         .sort({ name: sortValue });
@@ -64,7 +64,6 @@ const getProducts = (limit = 2, page = 0, sort = "asc") => {
     }
   });
 };
-
 
 const getProductById = async (id) => {
   const product = await Product.findById(id);
