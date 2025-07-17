@@ -1,16 +1,59 @@
 // src/services/ProductService.js
 const Product = require("../models/ProductModel");
+const Brand = require('../models/Brands');
+const Category = require('../models/Categories'); 
 
 const createProduct = async (data) => {
-  if (!data.name || !data.price || !data.image) {
-    throw new Error("Missing required fields: name, price, image");
-  }
-  const nameExists = await Product.findOne({ name: data.name });
-  if (nameExists) {
-    throw new Error("Product name already exists");
-  }
+  const {
+      name,
+      sortDescription,
+      image,
+      srcImages = [],
+      type,
+      price,
+      countInStock,
+      rating,
+      description,
+      hasVariants = false,
+      attributes = [],
+      variants = [],
+      brandId,
+      categoryId,
+    } = data;
+  try {
+ 
+    if (brandId) {
+      const brandExists = await Brand.exists({ _id: brandId });
+      if (!brandExists) throw new Error({ message: 'Brand không tồn tại' });
+    }
 
-  return await Product.create(data);
+    if (categoryId) {
+      const categoryExists = await Category.exists({ _id: categoryId });
+      if (!categoryExists) throw new Error({ message: 'Category không tồn tại' });
+    }
+
+    const product = new Product({
+      name,
+      sortDescription,
+      image,
+      srcImages,
+      type,
+      price,
+      countInStock,
+      rating,
+      description,
+      hasVariants,
+      attributes,
+      brandId,
+      categoryId,
+      variants,
+    });
+
+    await product.save();
+    return product;
+  } catch (e) {
+    throw new Error(e.message);
+  }
 };
 
 const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
@@ -74,20 +117,62 @@ const getProductById = async (id) => {
   return product;
 };
 
-const updateProduct = async (id, data) => {
-  const product = await Product.findById(id);
-  if (!product) {
-    throw new Error("Cannot update. Product not found");
-  }
+const updateProduct = async (productId, data) => {
+  const {
+    name,
+    sortDescription,
+    image,
+    srcImages = [],
+    type,
+    price,
+    countInStock,
+    rating,
+    description,
+    hasVariants = false,
+    attributes = [],
+    variants = [],
+    brandId,
+    categoryId,
+  } = data;
 
-  if (data.name && data.name !== product.name) {
-    const nameExists = await Product.findOne({ name: data.name });
-    if (nameExists) {
-      throw new Error("Product name already exists");
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Sản phẩm không tồn tại.");
     }
-  }
 
-  return await Product.findByIdAndUpdate(id, data, { new: true });
+    // ✅ Kiểm tra brand và category
+    if (brandId) {
+      const brandExists = await Brand.exists({ _id: brandId });
+      if (!brandExists) throw new Error("Brand không tồn tại.");
+    }
+
+    if (categoryId) {
+      const categoryExists = await Category.exists({ _id: categoryId });
+      if (!categoryExists) throw new Error("Category không tồn tại.");
+    }
+
+    // ✅ Cập nhật các field
+    product.name = name ?? product.name;
+    product.sortDescription = sortDescription ?? product.sortDescription;
+    product.image = image ?? product.image;
+    product.srcImages = srcImages ?? product.srcImages;
+    product.type = type ?? product.type;
+    product.price = price ?? product.price;
+    product.countInStock = countInStock ?? product.countInStock;
+    product.rating = rating ?? product.rating;
+    product.description = description ?? product.description;
+    product.hasVariants = hasVariants;
+    product.attributes = attributes;
+    product.variants = variants;
+    product.brandId = brandId ?? product.brandId;
+    product.categoryId = categoryId ?? product.categoryId;
+
+    await product.save();
+    return product;
+  } catch (err) {
+    throw new Error(err.message || "Cập nhật sản phẩm thất bại.");
+  }
 };
 
 const deleteProduct = async (id) => {
