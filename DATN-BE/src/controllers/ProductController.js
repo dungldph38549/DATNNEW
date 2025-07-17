@@ -36,11 +36,10 @@ exports.getProducts = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { limit, page, sort, filter } = req.query;
+    const { limit, page, filter } = req.query;
     const products = await ProductService.getAllProducts(
-      Number(limit) || 8,
+      Number(limit) || 10,
       Number(page) || 0,
-      sort,
       filter
     );
     res.json(products);
@@ -105,7 +104,7 @@ exports.restoreProductById = async (req, res) => {
     const deleted = await ProductService.restoreProductById(id);
     if (!deleted) return res.status(404).json({ message: "Product not found" });
 
-    res.json({ message: "Product deleted successfully" });
+    res.json({ message: "Product restored" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

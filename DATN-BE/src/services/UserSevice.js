@@ -4,15 +4,15 @@ const { genneralAcessToken } = require("./JwtSevice");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, password, comfirmPassword, phone } = newUser;
+    const { name, email, password, phone } = newUser;
     try {
       const checkUser = await User.findOne({
         email: email,
       });
       if (checkUser) {
-        resolve({
-          status: "Ok",
-          message: "User already exists",
+        reject({
+          status: "false",
+          message: "Email đang được sử dụng",
         });
       }
       const hash = await bcrypt.hashSync(password, 10);
@@ -21,13 +21,13 @@ const createUser = (newUser) => {
         name,
         email,
         password: hash,
-        comfirmPassword: hash,
+        isAdmin: true,
         phone,
       });
       if (createdUser) {
         resolve({
           status: true,
-          message: "User created successfully",
+          message: "Tạo tài khoản thành công",
           data: createdUser,
         });
       }
@@ -37,25 +37,41 @@ const createUser = (newUser) => {
   });
 };
 
+const listUser = async (page, limit) => {
+  const total = await User.countDocuments();
+  
+  return new Promise(async (resolve, reject) => {
+    try {
+      const allUser = await User.find()
+        .limit(limit)
+        .skip((page) * limit)
+      resolve({
+        status: "ok",
+        message: "Successfully",
+        data: allUser,
+        total: total,
+        pageCurrent: page + 1,
+        totalPage: Math.ceil(total / limit),
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 const loginUser = (userLogin) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, password, comfirmPassword, phone } = userLogin;
+    const { email, password } = userLogin;
     try {
       const checkUser = await User.findOne({
         email: email,
       });
-      if (checkUser === null) {
-        resolve({
-          status: "Ok",
-          message: "User already exists",
-        });
-      }
       const comfirmPassword = bcrypt.compareSync(password, checkUser.password);
 
       if (!comfirmPassword) {
-        resolve({
-          status: true,
-          message: "  the password is incorrect",
+        reject({
+          status: false,
+          message: "Email hoặc mật khẩu không chính xác",
         });
       }
       const acess_token = await genneralAcessToken({
@@ -66,13 +82,19 @@ const loginUser = (userLogin) => {
         id: checkUser.id,
         isAdmin: checkUser.isAdmin,
       });
-      console.log("acess_token", acess_token);
 
       resolve({
         status: true,
-        message: "  successfully",
+        message: "Đăng nhập thành công",
         acess_token,
         refresh_token,
+        data: {
+          _id: checkUser._id,
+          name: checkUser.name,
+          email: checkUser.email,
+          phone: checkUser.phone,
+          isAdmin: checkUser.isAdmin,
+        },
       });
     } catch (e) {
       reject(e);
@@ -86,23 +108,26 @@ const updateUser = async (id, data) => {
     if (!checkUser) {
       return {
         status: false,
-        message: "User not found",
+        message: "Không tìm thấy người dùng",
       };
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
+    const update = {  }
+    if(data.password) {
+      const hash = await bcrypt.hashSync(password, 10);
+      update.password = hash
+    } 
+    update.isAdmin = data.isAdmin
+    
+    const updatedUser = await User.findByIdAndUpdate(id, update, { new: true });
 
     return {
       status: true,
-      message: "Update successfully",
+      message: "Cập nhật người dùng thành công",
       data: updatedUser,
     };
   } catch (e) {
-    return {
-      status: false,
-      message: "Something went wrong",
-      error: e.message,
-    };
+    throw new Error(e.message);
   }
 };
 
@@ -153,4 +178,5 @@ module.exports = {
   updateUser,
   deleteUser,
   getAllUser,
+  listUser,
 };

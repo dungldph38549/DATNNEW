@@ -18,13 +18,9 @@ const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
     try {
       const totalProduct = await Product.countDocuments();
 
-      // Chuyển sort thành số: 1 (asc) hoặc -1 (desc)
-      const sortValue = sort === "desc" ? -1 : 1;
-
       const allProduct = await Product.find()
         .limit(limit)
         .skip((page) * limit)
-        .sort({ name: sortValue }); // Sắp xếp theo tên, có thể đổi sang "price" nếu cần
 
       resolve({
         status: "ok",
@@ -105,13 +101,19 @@ const deleteProduct = async (id) => {
 };
 
 const restoreProductById = async (id) => {
-  const product = await Product.findById(id);
-  if (!product) {
-    throw new Error("Không tìm thấy sản phẩm.");
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm.");
+    }
+
+    product.deletedAt = null;
+    await product.save();
+    return product;
+  } catch (error) {
+    console.error("Lỗi khi khôi phục sản phẩm:", error.message);
+    throw new Error("Khôi phục sản phẩm thất bại.");
   }
-  product.deletedAt = null;
-  product.save();
-  return product;
 };
 
 module.exports = {
