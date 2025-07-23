@@ -42,7 +42,7 @@ const AdminPage = () => {
     return (
         <div className="flex">
             {/* Sidebar */}
-            <div className="w-[20rem] h-screen bg-white p-4 shadow-xl" style={{ minWidth: '150px' }}>
+            <div className="w-[20rem] h-screen bg-white p-4 shadow-xl" style={{ minWidth: '200px' }}>
                 <h2 className="text-2xl font-semibold mb-6">Trang Admin</h2>
                 <nav className="flex flex-col gap-2">
                     <button onClick={() => handleMenuClick('products')} className={`text-left p-3 rounded ${selectedMenu === 'products' ? 'bg-blue-100': 'hover:bg-blue-100 '}`}>Quản lý sản phẩm</button>
