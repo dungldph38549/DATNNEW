@@ -1,8 +1,7 @@
-import express from 'express';
 
 export const successResponse = ({ 
   res, 
-  message = "Success",
+  message = "Thành công",
   data = null,
   meta = null,
   statusCode = 200}) => {

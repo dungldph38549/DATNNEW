@@ -62,8 +62,6 @@ const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
     const data = req.body;
-    console.log(data);
-
     if (!userId) {
       return res.status(422).json({
         status: false,
