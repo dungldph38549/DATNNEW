@@ -106,3 +106,30 @@ export const updateOrderInfo  = async (id, data) => {  // admin
   const res = await axiosInstance.put(`/order/${id}`, data);
   return res.data;
 }
+
+//brand
+
+export const createBrand = async (payload) => {
+  const res = await axiosInstance.post('/brand/admin/create', payload);
+  return res.data;
+};
+
+export const getAllBrands = async (status) => {
+  const res = await axiosInstance.get(`/brand/admin/list${status ? `?status=${status}` : ''}`);
+  return res.data;
+};
+
+export const updateBrand = async (payload) => {
+  const res = await axiosInstance.put('/brand/admin/update', payload);
+  return res.data;
+};
+
+export const deleteBrand = async ({ids}) => {
+  const res = await axiosInstance.delete('/brand/admin/delete', {ids});
+  return res.data;
+};
+
+export const getBrandById = async (id) => {
+  const res = await axiosInstance.get('/brand/admin/detail/' + id);
+  return res.data;
+};
