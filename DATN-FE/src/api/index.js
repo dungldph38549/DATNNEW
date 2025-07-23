@@ -107,8 +107,7 @@ export const updateOrderInfo  = async (id, data) => {  // admin
   return res.data;
 }
 
-//brand
-
+// brand
 export const createBrand = async (payload) => {
   const res = await axiosInstance.post('/brand/admin/create', payload);
   return res.data;
@@ -131,5 +130,57 @@ export const deleteBrand = async ({ids}) => {
 
 export const getBrandById = async (id) => {
   const res = await axiosInstance.get('/brand/admin/detail/' + id);
+  return res.data;
+};
+
+// category
+export const createCategory = async (payload) => {
+  const res = await axiosInstance.post('/category/admin/create', payload);
+  return res.data;
+};
+
+export const getAllCategories = async (status) => {
+  const res = await axiosInstance.get(`/category/admin/list${status ? `?status=${status}` : ''}`);
+  return res.data;
+};
+
+export const updateCategory = async (payload) => {
+  const res = await axiosInstance.put('/category/admin/update', payload);
+  return res.data;
+};
+
+export const deleteCategory = async ({ids}) => {
+  const res = await axiosInstance.delete('/category/admin/delete', {ids});
+  return res.data;
+};
+
+// voucher
+export const createVoucher = async (payload) => {
+  const res = await axiosInstance.post('/voucher/admin/create', payload);
+  return res.data;
+};
+
+export const updateVoucher = async (payload) => {
+  const res = await axiosInstance.put('/voucher/admin/update', payload);
+  return res.data;
+};
+
+export const deleteVoucher = async ({ids}) => {
+  const res = await axiosInstance.delete('/voucher/admin/delete', {ids});
+  return res.data;
+};
+
+export const getAllVouchers = async ({status, code, page, limit}) => {
+  const res = await axiosInstance.get(`/voucher/admin/list?page=${page}&limit=${limit}${status ? `&status=${status}` : ''}${code ? `&code=${code}` : ''}`);
+  return res.data;
+};
+
+export const getActiveVouchers = async ({status, page, limit}) => {
+  const res = await axiosInstance.get(`/voucher/list?page=${page}&limit=${limit}${status ? `status=${status}` : ''}`);
+  return res.data;
+};
+
+export const getVoucherById = async (id) => {
+  const res = await axiosInstance.get('/voucher/detail/' + id);
   return res.data;
 };
