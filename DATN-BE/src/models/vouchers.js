@@ -12,6 +12,7 @@ const VoucherSchema = new mongoose.Schema({
     unique: true,
     uppercase: true,
     trim: true,
+    match: [/^[A-Z0-9]+$/, "Mã voucher chỉ được chứa các ký tự từ A-Z và số từ 0-9"],
   },
   value: {
     type: Number,

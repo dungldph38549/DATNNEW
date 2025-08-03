@@ -76,14 +76,19 @@ export default function Products() {
     },
     {
       title: 'Danh mục',
-      dataIndex: 'type',
-      key: 'type',
+      key: 'category',
+      render: (_, record) => record.categoryId?.name || 'không có',
+    },
+    {
+      title: 'Thương hiệu',
+      key: 'brand',
+      render: (_, record) => record.brandId?.name || 'không có',
     },
     {
       title: 'Giá tiền',
       dataIndex: 'price',
       key: 'price',
-      render: (price) => `${price.toLocaleString()}₫`,
+      render: (price) => price ? `${price.toLocaleString()}₫` : '0₫',
     },
     {
       title: 'Tồn kho',
@@ -147,6 +152,48 @@ export default function Products() {
             onChange: (newPage) => setPage(newPage),
           }}
           bordered
+          expandable={{
+            expandedRowRender: (record) => {
+              if (!record.hasVariants || !Array.isArray(record.variants)) {
+                return 'Sản phẩm không có biến thể';
+              }
+
+              const variantColumns = [
+                { title: 'SKU', dataIndex: 'sku', key: 'sku' },
+                {
+                  title: 'Giá',
+                  dataIndex: 'price',
+                  key: 'price',
+                  render: (val) => `${val.toLocaleString()}₫`,
+                },
+                {
+                  title: 'Tồn kho',
+                  dataIndex: 'stock',
+                  key: 'stock',
+                },
+                {
+                  title: 'Thuộc tính',
+                  key: 'attributes',
+                  render: (_, variant) =>
+                    variant.attributes
+                      ? Object.entries(variant.attributes)
+                          .map(([key, val]) => `${key}: ${val}`)
+                          .join(', ')
+                      : 'Không có',
+                },
+              ];
+
+              return (
+                <Table
+                  columns={variantColumns}
+                  dataSource={record.variants.map((v, i) => ({ ...v, key: i }))}
+                  pagination={false}
+                  size="small"
+                />
+              );
+            },
+            rowExpandable: (record) => record.hasVariants,
+          }}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 
-export const successResponse = ({ 
+exports.successResponse = ({ 
   res, 
   message = "Thành công",
   data = null,
@@ -14,7 +14,7 @@ export const successResponse = ({
 }
 
 
-export const errorResponse = (
+exports.errorResponse = (
   { 
     res, 
     message = "Error",

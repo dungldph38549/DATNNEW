@@ -15,14 +15,14 @@ exports.getAll = async (req, res) => {
     try {
         const { status } = req.query;
         let categories
-        if(status) {
+        if(status !== 'all') {
             categories =  await Category.find({ status });
         } else {
             categories = await Category.find();
         }
-        successResponse({ res, data: categories });
+        return successResponse({ res, data: categories });
     } catch (err) {
-        errorResponse({ res, message: err.message, statusCode: 500 });
+        return errorResponse({ res, message: err.message, statusCode: 500 });
     }
 };
 

@@ -62,10 +62,12 @@ const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
       const totalProduct = await Product.countDocuments();
 
       const allProduct = await Product.find()
+        .populate('brandId')
+        .populate('categoryId')
         .limit(limit)
         .skip((page) * limit)
 
-      resolve({
+      return resolve({
         status: "ok",
         message: "Successfully fetched all products",
         data: allProduct,
@@ -79,7 +81,7 @@ const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
   });
 };
 
-const getProducts = (limit = 2, page = 0, sort = "asc") => {
+const getProducts = (limit = 20, page = 0, sort = "asc") => {
   return new Promise(async (resolve, reject) => {
     try {
       const totalProduct = await Product.countDocuments();
@@ -90,11 +92,13 @@ const getProducts = (limit = 2, page = 0, sort = "asc") => {
       const allProduct = await Product.find({
           deletedAt: null
         })
+        .populate('brandId')
+        .populate('categoryId')
         .limit(limit)
         .skip(page * limit)
         .sort({ name: sortValue });
-
-      resolve({
+        
+      return resolve({
         status: "ok",
         message: "Successfully fetched all products",
         data: allProduct,
@@ -176,13 +180,18 @@ const updateProduct = async (productId, data) => {
 };
 
 const deleteProduct = async (id) => {
-  const product = await Product.findById(id);
-  if (!product) {
-    throw new Error("Không tìm thấy sản phẩm.");
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm.");
+    }
+    await Product.findByIdAndUpdate(id, { deletedAt: Date.now() });
+    // await product.save();
+    // return product;
+    return true;
+  } catch (error) {
+    throw new Error(error.message);
   }
-  product.deletedAt = Date.now();
-  product.save();
-  return product;
 };
 
 const restoreProductById = async (id) => {

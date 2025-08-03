@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Tag, Spin, Modal, Button, Form, Input, message, Switch } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllUser, updateUserById } from '../api/index'; // Bạn cần định nghĩa API này
+import { getAllUser, updateUserById } from '../api/index';
 
 const Users = () => {
   const [page, setPage] = useState(1);
