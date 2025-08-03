@@ -7,11 +7,6 @@ const productSchema = new mongoose.Schema(
       required: [true, "Tên sản phẩm là bắt buộc"],
       trim: true,
     },
-    sortDescription: {
-      type: String,
-      required: [true, "Mô tả ngắn là bắt buộc"],
-      trim: true,
-    },
     image: {
       type: String,
       required: [true, "Ảnh chính của sản phẩm là bắt buộc"],
@@ -29,6 +24,7 @@ const productSchema = new mongoose.Schema(
       required: [true, "Số lượng tồn kho là bắt buộc"],
       min: [0, "Số lượng tồn kho không được âm"],
     },
+    sold: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
     description: {
       type: String,
@@ -36,7 +32,6 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
     hasVariants: { type: Boolean, default: false },
-    attributes: [{ type: String, trim: true }],
     brandId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
@@ -45,6 +40,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
+    attributes: [{ type: String, trim: true }],
     variants: [
       {
         sku: {
@@ -68,6 +64,7 @@ const productSchema = new mongoose.Schema(
           of: String,
           required: [true, "Thuộc tính của biến thể là bắt buộc"],
         },
+        sold: { type: Number, default: 0 },
       },
     ],
     deletedAt: { type: Date, default: null },
@@ -77,14 +74,15 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-
 productSchema.pre("validate", async function (next) {
   const product = this;
 
   // ✅ Nếu có biến thể thì phải có ít nhất 1 variant
   if (product.hasVariants) {
     if (!product.variants || product.variants.length === 0) {
-      return next(new Error("Sản phẩm có biến thể phải có ít nhất 1 biến thể."));
+      return next(
+        new Error("Sản phẩm có biến thể phải có ít nhất 1 biến thể.")
+      );
     }
 
     // ✅ Kiểm tra tất cả biến thể có đúng các thuộc tính khai báo
@@ -102,7 +100,9 @@ productSchema.pre("validate", async function (next) {
     if (hasMismatch) {
       return next(
         new Error(
-          `Tất cả biến thể phải có đầy đủ các thuộc tính: [${expectedAttrs.join(", ")}]`
+          `Tất cả biến thể phải có đầy đủ các thuộc tính: [${expectedAttrs.join(
+            ", "
+          )}]`
         )
       );
     }
@@ -125,7 +125,9 @@ productSchema.pre("validate", async function (next) {
     const skuSet = new Set();
     for (const variant of product.variants) {
       if (skuSet.has(variant.sku)) {
-        return next(new Error(`SKU "${variant.sku}" bị trùng trong cùng sản phẩm.`));
+        return next(
+          new Error(`SKU "${variant.sku}" bị trùng trong cùng sản phẩm.`)
+        );
       }
       skuSet.add(variant.sku);
     }

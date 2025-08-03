@@ -107,7 +107,12 @@ export const updateOrderInfo  = async (id, data) => {  // admin
   return res.data;
 }
 
+<<<<<<< HEAD
 // brand
+=======
+//brand
+
+>>>>>>> origin/tuanphong
 export const createBrand = async (payload) => {
   const res = await axiosInstance.post('/brand/admin/create', payload);
   return res.data;
@@ -132,6 +137,7 @@ export const getBrandById = async (id) => {
   const res = await axiosInstance.get('/brand/admin/detail/' + id);
   return res.data;
 };
+<<<<<<< HEAD
 
 // category
 export const createCategory = async (payload) => {
@@ -184,3 +190,5 @@ export const getVoucherById = async (id) => {
   const res = await axiosInstance.get('/voucher/detail/' + id);
   return res.data;
 };
+=======
+>>>>>>> origin/tuanphong
