@@ -3,14 +3,9 @@ const express = require("express");
 const router = express.Router();
 const ProductController = require("../controllers/ProductController");
 const { authAdminMiddleware } = require("../middleware/authMiddleware");
-<<<<<<< HEAD
-router.post("/create", ProductController.createProduct);
-router.get("/getAll", ProductController.getAllProducts);
-=======
 
 router.post("/create", authAdminMiddleware, ProductController.createProduct);
 router.get("/getAll", authAdminMiddleware, ProductController.getAllProducts);
->>>>>>> origin/tuanphong
 router.get("/user/list", ProductController.getProducts);
 router.get("/:id", ProductController.getProductById);
 router.put("/update/:id", authAdminMiddleware, ProductController.updateProduct);

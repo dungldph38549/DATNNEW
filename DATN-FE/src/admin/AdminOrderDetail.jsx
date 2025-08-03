@@ -47,6 +47,7 @@ const AdminOrderDetailPage = ({id, onClose}) => {
     onSuccess: () => {
       Swal.fire('Thành công', 'Đã cập nhật thông tin đơn hàng!', 'success');
       queryClient.invalidateQueries(['admin-order-detail', id]);
+      onClose();
     },
     onError: (error) => {
       if(error.response.data.message) return Swal.fire('Thất bại', error.response.data.message, 'warning');
@@ -74,7 +75,7 @@ const AdminOrderDetailPage = ({id, onClose}) => {
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Chi tiết & Chỉnh sửa Đơn hàng</h2>
-        <p className='cursor-pointer' onClick={onClose}>Quay lại danh sách</p>
+        <p className='cursor-pointer text-blue-600 hover:text-blue-800 font-semibold bg-gray-200 hover:bg-gray-300 p-2 rounded' onClick={onClose}>Quay lại danh sách</p>
       </div>
 
       <div className="grid grid-cols-2 gap-6 mb-6">

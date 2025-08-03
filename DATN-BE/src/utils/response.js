@@ -1,8 +1,7 @@
-import express from 'express';
 
-export const successResponse = ({ 
+exports.successResponse = ({ 
   res, 
-  message = "Success",
+  message = "Thành công",
   data = null,
   meta = null,
   statusCode = 200}) => {
@@ -15,7 +14,7 @@ export const successResponse = ({
 }
 
 
-export const errorResponse = (
+exports.errorResponse = (
   { 
     res, 
     message = "Error",

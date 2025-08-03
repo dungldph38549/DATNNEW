@@ -10,7 +10,7 @@ const createUser = (newUser) => {
         email: email,
       });
       if (checkUser) {
-        reject({
+        return reject({
           status: "false",
           message: "Email đang được sử dụng",
         });
@@ -21,18 +21,18 @@ const createUser = (newUser) => {
         name,
         email,
         password: hash,
-        isAdmin: true,
+        isAdmin: false,
         phone,
       });
       if (createdUser) {
-        resolve({
+        return resolve({
           status: true,
           message: "Tạo tài khoản thành công",
           data: createdUser,
         });
       }
     } catch (e) {
-      reject(e);
+      return reject(e);
     }
   });
 };
@@ -69,7 +69,7 @@ const loginUser = (userLogin) => {
       const comfirmPassword = bcrypt.compareSync(password, checkUser.password);
 
       if (!comfirmPassword) {
-        reject({
+        return reject({
           status: false,
           message: "Email hoặc mật khẩu không chính xác",
         });
@@ -83,7 +83,7 @@ const loginUser = (userLogin) => {
         isAdmin: checkUser.isAdmin,
       });
 
-      resolve({
+      return resolve({
         status: true,
         message: "Đăng nhập thành công",
         acess_token,
@@ -97,7 +97,7 @@ const loginUser = (userLogin) => {
         },
       });
     } catch (e) {
-      reject(e);
+      return reject(e.message);
     }
   });
 };

@@ -1,35 +1,35 @@
 // src/services/ProductService.js
 const Product = require("../models/ProductModel");
-const Brand = require("../models/Brands");
-const Category = require("../models/Categories");
+const Brand = require('../models/Brands');
+const Category = require('../models/Categories'); 
 
 const createProduct = async (data) => {
   const {
-    name,
-    sortDescription,
-    image,
-    srcImages = [],
-    type,
-    price,
-    countInStock,
-    rating,
-    description,
-    hasVariants = false,
-    attributes = [],
-    variants = [],
-    brandId,
-    categoryId,
-  } = data;
+      name,
+      sortDescription,
+      image,
+      srcImages = [],
+      type,
+      price,
+      countInStock,
+      rating,
+      description,
+      hasVariants = false,
+      attributes = [],
+      variants = [],
+      brandId,
+      categoryId,
+    } = data;
   try {
+ 
     if (brandId) {
       const brandExists = await Brand.exists({ _id: brandId });
-      if (!brandExists) throw new Error({ message: "Brand không tồn tại" });
+      if (!brandExists) throw new Error({ message: 'Brand không tồn tại' });
     }
 
     if (categoryId) {
       const categoryExists = await Category.exists({ _id: categoryId });
-      if (!categoryExists)
-        throw new Error({ message: "Category không tồn tại" });
+      if (!categoryExists) throw new Error({ message: 'Category không tồn tại' });
     }
 
     const product = new Product({
@@ -62,10 +62,12 @@ const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
       const totalProduct = await Product.countDocuments();
 
       const allProduct = await Product.find()
+        .populate('brandId')
+        .populate('categoryId')
         .limit(limit)
-        .skip(page * limit);
+        .skip((page) * limit)
 
-      resolve({
+      return resolve({
         status: "ok",
         message: "Successfully fetched all products",
         data: allProduct,
@@ -79,7 +81,7 @@ const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
   });
 };
 
-const getProducts = (limit = 2, page = 0, sort = "asc") => {
+const getProducts = (limit = 20, page = 0, sort = "asc") => {
   return new Promise(async (resolve, reject) => {
     try {
       const totalProduct = await Product.countDocuments();
@@ -88,13 +90,15 @@ const getProducts = (limit = 2, page = 0, sort = "asc") => {
       const sortValue = sort === "desc" ? -1 : 1;
 
       const allProduct = await Product.find({
-        deletedAt: null,
-      })
+          deletedAt: null
+        })
+        .populate('brandId')
+        .populate('categoryId')
         .limit(limit)
         .skip(page * limit)
         .sort({ name: sortValue });
-
-      resolve({
+        
+      return resolve({
         status: "ok",
         message: "Successfully fetched all products",
         data: allProduct,
@@ -107,6 +111,7 @@ const getProducts = (limit = 2, page = 0, sort = "asc") => {
     }
   });
 };
+
 
 const getProductById = async (id) => {
   const product = await Product.findById(id);
@@ -175,13 +180,18 @@ const updateProduct = async (productId, data) => {
 };
 
 const deleteProduct = async (id) => {
-  const product = await Product.findById(id);
-  if (!product) {
-    throw new Error("Không tìm thấy sản phẩm.");
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm.");
+    }
+    await Product.findByIdAndUpdate(id, { deletedAt: Date.now() });
+    // await product.save();
+    // return product;
+    return true;
+  } catch (error) {
+    throw new Error(error.message);
   }
-  product.deletedAt = Date.now();
-  product.save();
-  return product;
 };
 
 const restoreProductById = async (id) => {

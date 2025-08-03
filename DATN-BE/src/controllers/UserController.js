@@ -5,8 +5,6 @@ const createUser = async (req, res) => {
     const { name, email, password, comfirmPassword, phone } = req.body;
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isCheckEmail = reg.test(email);
-    console.log("Email check:", name, email, password, comfirmPassword, phone);
-    console.log("Email check:", req.body);
     
     if (!name || !email || !password || !comfirmPassword || !phone || !isCheckEmail) {
       return res.status(422).json({
@@ -40,6 +38,7 @@ const listUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+  
   try {
     const { email, password } = req.body;
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -62,8 +61,6 @@ const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
     const data = req.body;
-    console.log(data);
-
     if (!userId) {
       return res.status(422).json({
         status: false,

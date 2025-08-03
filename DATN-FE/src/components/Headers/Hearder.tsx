@@ -1,7 +1,13 @@
 import React, { useState } from 'react'
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearUser } from '../../redux/user';
 
 const Hearder = () => {
+  const user = useSelector((state: any) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [topMenuOpen, setTopMenuOpen] = useState(false)
   const [navMenuOpen, setNavMenuOpen] = useState(false)
   const [currencyOpen, setCurrencyOpen] = useState(false)
@@ -41,6 +47,11 @@ const Hearder = () => {
       link: '/7'
     },
   ]
+
+  const handleLogout = () => {
+    dispatch(clearUser());
+    navigate('/login');
+  }
   return (
     <div>
       <div>
@@ -69,6 +80,11 @@ const Hearder = () => {
             </div> */}
 
             {/* Các nút ẩn trên điện thoại */}
+            { user.isAdmin &&
+              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
+                <Link to="/admin" className="flex items-center gap-1"> Admin page</Link >
+              </button>
+            }
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
               <span className="flex items-center gap-1">👤 Tài khoản</span>
             </button>
@@ -84,10 +100,16 @@ const Hearder = () => {
              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
               <Link className="flex items-center gap-1" to="/checkoutpage">✔ Thanh toán</Link>
             </button>
-            <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <Link className="flex items-center gap-1" to="/login">🔒 Đăng nhập</Link>
-            </button>
-
+        
+            { !user.login ?
+              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
+                <Link className="flex items-center gap-1" to="/login">🔒 Đăng nhập</Link>
+              </button>
+              : 
+              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
+                <span className="flex items-center gap-1" onClick={handleLogout}>🔒 Đăng xuất</span>
+              </button>
+            }
             {/* Nút menu trên điện thoại */}
             <button 
               className="sm:hidden px-3 py-1 bg-white text-black rounded"
