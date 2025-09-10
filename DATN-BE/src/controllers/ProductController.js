@@ -13,12 +13,17 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const { limit, page, sort, filter } = req.query;
+    const { limit, page, sort, brandId, categoryId, keyword } = req.body;
+
+    const filter = {}
+    if(brandId) filter.brandId = brandId;
+    if(categoryId) filter.categoryId = categoryId;
+    if(keyword) filter.keyword = keyword;
     const products = await ProductService.getProducts(
       Number(limit) || 10,
       Number(page) || 0,
-      sort,
-      filter
+      filter,
+      sort
     );
     res.json(products);
   } catch (err) {
@@ -28,8 +33,20 @@ exports.getProducts = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { limit, page, filter } = req.query;
-    const products = await ProductService.getAllProducts(Number(limit) || 10, Number(page) || 0, filter);
+    const { limit, page, filter, isListProductRemoved } = req.query;
+    const products = await ProductService.getAllProducts(Number(limit) || 10, Number(page) || 0, filter, isListProductRemoved);
+    
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.relationProduct = async (req, res) => {
+  try {
+    const { categoryId, brandId } = req.body;
+    const products = await ProductService.relationProduct(categoryId, brandId, req.body.id);
+    
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -118,6 +135,36 @@ exports.uploadImage = async (req, res) => {
     if (!deleted) return res.status(404).json({ message: "Product not found" });
 
     res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getStock = async (req, res) => {
+  try {
+    const data = req.body || [];
+    if(!Array.isArray(data) && data.length === 0 ) return res.status(400).json({ message: "Invalid data" });
+    const results = await Promise.all(data.map(async item => {
+      const { productId, sku } = item;
+      if (sku) {
+        const product = await Product.findOne({
+          _id: productId,
+          "variants.sku": sku
+        });
+        return {
+          productId,
+          sku,
+          countInStock: product.variants.find(variant => variant.sku === sku).stock
+        };
+      } else {
+        const product = await Product.findById(productId);
+        return {
+          productId,
+          countInStock: product?.countInStock
+        }
+      }
+    }));
+    res.status(200).json(results);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
