@@ -49,6 +49,11 @@ export const fetchProducts = async (payload) => {
   return res.data;
 };
 
+export const getStocks = async (payload) => {
+  const res = await axiosInstance.post(`/product/stocks`, payload);
+  return res.data;
+};
+
 export const relationProduct = async (brandId, categoryId, id) => {
   const res = await axiosInstance.post(`/product/relationProduct`, {
     brandId,
@@ -102,6 +107,16 @@ export const restoreProductById = async ({ id }) => {
 // Order
 export const createOrder = async (payload) => {
   const res = await axiosInstance.post("/order", payload);
+  return res.data;
+};
+
+export const returnOrder = async (payload) => {
+  const res = await axiosInstance.post(`/order/returnOrderRequest/`, payload);
+  return res.data;
+};
+
+export const acceptOrRejectReturn = async (payload) => {
+  const res = await axiosInstance.post(`/order/acceptOrRejectReturn/`, payload);
   return res.data;
 };
 
@@ -238,5 +253,22 @@ export const getActiveVouchers = async () => {
 
 export const getVoucherById = async (id) => {
   const res = await axiosInstance.get("/voucher/detail/" + id);
+  return res.data;
+};
+
+// Review
+
+export const createReview = async (payload) => {
+  const res = await axiosInstance.post("/review/create", payload);
+  return res.data;
+};
+
+export const repliesReview = async (payload) => {
+  const res = await axiosInstance.post("/review/replies", payload);
+  return res.data;
+};
+
+export const getreviewById = async (productId) => {
+  const res = await axiosInstance.get(`/review/${productId}`);
   return res.data;
 };
