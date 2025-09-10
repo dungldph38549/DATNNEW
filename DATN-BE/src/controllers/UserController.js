@@ -76,6 +76,31 @@ const updateUser = async (req, res) => {
   }
 };
 
+const updateCustomer = async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id) {
+      return res.status(422).json({
+        status: false,
+        message: "Vui lòng điền đầy đủ thông tin",
+      });
+    }
+    const userInfor = {};
+    if(data.name) userInfor.name = data.fullName
+    if(data.email) userInfor.email = data.email
+    if(data.phone) userInfor.phone = data.phone
+    if(data.address) userInfor.address = data.address 
+    if(data.password) userInfor.password = data.password
+    if(data.avatar) userInfor.avatar = data.avatar
+    const response = await UserService.updateUser(data.id, userInfor);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e.message,
+    });
+  }
+};
+
 const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -113,4 +138,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   listUser,
+  updateCustomer
 };
