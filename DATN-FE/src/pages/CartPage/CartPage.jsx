@@ -151,6 +151,23 @@ const CartPage = () => {
                 alt={item.name}
                 className="w-20 h-20 object-cover rounded mx-auto"
               />
+              
+                {/* Name + Attributes */}
+              <div className="text-left px-2">
+                <p className="text-sm font-semibold whitespace-pre-line">
+                  {item.name}
+                  {item.attributes &&
+                    Object.entries(item.attributes).length > 0 && (
+                      <>
+                        {' ('}
+                        {Object.entries(item.attributes)
+                          .map(([key, val]) => `${key}: ${val}`)
+                          .join(', ')}
+                        {')'}
+                      </>
+                    )}
+                </p>
+              </div>
 
            
 
