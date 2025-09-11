@@ -126,6 +126,55 @@ const CartPage = () => {
         <span>Xoá</span>
       </div>
 
+      {/* Cart Items */}
+      <div className="border-t mt-3">
+        {carts.length === 0 ? (
+          <p className="text-center text-gray-500 italic py-6">Giỏ hàng trống.</p>
+        ) : (
+          carts.map((item, index) => (
+            <div
+              key={`${item.productId}-${item.sku || 'default'}`}
+              className="grid grid-cols-8 items-center py-4 border-b text-center"
+            >
+              {/* Checkbox */}
+              <input
+                type="checkbox"
+                checked={isSelected(item.productId, item.sku || null)}
+                onChange={() => handleSelect(item.productId, item.sku || null)}
+                className="mx-auto"
+                style={{ width: 24, height: 24 }}
+              />
+
+              {/* Image */}
+              <img
+                src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${item.image}`}
+                alt={item.name}
+                className="w-20 h-20 object-cover rounded mx-auto"
+              />
+
+           
+
+            
+              {/* Price */}
+              <p className="text-lg font-semibold">{item.price.toLocaleString('vi-VN')}₫</p>
+
+              {/* Total per item */}
+              <p className="text-lg font-semibold">
+                {(item.quantity * item.price).toLocaleString('vi-VN')}₫
+              </p>
+
+              {/* Remove button */}
+              <button
+                className="text-red-500 font-bold text-xl"
+                onClick={() => handleRemove(item.productId, item.sku || null)}
+                aria-label={`Xóa ${item.name} khỏi giỏ hàng`}
+              >
+                ×
+              </button>
+            </div>
+          ))
+        )}
+      </div>
    
 
   
