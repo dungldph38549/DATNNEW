@@ -1,12 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getOrCreateGuestId } from "../../const/index.ts";
 
-const initialState = {
+const user = JSON.parse(localStorage.getItem("user")) 
+let initialState = {
   id: getOrCreateGuestId(),
-  name: "",
-  email: "",
   isGuest: true,
-};
+  login: false,
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  isAdmin: false,
+  token: '',
+  refreshToken: '',
+}
+if (user) {
+  initialState = {
+    ...user
+  };
+} 
 
 export const userSlice = createSlice({
   name: "user",
@@ -20,7 +32,21 @@ export const userSlice = createSlice({
         isGuest: false,
       };
     },
-    clearUser: () => initialState,
+    clearUser: () => {
+      localStorage.removeItem("user");
+      return {
+        id: getOrCreateGuestId(),
+        isGuest: true,
+        login: false,
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        isAdmin: false,
+        token: '',
+        refreshToken: '',
+      };
+    },
     updateUserInfo: (state, action) => {
       return {
         ...state,
@@ -30,6 +56,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const { initializeUser, setUser, clearUser, updateUserInfo } = userSlice.actions;
+export const { setUser, clearUser, updateUserInfo } = userSlice.actions;
 
 export default userSlice.reducer;

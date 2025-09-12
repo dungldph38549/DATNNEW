@@ -5,8 +5,6 @@ const createUser = async (req, res) => {
     const { name, email, password, comfirmPassword, phone } = req.body;
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isCheckEmail = reg.test(email);
-    console.log("Email check:", name, email, password, comfirmPassword, phone);
-    console.log("Email check:", req.body);
     
     if (!name || !email || !password || !comfirmPassword || !phone || !isCheckEmail) {
       return res.status(422).json({
@@ -40,6 +38,7 @@ const listUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+  
   try {
     const { email, password } = req.body;
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,6 +68,31 @@ const updateUser = async (req, res) => {
       });
     }
     const response = await UserService.updateUser(userId, data);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e.message,
+    });
+  }
+};
+
+const updateCustomer = async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id) {
+      return res.status(422).json({
+        status: false,
+        message: "Vui lòng điền đầy đủ thông tin",
+      });
+    }
+    const userInfor = {};
+    if(data.name) userInfor.name = data.fullName
+    if(data.email) userInfor.email = data.email
+    if(data.phone) userInfor.phone = data.phone
+    if(data.address) userInfor.address = data.address 
+    if(data.password) userInfor.password = data.password
+    if(data.avatar) userInfor.avatar = data.avatar
+    const response = await UserService.updateUser(data.id, userInfor);
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
@@ -114,4 +138,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   listUser,
+  updateCustomer
 };

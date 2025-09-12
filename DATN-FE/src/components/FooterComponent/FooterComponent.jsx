@@ -21,7 +21,7 @@ const FooterComponent = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-8">
         {/* Contact Us */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">CONTACT US</h2>
+          <h2 className="text-lg font-semibold mb-4  text-white">CONTACT US</h2>
           <div className="flex items-start gap-3 mb-4">
             <FaMapMarkerAlt className="text-xl mt-1 text-white" />
             <p>
@@ -46,7 +46,7 @@ const FooterComponent = () => {
 
         {/* Customer Service */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">CUSTOMER SERVICE</h2>
+          <h2 className="text-lg font-semibold mb-4  text-white">CUSTOMER SERVICE</h2>
           <ul className="space-y-2">
             <li>
               <a href="#" className="hover:text-white">
@@ -78,7 +78,7 @@ const FooterComponent = () => {
 
         {/* Corporation */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">CORPORATION</h2>
+          <h2 className="text-lg font-semibold mb-4 text-white">CORPORATION</h2>
           <ul className="space-y-2">
             <li>
               <a href="#" className="hover:text-white">
@@ -110,7 +110,7 @@ const FooterComponent = () => {
 
         {/* Why Choose Us */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">WHY CHOOSE US</h2>
+          <h2 className="text-lg font-semibold mb-4 text-white">WHY CHOOSE US</h2>
           <ul className="space-y-2">
             <li>
               <a href="#" className="hover:text-white">

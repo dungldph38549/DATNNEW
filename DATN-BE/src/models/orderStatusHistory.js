@@ -3,11 +3,11 @@ const mongoose = require('mongoose');
 const orderStatusHistorySchema = new mongoose.Schema({
   oldStatus: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipped', 'delivered', 'canceled'],
+    enum: ['pending', 'confirmed', 'shipped', 'delivered', 'canceled','return-request','accepted', 'rejected'],
   },
-   newStatus: {
+  newStatus: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipped', 'delivered', 'canceled'],
+    enum: ['pending', 'confirmed', 'shipped', 'delivered', 'canceled','return-request','accepted', 'rejected'],
   },
   paymentStatus: {
     type: String,

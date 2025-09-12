@@ -2,16 +2,17 @@ import Category from "../pages/Category/Category.jsx";
 import Checkout from "../pages/Checkout/Checkout.jsx";
 import Detail from "../pages/Detail/Detail.jsx";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage.jsx";
-import HomePages from "../pages/HomePages/HomePages.tsx";
+import HomePages from "../pages/HomePages/HomePages.jsx";
 import Login from "../pages/Login/Login.jsx";
 import Register from "../pages/Register/Register.jsx";
-import CartPage from "../pages/CartPage/CartPage.tsx";
+import CartPage from "../pages/CartPage/CartPage.jsx";
 import AdminPage from "../admin/AdminPage.tsx";
-import CheckoutPage from "../pages/CheckoutPage/checkOutPage.tsx";
+import CheckoutPage from "../pages/CheckoutPage/checkOutPage.jsx";
 import OrderPage from "../pages/OrderPage/OrderPage.jsx";
 import OrderDetailPage from "../pages/OrderDetailPage/OrderDetailPage.jsx";
 import AdminOrderDetailPage from "../admin/AdminOrderDetail.jsx";
-
+import ReturnPayment from "../pages/ReturnPayment/ReturnPayment.jsx";
+import CustommerPage from "../pages/CustommerPage/CustommerPage.jsx";
 export const routers = [
     {
         path: "/",
@@ -21,6 +22,16 @@ export const routers = [
     {
         path: "/category",
         page: Category,
+        isShowHeader: true,
+    },
+    {
+        path: "/return-payment",
+        page: ReturnPayment,
+        isShowHeader: true,
+    },
+    {
+        path: "/profile",
+        page: CustommerPage,
         isShowHeader: true,
     },
     {

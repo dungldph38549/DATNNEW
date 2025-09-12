@@ -4,14 +4,7 @@ const { successResponse, errorResponse } = require("../utils/response.js");
 
 exports.createProduct = async (req, res) => {
   try {
-    const {
-      name,
-      image,
-    } = req.body;
-    if (!name || !image) {
-      return res.status(422).json({ message: "Điền đầy đủ các trường yêu cầu" });
-    }
-    const newProduct = await ProductService.createProduct(req.body);
+    const newProduct = await ProductService.createProduct(req.body.payload);
     successResponse({ res, data: newProduct, statusCode: 201 });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -20,12 +13,17 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const { limit, page, sort, filter } = req.query;
+    const { limit, page, sort, brandId, categoryId, keyword } = req.body;
+
+    const filter = {}
+    if(brandId) filter.brandId = brandId;
+    if(categoryId) filter.categoryId = categoryId;
+    if(keyword) filter.keyword = keyword;
     const products = await ProductService.getProducts(
       Number(limit) || 10,
       Number(page) || 0,
-      sort,
-      filter
+      filter,
+      sort
     );
     res.json(products);
   } catch (err) {
@@ -35,8 +33,20 @@ exports.getProducts = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { limit, page, filter } = req.query;
-    const products = await ProductService.getAllProducts(Number(limit) || 10, Number(page) || 0, filter);
+    const { limit, page, filter, isListProductRemoved } = req.query;
+    const products = await ProductService.getAllProducts(Number(limit) || 10, Number(page) || 0, filter, isListProductRemoved);
+    
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.relationProduct = async (req, res) => {
+  try {
+    const { categoryId, brandId } = req.body;
+    const products = await ProductService.relationProduct(categoryId, brandId, req.body.id);
+    
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -61,7 +71,7 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const updated = await updateProduct(req.params.id, req.body);
+    const updated = await ProductService.updateProduct(req.params.id, req.body);
     res.status(200).json({ message: "Cập nhật thành công", data: updated });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -71,7 +81,7 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {  
     //   return res.status(400).json({ message: "Invalid product ID" });
     // }
     const deleted = await ProductService.deleteProduct(id);
@@ -125,6 +135,36 @@ exports.uploadImage = async (req, res) => {
     if (!deleted) return res.status(404).json({ message: "Product not found" });
 
     res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getStock = async (req, res) => {
+  try {
+    const data = req.body || [];
+    if(!Array.isArray(data) && data.length === 0 ) return res.status(400).json({ message: "Invalid data" });
+    const results = await Promise.all(data.map(async item => {
+      const { productId, sku } = item;
+      if (sku) {
+        const product = await Product.findOne({
+          _id: productId,
+          "variants.sku": sku
+        });
+        return {
+          productId,
+          sku,
+          countInStock: product.variants.find(variant => variant.sku === sku).stock
+        };
+      } else {
+        const product = await Product.findById(productId);
+        return {
+          productId,
+          countInStock: product?.countInStock
+        }
+      }
+    }));
+    res.status(200).json(results);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

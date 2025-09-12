@@ -1,178 +1,150 @@
+import { useEffect } from 'react';
+import {
+  Form, Input, InputNumber, Button, Checkbox, Upload,
+  Select, Space, Card, Divider, message,
+  Table
+} from 'antd';
+import { PlusOutlined, UploadOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import Swal from 'sweetalert2';
-import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getProductById, createProduct, uploadImage, uploadImages, updateProduct } from './../api/index';
+import {
+  getProductById,
+  createProduct,
+  updateProduct,
+  uploadImage,
+  uploadImages,
+  getAllBrands,
+  getAllCategories
+} from './../api/index';
+
+const { TextArea } = Input;
 
 const ProductDetail = ({ productId = null, onClose }) => {
+  const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  const createProductMutation = useMutation({
-    mutationFn: productId !== 'create' ? updateProduct : createProduct,
-    onSuccess: () => {
-      Swal.fire('Thành công', `${productId !== 'create' ? 'Cập nhật' : 'Tạo'} sản phẩm thành công!`, 'success');
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] }); 
-      onClose(); 
-    },
-    onError: (error) => {
-      if(error.response.data.message) return Swal.fire('Thất bại', error.response.data.message, 'warning');
-    },
-  });
-  const [formData, setFormData] = useState({
-    name: '',
-    image: '',
-    type: '',
-    price: '',
-    sortDescription: '',
-    countInStock: '',
-    description: '',
-    srcImages: [],
-  });
-
-  const { data, isLoading, isError } = useQuery({
+  const { data: productData, isLoading } = useQuery({
     queryKey: ['admin-product-detail', productId],
     queryFn: () => getProductById(productId),
     enabled: productId !== null && productId !== 'create',
   });
-  
+
+  const { data: brands } = useQuery({
+    queryKey: ['admin-brands'],
+    queryFn: () => getAllBrands('all'),
+    keepPreviousData: true,
+  });
+  const { data: categories } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: () => getAllCategories('all'),
+    keepPreviousData: true,
+  })
+
+  const mutation = useMutation({
+    mutationFn: productId !== 'create' ? updateProduct : createProduct,
+    onSuccess: () => {
+      Swal.fire('Thành công', `${productId !== 'create' ? 'Cập nhật' : 'Tạo'
+        } sản phẩm thành công!`, 'success');
+      queryClient.invalidateQueries(['admin-products']);
+      onClose();
+    },
+    onError: (err) => {
+      if (err.response?.data?.message)
+        Swal.fire('Thất bại', err.response.data.message, 'warning');
+    }
+  });
+
   useEffect(() => {
-    if (productId && productId !== 'create' && data) {
-      setFormData({
-        name: data.name || '',
-        image: data.image || '',
-        sortDescription: data.sortDescription || '',
-        type: data.type || '',
-        price: data.price || '',
-        countInStock: data.countInStock || '',
-        description: data.description || '',
-        srcImages: data.srcImages || [],
+    if (productData) {
+      form.setFieldsValue({
+        ...productData,
+        attributes: productData.attributes || [],
+        variants: productData.variants || [],
       });
     }
-  }, [productId, data]);
+  }, [productData, form]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'srcImages' ? value.split(',') : value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.price || !formData.image || !formData.type) {
-      Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ các trường bắt buộc.', 'warning');
-      return;
-    }
-
-    if (productId !== 'create') {
-      createProductMutation.mutate({ id: productId, payload: formData });
-    } else {
-      createProductMutation.mutate(formData);
-    }
+  const handleMainUpload = async ({ file }) => {
+    const formD = new FormData();
+    formD.append('file', file);
+    const res = await uploadImage(formD);
+    form.setFieldsValue({ image: res.path });
   };
 
   const handleChangeSubImages = async (e) => {
     const files = Array.from(e.target.files);
-    const maxImages = 10;
-    const remainingSlots = maxImages - formData.srcImages.length;
-
-    if (files.length > remainingSlots) {
-      alert(`Chỉ được chọn thêm tối đa ${remainingSlots} ảnh`);
-      return;
-    }
 
     try {
       const formDataMulti = new FormData();
-      files.forEach((file) => formDataMulti.append('files', file));
-
+      files?.forEach((file) => formDataMulti.append('files', file));
       const result = await uploadImages(formDataMulti);
-      setFormData((prev) => ({
-        ...prev,
-        srcImages: [...prev.srcImages, ...result.paths],
-      }));
+      form.setFieldsValue({ srcImages: result.paths });
     } catch (err) {
       console.error('Upload ảnh phụ thất bại:', err);
     }
   };
 
   const handleRemoveSubImage = (indexToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      srcImages: prev.srcImages.filter((_, i) => i !== indexToRemove),
-    }));
-  };
-  const handleChangeImg = async (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file); 
-    try {
-      const result = await uploadImage(formData);
-       setFormData((prev) => ({
-        ...prev,
-        image: result.path,
-      }))
-    } catch (err) {
-      console.error('Upload ảnh thất bại', err);
-    }
+    const currrent = form.getFieldValue('srcImages') || [];
+    form.setFieldsValue({ srcImages: currrent.filter((_, i) => i !== indexToRemove) });
   };
 
-  if (isLoading) return <div className="text-center mt-10">Đang tải sản phẩm...</div>;
-  if (isError) return <div className="text-center text-red-500">Không tìm thấy sản phẩm</div>;
+  const onFinish = (values) => {
+    mutation.mutate({ id: productId !== 'create' ? productId : undefined, payload: { ...values, srcImages: form.getFieldValue('srcImages') } });
+  };
+
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow-md">
-      <h2 className="text-xl font-bold mb-4">
-        {productId !== 'create' ? '✏️ Sửa sản phẩm' : '➕ Tạo sản phẩm mới'}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <Card
+      className="bg-white rounded-xl shadow"
+      title={productId !== 'create' ? '✏️ Sửa sản phẩm' : '➕ Tạo sản phẩm mới'}
+      loading={isLoading}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{
+          hasVariants: false,
+          variants: [],
+          attributes: [],
+        }}
+      >
+        <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
 
-        <div>
-          <label className="block font-medium">Tên sản phẩm</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-medium">Miêu tả ngắn</label>
-          <input
-            type="text"
-            name="sortDescription"
-            value={formData.sortDescription}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded"
-          />
-        </div>
+        <Form.Item name="brandId" label="Thương hiệu" rules={[{ required: true }]}>
+          <Select options={brands?.data?.map(b => ({ label: b.name, value: b._id }))} />
+        </Form.Item>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ảnh chính <span className="text-red-500">*</span>
-          </label>
+        <Form.Item name="categoryId" label="Danh mục" rules={[{ required: true }]}>
+          <Select options={categories?.data?.map(c => ({ label: c.name, value: c._id }))} />
+        </Form.Item>
 
-          <div className="flex items-center gap-4">
-            <label className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-              Chọn ảnh
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp,.gif"
-                onChange={handleChangeImg}
-                className="hidden"
-              />
-            </label>
-
-            {formData.image && (
-              <img
-                src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${formData.image}`}
-                alt="Preview"
-                className="w-20 h-20 object-cover rounded border border-gray-300 shadow"
-              />
-            )}
-          </div>
-        </div>
+        <Form.Item
+          name="image"
+          label="Ảnh chính"
+          rules={[{ required: true, message: 'Ảnh chính là bắt buộc' }]}
+        >
+          <Upload
+            customRequest={handleMainUpload}
+            showUploadList={false}
+            accept="image/*"
+          >
+            <Button icon={<UploadOutlined />}>Chọn ảnh chính</Button>
+          </Upload>
+          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.image !== cur.image}>
+            {({ getFieldValue }) =>
+              getFieldValue('image') ? (
+                <img
+                  src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${getFieldValue('image')}`}
+                  alt="Preview"
+                  style={{ width: 120, marginTop: 10 }}
+                />
+              ) : null
+            }
+          </Form.Item>
+        </Form.Item>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -180,121 +152,229 @@ const ProductDetail = ({ productId = null, onClose }) => {
           </label>
 
           <div className="flex flex-col gap-2">
-            <label className="cursor-pointer w-fit px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
-              Tải lên ảnh phụ
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp,.gif"
-                multiple
-                onChange={handleChangeSubImages}
-                className="hidden"
-              />
-            </label>
-
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.gif"
+              multiple
+              onChange={handleChangeSubImages}
+            />
             {/* Hiển thị ảnh preview */}
-            <div className="grid grid-cols-5 gap-2 mt-2">
-              {formData.srcImages?.map((imgPath, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${imgPath}`}
-                    alt={`Ảnh phụ ${index + 1}`}
-                    className="w-full h-20 object-cover rounded border border-gray-300 shadow"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSubImage(index)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                    title="Xoá ảnh"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+            <Form.Item shouldUpdate>
+              {({ getFieldValue }) => {
+                const images = getFieldValue('srcImages') || [];
+                return (
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    {images.map((imgPath, index) => (
+                      <div key={index} className="relative" style={{ width: "120px" }}>
+                        <img
+                          src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${imgPath}`}
+                          alt={`Ảnh phụ ${index + 1}`}
+                          style={{ width: "120px" }}
+                          className="w-full h-20 object-cover rounded border border-gray-300 shadow"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSubImage(index)}
+                          className="absolute top-0 right-0 text-white w-6 h-6 flex items-center justify-center"
+                          title="Xoá ảnh"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}
+            </Form.Item>
           </div>
         </div>
 
-        <div>
-          <label className="block font-medium">Loại sản phẩm</label>
-          <input
-            type="text"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium">Giá tiền</label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded"
-            />
-          </div>
-          <div>
-            <label className="block font-medium">Tồn kho</label>
-            <input
-              type="number"
-              name="countInStock"
-              value={formData.countInStock}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded"
-            />
-          </div>
-        </div>
-{/* 
-        <div>
-          <label className="block font-medium">Đánh giá (1-5)</label>
-          <input
-            type="number"
-            name="rating"
-            min="1"
-            max="5"
-            step="0.1"
-            value={formData.rating}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded"
-          />
-        </div> */}
-
-        <div>
-          <label className="block font-medium">Mô tả</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            rows={3}
-            className="w-full border p-2 rounded"
-          ></textarea>
-        </div>
-
-        <div className="flex justify-between pt-4">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        <Space size="large">
+          <Form.Item
+            name="price"
+            label="Giá tiền"
+            rules={[{ required: true, type: 'number', min: 0 }]}
           >
-            {productId !== 'create' ? 'Cập nhật' : 'Tạo mới'}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-600 hover:underline"
+            <InputNumber formatter={val => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} style={{ width: 200 }} />
+          </Form.Item>
+
+          <Form.Item
+            name="countInStock"
+            label="Tồn kho"
+            rules={[{ required: true, type: 'number', min: 0 }]}
           >
-            Huỷ
-          </button>
-        </div>
-      </form>
-    </div>
+            <InputNumber style={{ width: 200 }} />
+          </Form.Item>
+        </Space>
+
+        <Form.Item name="hasVariants" valuePropName="checked">
+          <Checkbox>Có biến thể?</Checkbox>
+        </Form.Item>
+
+        <Form.Item shouldUpdate={(prev, cur) => prev.hasVariants !== cur.hasVariants}>
+          {({ getFieldValue }) =>
+            getFieldValue('hasVariants') && (
+              <>
+                <Divider orientation="left">Thuộc tính biến thể</Divider>
+
+                <Form.Item
+                  name="attributes"
+                  label="Attributes (phân cách dấu phẩy)"
+                  rules={[
+                    {
+                      validator: (_, val) =>
+                        Array.isArray(val)
+                          ? Promise.resolve()
+                          : Promise.reject('Cần nhập thuộc tính'),
+                    },
+                  ]}
+                >
+                  <Select mode="tags" placeholder="e.g. Color, Size" />
+                </Form.Item>
+
+                {/* Bao toàn bộ Form.List trong shouldUpdate để re-render khi attributes đổi */}
+                <Form.Item shouldUpdate={(prev, cur) => prev.attributes !== cur.attributes}>
+                  {({ getFieldValue }) => {
+                    const attributes = getFieldValue('attributes') || [];
+                    // color, size
+                    return (
+                      <Form.List name="variants">
+                        {(fields, { add, remove }) => {
+                          const columns = [
+                            {
+                              title: 'SKU',
+                              dataIndex: 'sku',
+                              render: (_, __, index) => (
+                                <Form.Item
+                                  name={[index, 'sku']}
+                                  rules={[{ required: true, message: 'Nhập SKU' }]}
+                                >
+                                  <Input />
+                                </Form.Item>
+                              ),
+                            },
+                            {
+                              title: 'Giá',
+                              dataIndex: 'price',
+                              render: (_, __, index) => (
+                                <Form.Item
+                                  name={[index, 'price']}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      type: 'number',
+                                      min: 1,
+                                      message: 'Nhập giá hợp lệ',
+                                    },
+                                  ]}
+                                >
+                                  <InputNumber style={{ width: '100%' }} />
+                                </Form.Item>
+                              ),
+                            },
+                            {
+                              title: 'Tồn kho',
+                              dataIndex: 'stock',
+                              render: (_, __, index) => (
+                                <Form.Item
+                                  name={[index, 'stock']}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      type: 'number',
+                                      min: 0,
+                                      message: 'Nhập tồn kho hợp lệ',
+                                    },
+                                  ]}
+                                >
+                                  <InputNumber style={{ width: '100%' }} />
+                                </Form.Item>
+                              ),
+                            },
+                            ...attributes.map((attr) => ({
+                              title: attr,
+                              dataIndex: ['attributes', attr],
+                              render: (_, __, index) => (
+                                <Form.Item
+                                  name={[index, 'attributes', attr]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: `Vui lòng nhập ${attr}`,
+                                    },
+                                  ]}
+                                >
+                                  <Input placeholder={`Giá trị cho ${attr}`} />
+                                </Form.Item>
+                              ),
+                            })),
+                            {
+                              title: 'Hành động',
+                              dataIndex: 'action',
+                              render: (_, __, index) => (
+                                <Button
+                                  danger
+                                  style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}
+                                  type="link"
+                                  icon={<MinusCircleOutlined />}
+                                  onClick={() => remove(index)}
+                                >
+                                  Xoá
+                                </Button>
+                              ),
+                            },
+                          ];
+
+                          const dataSource = fields.map((field, index) => ({
+                            key: field.key,
+                            ...field,
+                          }));
+
+                          return (
+                            <>
+                              <Table
+                                pagination={false}
+                                dataSource={dataSource}
+                                columns={columns}
+                                rowKey="key"
+                              />
+                              <Form.Item>
+                                <Button
+                                  type="dashed"
+                                  onClick={() => add()}
+                                  block
+                                  icon={<PlusOutlined />}
+                                >
+                                  Thêm biến thể
+                                </Button>
+                              </Form.Item>
+                            </>
+                          );
+                        }}
+                      </Form.List>
+                    );
+                  }}
+                </Form.Item>
+              </>
+            )
+          }
+        </Form.Item>
+
+
+        <Form.Item name="description" label="Mô tả" rules={[{ required: true }]}>
+          <TextArea rows={4} />
+        </Form.Item>
+
+        <Form.Item>
+          <Space>
+            <Button type="primary" htmlType="submit">
+              {productId !== 'create' ? 'Cập nhật' : 'Tạo mới'}
+            </Button>
+            <Button onClick={onClose}>Hủy</Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Card>
   );
 };
 

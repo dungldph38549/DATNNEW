@@ -12,6 +12,7 @@ const VoucherSchema = new mongoose.Schema({
     unique: true,
     uppercase: true,
     trim: true,
+    match: [/^[A-Z0-9]+$/, "Mã voucher chỉ được chứa các ký tự từ A-Z và số từ 0-9"],
   },
   value: {
     type: Number,
@@ -88,9 +89,10 @@ VoucherSchema.methods.isUsable = function () {
   const now = new Date();
   return (
     this.status === "active" &&
-    this.startDate <= now &&
-    this.endDate >= now &&
-    (this.count === 0 || this.usedCount < this.count)
+    now >= this.startDate &&
+    now <= this.endDate &&
+    this.usedCount < this.count &&
+    this.count > 0
   );
 };
 

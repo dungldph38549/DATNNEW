@@ -15,14 +15,14 @@ exports.getAll = async (req, res) => {
     try {
         let { status } = req.query;
         let brands
-        if(status) {
+        if(status !== 'all') {
           brands =  await Brand.find({ status });
         } else {
           brands = await Brand.find();
         }
-        successResponse({ res, data: brands });
+        return successResponse({ res, data: brands });
     } catch (err) {
-        errorResponse({ res, message: err.message, statusCode: 500 });
+        return errorResponse({ res, message: err.message, statusCode: 500 });
     }
 };
 

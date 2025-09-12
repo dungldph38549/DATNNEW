@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Tag, Spin, Modal, Button, Form, Input, message, Switch } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllUser, updateUserById } from '../api/index'; // Bạn cần định nghĩa API này
+import { getAllUser, updateUserById } from '../api/index';
 
 const Users = () => {
   const [page, setPage] = useState(1);
@@ -90,20 +90,23 @@ const Users = () => {
     return <div className="text-center text-red-500">Lỗi khi tải danh sách người dùng.</div>;
 
   return (
-    <div>
+    <div className="bg-white p-4 rounded-xl shadow">
       <h2 className="text-2xl font-semibold mb-4">Danh sách người dùng</h2>
-      <Table
-        columns={columns}
-        dataSource={data.data.map((user) => ({ ...user, key: user._id }))}
-        pagination={{
-          current: page,
-          total: data.total,
-          pageSize: limit,
-          onChange: (newPage) => setPage(newPage),
-        }}
-        bordered
-        rowKey="_id"
-      />
+      <div className="overflow-x-auto">
+
+        <Table
+          columns={columns}
+          dataSource={data.data.map((user) => ({ ...user, key: user._id }))}
+          pagination={{
+            current: page,
+            total: data.total,
+            pageSize: limit,
+            onChange: (newPage) => setPage(newPage),
+          }}
+          bordered
+          rowKey="_id"
+        />
+      </div>
 
       {/* Modal chỉnh sửa */}
       <Modal

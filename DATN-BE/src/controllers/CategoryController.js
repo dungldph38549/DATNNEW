@@ -15,14 +15,14 @@ exports.getAll = async (req, res) => {
     try {
         const { status } = req.query;
         let categories
-        if(status) {
+        if(status !== 'all') {
             categories =  await Category.find({ status });
         } else {
             categories = await Category.find();
         }
-        successResponse({ res, data: categories });
+        return successResponse({ res, data: categories });
     } catch (err) {
-        errorResponse({ res, message: err.message, statusCode: 500 });
+        return errorResponse({ res, message: err.message, statusCode: 500 });
     }
 };
 
@@ -38,11 +38,11 @@ exports.getOne = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const { name, status, id } = req.body;
+        const { name, status, id, image } = req.body;
         if(!id) {
             return errorResponse({ res, message: "ID danh mục không hợp lệ", statusCode: 422 });
         }
-        const category = await Category.findByIdAndUpdate(id, { name, status }, { new: true, runValidators: true, });
+        const category = await Category.findByIdAndUpdate(id, { name, status, image }, { new: true, runValidators: true, });
         successResponse({ res, data: category });
     } catch (err) {
         errorResponse({ res, message: err.message, statusCode: 500 });

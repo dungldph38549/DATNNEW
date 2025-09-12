@@ -22,6 +22,9 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   shipped: 'Đang giao',
   delivered: 'Đã giao',
   canceled: 'Đã hủy',
+  accepted: 'Chấp nhận hoàn hàng',
+  rejected: 'Từ chối hoàn hàng',
+  'return-request': 'Yêu cầu hoàn hàng'
 };
 
 export const PAYMENT_METHOD: Record<string, string> = {

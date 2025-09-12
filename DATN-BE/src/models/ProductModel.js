@@ -7,18 +7,13 @@ const productSchema = new mongoose.Schema(
       required: [true, "Tên sản phẩm là bắt buộc"],
       trim: true,
     },
-    sortDescription: {
-      type: String,
-      required: [true, "Mô tả ngắn là bắt buộc"],
-      trim: true,
-    },
     image: {
       type: String,
       required: [true, "Ảnh chính của sản phẩm là bắt buộc"],
       trim: true,
     },
     srcImages: [{ type: String, trim: true }],
-    type: { type: String, trim: true },
+    // type: { type: String, trim: true },
     price: {
       type: Number,
       required: [true, "Giá sản phẩm là bắt buộc"],
@@ -29,6 +24,7 @@ const productSchema = new mongoose.Schema(
       required: [true, "Số lượng tồn kho là bắt buộc"],
       min: [0, "Số lượng tồn kho không được âm"],
     },
+    sold: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
     description: {
       type: String,
@@ -36,7 +32,6 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
     hasVariants: { type: Boolean, default: false },
-    attributes: [{ type: String, trim: true }],
     brandId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
@@ -45,6 +40,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
+    attributes: [{ type: String, trim: true }],
     variants: [
       {
         sku: {
@@ -63,12 +59,12 @@ const productSchema = new mongoose.Schema(
           default: 0,
           min: [0, "Số lượng biến thể không được âm"],
         },
-        image: { type: String, trim: true },
         attributes: {
           type: Map,
           of: String,
           required: [true, "Thuộc tính của biến thể là bắt buộc"],
         },
+        sold: { type: Number, default: 0 },
       },
     ],
     deletedAt: { type: Date, default: null },
