@@ -169,10 +169,30 @@ const CartPage = () => {
                 </p>
               </div>
 
-           
+                {/* Quantity Controls */}
+              <div className="flex items-center justify-center space-x-2">
+                <button
+                  className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={() =>
+                    handleChangeQuantity(item.productId, item.sku || null, -1)
+                  }
+                  disabled={item.quantity <= 1}
+                >
+                  -
+                </button>
+                <span>{item.quantity}</span>
+                <button
+                  className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={() =>
+                    handleChangeQuantity(item.productId, item.sku || null, 1)
+                  }
+                  disabled={item.quantity >= checkStock(item.productId, item.sku)}
+                >
+                  +
+                </button>
+              </div>
 
-            
-              {/* Price */}
+               {/* Price */}
               <p className="text-lg font-semibold">{item.price.toLocaleString('vi-VN')}₫</p>
 
               {/* Total per item */}
@@ -180,14 +200,12 @@ const CartPage = () => {
                 {(item.quantity * item.price).toLocaleString('vi-VN')}₫
               </p>
 
-              {/* Remove button */}
-              <button
-                className="text-red-500 font-bold text-xl"
-                onClick={() => handleRemove(item.productId, item.sku || null)}
-                aria-label={`Xóa ${item.name} khỏi giỏ hàng`}
-              >
-                ×
-              </button>
+              
+
+           
+
+            
+             
             </div>
           ))
         )}
@@ -200,4 +218,3 @@ const CartPage = () => {
 };
 
 export default CartPage;
-// tuấn phong 
