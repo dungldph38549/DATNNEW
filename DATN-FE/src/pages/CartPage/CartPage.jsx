@@ -200,6 +200,14 @@ const CartPage = () => {
                 {(item.quantity * item.price).toLocaleString('vi-VN')}₫
               </p>
 
+                  {/* Remove button */}
+              <button
+                className="text-red-500 font-bold text-xl"
+                onClick={() => handleRemove(item.productId, item.sku || null)}
+                aria-label={`Xóa ${item.name} khỏi giỏ hàng`}
+              >
+                ×
+              </button>
               
 
            
