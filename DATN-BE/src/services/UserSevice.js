@@ -94,8 +94,6 @@ const loginUser = (userLogin) => {
           email: checkUser.email,
           phone: checkUser.phone,
           isAdmin: checkUser.isAdmin,
-          address: checkUser.address,
-          avatar: checkUser.avatar
         },
       });
     } catch (e) {
@@ -116,16 +114,10 @@ const updateUser = async (id, data) => {
 
     const update = {  }
     if(data.password) {
-      const hash = await bcrypt.hashSync(data.password, 10);
+      const hash = await bcrypt.hashSync(password, 10);
       update.password = hash
     } 
-    if(data.isAdmin) update.isAdmin = data.isAdmin
-
-    if(data.name) update.name = data.name
-    if(data.email) update.email = data.email
-    if(data.phone) update.phone = data.phone
-    if(data.address) update.address = data.address
-    if(data.avatar) update.avatar = data.avatar
+    update.isAdmin = data.isAdmin
     
     const updatedUser = await User.findByIdAndUpdate(id, update, { new: true });
 

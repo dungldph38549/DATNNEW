@@ -1,26 +1,27 @@
 // src/services/ProductService.js
 const Product = require("../models/ProductModel");
 const Brand = require('../models/Brands');
-const Category = require('../models/Categories');
+const Category = require('../models/Categories'); 
 
 const createProduct = async (data) => {
   const {
-    name,
-    image,
-    srcImages = [],
-    type,
-    price,
-    countInStock,
-    rating,
-    description,
-    hasVariants = false,
-    attributes = [],
-    variants = [],
-    brandId,
-    categoryId,
-  } = data;
+      name,
+      sortDescription,
+      image,
+      srcImages = [],
+      type,
+      price,
+      countInStock,
+      rating,
+      description,
+      hasVariants = false,
+      attributes = [],
+      variants = [],
+      brandId,
+      categoryId,
+    } = data;
   try {
-
+ 
     if (brandId) {
       const brandExists = await Brand.exists({ _id: brandId });
       if (!brandExists) throw new Error({ message: 'Brand không tồn tại' });
@@ -33,6 +34,7 @@ const createProduct = async (data) => {
 
     const product = new Product({
       name,
+      sortDescription,
       image,
       srcImages,
       type,
@@ -54,46 +56,16 @@ const createProduct = async (data) => {
   }
 };
 
-const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
+const getAllProducts = (limit = 10, page = 0, sort = "asc") => {
   return new Promise(async (resolve, reject) => {
     try {
-      let query = {};
+      const totalProduct = await Product.countDocuments();
 
-      if (isListProductRemoved == 1) {
-        query.deletedAt = { $ne: null };
-      } else {
-        query.$or = [
-          { deletedAt: { $exists: false } },
-          { deletedAt: null }
-        ];
-      }
-      const filters = JSON.parse(filter);
-      if (filters.name) {
-        query.name = { $regex: filters.name, $options: "i" };
-      }
-
-      if (filters.categoryId) {
-        query.categoryId = filters.categoryId;
-      }
-
-      if (filters.brandId) {
-        query.brandId = filters.brandId;
-      }
-
-      if (filters.priceFrom || filters.priceTo) {
-        query.price = {};
-        if (filters.priceFrom) query.price.$gte = filters.priceFrom;
-        if (filters.priceTo) query.price.$lte = filters.priceTo;
-      }
-
-      const totalProduct = await Product.countDocuments(query);
-
-      const allProduct = await Product.find(query)
+      const allProduct = await Product.find()
         .populate('brandId')
         .populate('categoryId')
         .limit(limit)
-        .skip(page * limit)
-        .sort({ createdAt: -1 });
+        .skip((page) * limit)
 
       return resolve({
         status: "ok",
@@ -109,102 +81,23 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
   });
 };
 
-const relationProduct = async (categoryId, brandId, id) => {
-  try {
-
-    const relationProducts = await Product.find({
-      $or: [
-        { categoryId },
-        { brandId }
-      ],
-      _id: { $ne: id }
-    }).sort({ createdAt: -1 }).limit(20);
-    return relationProducts;
-  } catch (e) {
-    throw new Error(e.message);
-  }
-}
-const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
+const getProducts = (limit = 20, page = 0, sort = "asc") => {
   return new Promise(async (resolve, reject) => {
     try {
-      let sortOption = {};
-      if (sort === 'createdAt') {
-        sortOption = { createdAt: -1 };
-      } else if (sort === 'sold') {
-        sortOption = { totalSold: -1 };
-      } else if (sort === 'priceDecre') {
-        sortOption = { minPrice: -1 };
-      } else if (sort === 'priceIncre') {
-        sortOption = { minPrice: 1 };
-      }
+      const totalProduct = await Product.countDocuments();
 
-      if (filter.keyword) {
-        filter.name = { $regex: filter.keyword, $options: "i" };
-        delete filter.keyword;
-      }
+      // Chuyển sort thành số: 1 (asc) hoặc -1 (desc)
+      const sortValue = sort === "desc" ? -1 : 1;
 
-      const matchCondition = {
-        deletedAt: null,
-        ...filter,
-      };
-
-      const result = await Product.aggregate([
-        { $match: matchCondition },
-
-        {
-          $addFields: {
-            minPrice: {
-              $cond: {
-                if: "$hasVariants",
-                then: { $min: "$variants.price" },
-                else: "$price",
-              },
-            },
-            totalSold: {
-              $cond: {
-                if: "$hasVariants",
-                then: { $sum: "$variants.sold" },
-                else: "$sold",
-              },
-            },
-          },
-        },
-
-        {
-          $facet: {
-            data: [
-              { $sort: sortOption },
-              { $skip: page * limit },
-              { $limit: limit },
-              {
-                $lookup: {
-                  from: 'brands',
-                  localField: 'brandId',
-                  foreignField: '_id',
-                  as: 'brandId',
-                },
-              },
-              { $unwind: { path: "$brandId", preserveNullAndEmptyArrays: true } },
-              {
-                $lookup: {
-                  from: 'categories',
-                  localField: 'categoryId',
-                  foreignField: '_id',
-                  as: 'categoryId',
-                },
-              },
-              { $unwind: { path: "$categoryId", preserveNullAndEmptyArrays: true } },
-            ],
-            totalCount: [
-              { $count: "total" }
-            ]
-          }
-        }
-      ]);
-
-      const allProduct = result[0]?.data || [];
-      const totalProduct = result[0]?.totalCount?.[0]?.total || 0;
-
+      const allProduct = await Product.find({
+          deletedAt: null
+        })
+        .populate('brandId')
+        .populate('categoryId')
+        .limit(limit)
+        .skip(page * limit)
+        .sort({ name: sortValue });
+        
       return resolve({
         status: "ok",
         message: "Successfully fetched all products",
@@ -221,9 +114,7 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
 
 
 const getProductById = async (id) => {
-  const product = await Product.findById(id)
-    .populate('brandId')
-    .populate('categoryId');
+  const product = await Product.findById(id);
   if (!product) {
     throw new Error("Product not found");
   }
@@ -233,6 +124,7 @@ const getProductById = async (id) => {
 const updateProduct = async (productId, data) => {
   const {
     name,
+    sortDescription,
     image,
     srcImages = [],
     type,
@@ -266,6 +158,7 @@ const updateProduct = async (productId, data) => {
 
     // ✅ Cập nhật các field
     product.name = name ?? product.name;
+    product.sortDescription = sortDescription ?? product.sortDescription;
     product.image = image ?? product.image;
     product.srcImages = srcImages ?? product.srcImages;
     product.type = type ?? product.type;
@@ -307,9 +200,12 @@ const restoreProductById = async (id) => {
     if (!product) {
       throw new Error("Không tìm thấy sản phẩm.");
     }
-    await Product.findByIdAndUpdate(id, { deletedAt: null });
-    return true;
+
+    product.deletedAt = null;
+    await product.save();
+    return product;
   } catch (error) {
+    console.error("Lỗi khi khôi phục sản phẩm:", error.message);
     throw new Error("Khôi phục sản phẩm thất bại.");
   }
 };
@@ -322,5 +218,4 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
-  relationProduct
 };

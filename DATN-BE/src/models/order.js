@@ -8,19 +8,11 @@ const orderSchema = new mongoose.Schema({
   guestId: {
     type: String,
   },
-  fullName: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  phone: {
-    type: String,
-    required: true
-  },
   address: {
+    type: String,
+    required: true
+  },
+  fullName: {
     type: String,
     required: true
   },
@@ -34,6 +26,14 @@ const orderSchema = new mongoose.Schema({
     required: true,
     enum: ['standard', 'fast'],
   },
+  phone: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true
+  },
   products: [
     {
       productId: {
@@ -41,44 +41,16 @@ const orderSchema = new mongoose.Schema({
         ref: 'Product',
         required: true
       },
-      sku: {
-        type: String
-      },
       quantity: {
         type: Number,
         required: true,
         min: 1
-      },
-      price: { 
-        type: Number,
-        required: true
-      },
-      attributes: {
-        type: Object, 
-        default: {}
       }
     }
   ],
-  discount: {
-    type: Number,
-    default: 0
-  },
-  voucherCode: {
-    type: String,
-    default: null
-  },
-  shippingFee: {
-    type: Number,
-    required: true
-  },
   totalAmount: {
     type: Number,
     required: true
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['paid', 'unpaid'],
-    default: 'unpaid'
   },
   status: {
     type: String,
@@ -87,7 +59,6 @@ const orderSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Đảm bảo ít nhất 1 trong 2: userId hoặc guestId
 orderSchema.pre('validate', function (next) {
   if (!this.userId && !this.guestId) {
     this.invalidate('userId', 'Either userId or guestId is required.');
@@ -95,5 +66,4 @@ orderSchema.pre('validate', function (next) {
   }
   next();
 });
-
 module.exports = mongoose.model('Order', orderSchema);

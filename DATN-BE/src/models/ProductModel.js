@@ -74,14 +74,15 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-
 productSchema.pre("validate", async function (next) {
   const product = this;
 
   // ✅ Nếu có biến thể thì phải có ít nhất 1 variant
   if (product.hasVariants) {
     if (!product.variants || product.variants.length === 0) {
-      return next(new Error("Sản phẩm có biến thể phải có ít nhất 1 biến thể."));
+      return next(
+        new Error("Sản phẩm có biến thể phải có ít nhất 1 biến thể.")
+      );
     }
 
     // ✅ Kiểm tra tất cả biến thể có đúng các thuộc tính khai báo
@@ -99,7 +100,9 @@ productSchema.pre("validate", async function (next) {
     if (hasMismatch) {
       return next(
         new Error(
-          `Tất cả biến thể phải có đầy đủ các thuộc tính: [${expectedAttrs.join(", ")}]`
+          `Tất cả biến thể phải có đầy đủ các thuộc tính: [${expectedAttrs.join(
+            ", "
+          )}]`
         )
       );
     }
@@ -122,7 +125,9 @@ productSchema.pre("validate", async function (next) {
     const skuSet = new Set();
     for (const variant of product.variants) {
       if (skuSet.has(variant.sku)) {
-        return next(new Error(`SKU "${variant.sku}" bị trùng trong cùng sản phẩm.`));
+        return next(
+          new Error(`SKU "${variant.sku}" bị trùng trong cùng sản phẩm.`)
+        );
       }
       skuSet.add(variant.sku);
     }

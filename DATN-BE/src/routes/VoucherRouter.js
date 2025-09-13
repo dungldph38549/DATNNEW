@@ -8,7 +8,6 @@ router.post("/admin/create", authAdminMiddleware, VoucherController.create);
 router.put("/admin/update", authAdminMiddleware, VoucherController.update);
 router.delete("/admin/delete", authAdminMiddleware, VoucherController.delete);
 router.get("/admin/list", authAdminMiddleware, VoucherController.getAll);
-router.post("/check-voucher/:code", VoucherController.checkVoucherCode);
 router.get("/list", VoucherController.getActiveVouchers);
 router.get("/detail/:id", VoucherController.detail);
 

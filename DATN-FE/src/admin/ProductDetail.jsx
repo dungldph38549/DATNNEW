@@ -76,7 +76,7 @@ const ProductDetail = ({ productId = null, onClose }) => {
 
     try {
       const formDataMulti = new FormData();
-      files?.forEach((file) => formDataMulti.append('files', file));
+      files.forEach((file) => formDataMulti.append('files', file));
       const result = await uploadImages(formDataMulti);
       form.setFieldsValue({ srcImages: result.paths });
     } catch (err) {
@@ -95,7 +95,6 @@ const ProductDetail = ({ productId = null, onClose }) => {
 
   return (
     <Card
-      className="bg-white rounded-xl shadow"
       title={productId !== 'create' ? '✏️ Sửa sản phẩm' : '➕ Tạo sản phẩm mới'}
       loading={isLoading}
     >
@@ -110,6 +109,10 @@ const ProductDetail = ({ productId = null, onClose }) => {
         }}
       >
         <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="sortDescription" label="Miêu tả ngắn" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
 
@@ -236,7 +239,7 @@ const ProductDetail = ({ productId = null, onClose }) => {
                 <Form.Item shouldUpdate={(prev, cur) => prev.attributes !== cur.attributes}>
                   {({ getFieldValue }) => {
                     const attributes = getFieldValue('attributes') || [];
-                    // color, size
+
                     return (
                       <Form.List name="variants">
                         {(fields, { add, remove }) => {

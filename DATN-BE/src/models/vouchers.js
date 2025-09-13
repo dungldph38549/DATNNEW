@@ -89,13 +89,11 @@ VoucherSchema.methods.isUsable = function () {
   const now = new Date();
   return (
     this.status === "active" &&
-    now >= this.startDate &&
-    now <= this.endDate &&
-    this.usedCount < this.count &&
-    this.count > 0
+    this.startDate <= now &&
+    this.endDate >= now &&
+    (this.count === 0 || this.usedCount < this.count)
   );
 };
 
 const Voucher = mongoose.model("Voucher", VoucherSchema);
 module.exports = Voucher;
-

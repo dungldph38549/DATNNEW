@@ -5,6 +5,8 @@ const orderController = require('../controllers/OrderController.js');
 router.post('/', orderController.createOrder);
 router.get('/', orderController.getAllOrders);
 router.get('/dashboard', orderController.dashboard);
+router.post('/returnOrderRequest', orderController.returnOrderRequest);
+router.post('/acceptOrRejectReturn', orderController.acceptOrRejectReturn);
 router.get('/revenue', orderController.revenue);
 router.get('/topSelling', orderController.topSelling);
 router.get('/paymentMethod', orderController.paymentMethod);

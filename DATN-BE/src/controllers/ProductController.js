@@ -139,3 +139,33 @@ exports.uploadImage = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.getStock = async (req, res) => {
+  try {
+    const data = req.body || [];
+    if(!Array.isArray(data) && data.length === 0 ) return res.status(400).json({ message: "Invalid data" });
+    const results = await Promise.all(data.map(async item => {
+      const { productId, sku } = item;
+      if (sku) {
+        const product = await Product.findOne({
+          _id: productId,
+          "variants.sku": sku
+        });
+        return {
+          productId,
+          sku,
+          countInStock: product.variants.find(variant => variant.sku === sku).stock
+        };
+      } else {
+        const product = await Product.findById(productId);
+        return {
+          productId,
+          countInStock: product?.countInStock
+        }
+      }
+    }));
+    res.status(200).json(results);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
