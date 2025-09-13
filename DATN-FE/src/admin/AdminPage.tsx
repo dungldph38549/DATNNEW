@@ -47,6 +47,12 @@ const AdminPage = () => {
                 return (<Brands />);
             case 'categories':
                 return (<Categories />);
+            case 'vouchers':
+                return (<Vouchers />);
+            case 'brands':
+                return (<Brands />);
+            case 'categories':
+                return (<Categories />);
             default:
                 return <p className="text-gray-600">📋 Chọn mục bên trái để xem nội dung</p>;
         }

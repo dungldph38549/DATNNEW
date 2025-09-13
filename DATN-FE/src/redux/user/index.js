@@ -48,6 +48,8 @@ export const userSlice = createSlice({
       };
     },
     updateUserInfo: (state, action) => {
+      console.log("Updating user info:", action.payload);
+      
       return {
         ...state,
         ...action.payload,
