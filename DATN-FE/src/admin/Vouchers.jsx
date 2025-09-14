@@ -103,6 +103,11 @@ const Vouchers = () => {
   ];
 
   const renderForm = (initialValues = {}, onFinish, loading = false) => {
+<<<<<<< HEAD
+    console.log('1', dayjs(initialValues.startDate), dayjs(initialValues.endDate));
+
+=======
+>>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
     return (
       <Form
         layout="vertical"
@@ -159,7 +164,11 @@ const Vouchers = () => {
     return <div className="text-center text-red-500">Lỗi khi tải danh sách voucher.</div>;
 
   return (
+<<<<<<< HEAD
+    <div className="bg-white p-4 rounded-xl shadow">
+=======
     <div>
+>>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Danh sách voucher</h2>
         <Button type="primary" onClick={() => setIsCreateModalVisible(true)}>

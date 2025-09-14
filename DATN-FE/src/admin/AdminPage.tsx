@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Order from './Order';
 import Products from './Products';
-import Users from './Users';
 import Categories from './Categories';
-import Vouchers from './Vouchers';
 import Brands from './Brands';
 import { useNavigate } from 'react-router-dom';
 import { clearUser } from '../redux/user';
@@ -36,10 +34,10 @@ const AdminPage = () => {
                 return (<Products />);
             case 'orders':
                 return ( <Order />);
-            case 'users':
-                return (<Users />);
-            case 'vouchers':
-                return (<Vouchers />);
+            // case 'users':
+            //     return (<Users />);
+            // case 'vouchers':
+            //     return (<Vouchers />);
             case 'brands':
                 return (<Brands />);
             case 'categories':
