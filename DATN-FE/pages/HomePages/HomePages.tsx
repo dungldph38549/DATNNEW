@@ -13,12 +13,10 @@ const HomePages = () => {
     queryKey: ['list-products'],
     queryFn: fetchProducts,
   });
-
   const handleCheckout = (item) => {
     dispatch(addProduct(item));
     navigate('/checkoutpage');
   };
-
   return (
     <div>
       <main className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4 py-8 bg-gray-100">
