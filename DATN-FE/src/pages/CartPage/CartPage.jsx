@@ -151,8 +151,8 @@ const CartPage = () => {
                 alt={item.name}
                 className="w-20 h-20 object-cover rounded mx-auto"
               />
-              
-                {/* Name + Attributes */}
+
+              {/* Name + Attributes */}
               <div className="text-left px-2">
                 <p className="text-sm font-semibold whitespace-pre-line">
                   {item.name}
@@ -169,7 +169,7 @@ const CartPage = () => {
                 </p>
               </div>
 
-                {/* Quantity Controls */}
+              {/* Quantity Controls */}
               <div className="flex items-center justify-center space-x-2">
                 <button
                   className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
@@ -192,7 +192,7 @@ const CartPage = () => {
                 </button>
               </div>
 
-               {/* Price */}
+              {/* Price */}
               <p className="text-lg font-semibold">{item.price.toLocaleString('vi-VN')}₫</p>
 
               {/* Total per item */}
@@ -200,7 +200,7 @@ const CartPage = () => {
                 {(item.quantity * item.price).toLocaleString('vi-VN')}₫
               </p>
 
-                  {/* Remove button */}
+              {/* Remove button */}
               <button
                 className="text-red-500 font-bold text-xl"
                 onClick={() => handleRemove(item.productId, item.sku || null)}
@@ -208,17 +208,12 @@ const CartPage = () => {
               >
                 ×
               </button>
-              
-
-           
-
-            
-             
             </div>
           ))
         )}
       </div>
-       {/* Payment Summary */}
+
+      {/* Payment Summary */}
       <div className="border-t pt-4 mt-6">
         <h3 className="text-lg font-semibold text-gray-800">Tóm tắt thanh toán</h3>
 
@@ -248,28 +243,3 @@ const CartPage = () => {
 };
 
 export default CartPage;
-    {/* Payment Summary */}
-      // <div className="border-t pt-4 mt-6">
-      //   <h3 className="text-lg font-semibold text-gray-800">Tóm tắt thanh toán</h3>
-
-      //   <div className="flex justify-between items-center mt-2">
-      //     <p className="text-gray-700 text-lg">Tổng cộng:</p>
-      //     <p className="text-green-500 text-xl font-bold">
-      //       {subtotal.toLocaleString('vi-VN')}₫
-      //     </p>
-      //   </div>
-
-      //   <button
-      //     className={`mt-4 w-full bg-yellow-500 text-white py-2 rounded-md font-semibold ${
-      //       selectedItems.length ? 'hover:bg-yellow-600' : 'opacity-50 cursor-not-allowed'
-      //     }`}
-      //     onClick={handleCheckout}
-      //     disabled={selectedItems.length === 0}
-      //   >
-      //     TIẾN HÀNH THANH TOÁN
-      //   </button>
-
-      //   <p className="text-sm text-gray-500 text-center mt-2">
-      //     Thanh toán bằng nhiều địa chỉ!
-      //   </p>
-
