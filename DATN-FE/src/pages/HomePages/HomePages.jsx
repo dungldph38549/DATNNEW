@@ -231,6 +231,7 @@ const HomePages = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Main News */}
+              {/* Thêm mục tin tức cho trang  */}
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 hover:bg-white/20 transition-all duration-300">
                 <div className="flex items-center mb-2">
                   <span className="bg-yellow-400 text-black px-2 py-1 rounded text-xs font-bold">

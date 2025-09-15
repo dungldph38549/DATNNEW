@@ -38,7 +38,7 @@ exports.getOne = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const { name, status, id, image } = req.body;
+        const {name,status,id,image } = req.body;
         if(!id) {
             return errorResponse({ res, message: "ID danh mục không hợp lệ", statusCode: 422 });
         }
