@@ -4,7 +4,6 @@ import { Wallet, Plus, Minus, CreditCard, History, Eye, EyeOff, ArrowUpRight, Ar
 export default function UserWallet() {
   const [showBalance, setShowBalance] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-
   // Dữ liệu mẫu
   const walletBalance = 2450000;
   const transactions = [
