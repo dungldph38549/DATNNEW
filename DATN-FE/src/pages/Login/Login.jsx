@@ -39,8 +39,9 @@ const Login = () => {
                 isGuest: false,
                 token: data.acess_token,
                 refreshToken: data.refresh_token,
-                address: data.data.address || '',
+                address: data.data.address,
                 login: true,
+                avatar: data.data.avatar
             }));
             if(data.data.isAdmin) navigate('/admin');
             else navigate('/');

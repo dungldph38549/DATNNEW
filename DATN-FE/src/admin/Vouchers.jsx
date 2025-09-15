@@ -103,6 +103,7 @@ const Vouchers = () => {
   ];
 
   const renderForm = (initialValues = {}, onFinish, loading = false) => {
+
     return (
       <Form
         layout="vertical"
@@ -159,7 +160,7 @@ const Vouchers = () => {
     return <div className="text-center text-red-500">Lỗi khi tải danh sách voucher.</div>;
 
   return (
-    <div>
+    <div className="bg-white p-4 rounded-xl shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Danh sách voucher</h2>
         <Button type="primary" onClick={() => setIsCreateModalVisible(true)}>

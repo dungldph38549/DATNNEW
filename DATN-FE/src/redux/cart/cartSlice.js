@@ -1,8 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const STORAGE_KEY = "cart";
+
 const loadFromLocalStorage = () => {
   try {
-    const data = localStorage.getItem("cart");
+    const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
   } catch {
     return [];
@@ -18,30 +20,40 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addProduct: (state, action) => {
-      if(!action.payload._id) return
-      const existing = state.products.find((p) => p._id === action.payload._id);
-      console.log(action.payload);
-      
+      const { productId, sku } = action.payload;
+      if (!productId) return;
+      const existing = state.products.find(
+        (p) => p.productId === productId && (p.sku || null) === (sku || null)
+      );
       if (existing) {
-        existing.quantity += 1;
+        existing.quantity += action.payload.quantity || 1;
       } else {
-        state.products.push({ ...action.payload, quantity: 1 });
+        state.products.push({ ...action.payload, quantity: action.payload.quantity || 1 });
       }
     },
     removeProduct: (state, action) => {
-      state.products = state.products.filter((p) => p._id !== action.payload);
+      // action.payload expected: { productId, sku? }
+      const { productId, sku = null } = action.payload;
+      state.products = state.products.filter(
+        (p) => !(p.productId === productId && (p.sku || null) === sku)
+      );
     },
     changeQuantity: (state, action) => {
-      const { id, delta } = action.payload;
-      const product = state.products.find((p) => p._id === id);
+      const { productId, sku = null, delta } = action.payload;
+      const product = state.products.find(
+        (p) => p.productId === productId && (p.sku || null) === sku
+      );
       if (product) {
         product.quantity = Math.max(1, product.quantity + delta);
       }
     },
     setQuantity: (state, action) => {
-      const { id, quantity } = action.payload;
-      const product = state.products.find((p) => p._id === id);
-      if (product && quantity >= 1) {
+      const { productId, sku = null, quantity } = action.payload;
+      if (quantity < 1) return;
+      const product = state.products.find(
+        (p) => p.productId === productId && (p.sku || null) === sku
+      );
+      if (product) {
         product.quantity = quantity;
       }
     },
