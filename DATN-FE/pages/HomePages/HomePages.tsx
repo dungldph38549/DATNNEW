@@ -13,12 +13,10 @@ const HomePages = () => {
     queryKey: ['list-products'],
     queryFn: fetchProducts,
   });
-
   const handleCheckout = (item) => {
     dispatch(addProduct(item));
     navigate('/checkoutpage');
   };
-
   return (
     <div>
       <main className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4 py-8 bg-gray-100">
@@ -171,11 +169,11 @@ const HomePages = () => {
               </div>
             </div>
           </div>
-          {/* Hàng mới về */}
+
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-gray-800">📦 Hàng mới về</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-              {/* Lặp sản phẩm mới về ở đây */}
+
             </div>
           </div>
         </section>
