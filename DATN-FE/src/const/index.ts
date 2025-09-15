@@ -68,6 +68,7 @@ export const PAYMENT_METHOD_LABELS: Record<PAYMENT_METHOD, string> = {
   [PAYMENT_METHOD.VNPAY]: "VNPay",
 };
 
+<<<<<<< HEAD
 export const GET_IMAGE = (pathName: string): string => {
   if (!pathName || typeof pathName !== "string") {
     return ""; // Hoặc trả về default image path
@@ -133,3 +134,8 @@ export const getStatusColor = (status: ORDER_STATUS): string => {
       return "default";
   }
 };
+=======
+export const GET_IMAGE = (path_name: string) => {
+  return process.env.REACT_APP_API_URL_BACKEND + '/image/' + path_name;
+};
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a

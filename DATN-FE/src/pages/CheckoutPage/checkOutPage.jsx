@@ -1,6 +1,10 @@
 import React, {  useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+<<<<<<< HEAD
 import { useMutation, useQuery } from '@tanstack/react-query';
+=======
+import { useMutation } from '@tanstack/react-query';
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { isValidEmail, isValidVietnamesePhone } from '../../const/index.ts';
@@ -9,7 +13,11 @@ import {
   removeProduct,
   clearProduct
 } from "../../redux/checkout/checkoutSlice.js";
+<<<<<<< HEAD
 import { checkVoucher, createOrder, getStocks } from "../../api/index.js";
+=======
+import { checkVoucher, createOrder } from "../../api/index.js";
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
@@ -146,6 +154,7 @@ const CheckoutPage = () => {
     mutate(payload);
   };
 
+<<<<<<< HEAD
   const { data } = useQuery({
     queryKey: ['product-stock', products],
     queryFn: () => getStocks(products),
@@ -162,6 +171,8 @@ const CheckoutPage = () => {
     return stock?.countInStock;
   };
 
+=======
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Thanh toán</h2>
@@ -275,7 +286,11 @@ const CheckoutPage = () => {
                         dispatch(changeQuantity({ productId: item.productId, sku: item.sku || null, delta: 1 }))
                       }
                       className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+<<<<<<< HEAD
                       disabled={item.quantity >= checkStock(item.productId, item.sku)}
+=======
+                      disabled={item.quantity >= item.countInStock}
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
                     >
                       +
                     </button>

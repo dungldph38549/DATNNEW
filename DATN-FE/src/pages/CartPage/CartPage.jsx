@@ -126,6 +126,7 @@ const CartPage = () => {
         <span>Xoá</span>
       </div>
 
+<<<<<<< HEAD
       {/* Cart Items */}
       <div className="border-t mt-3">
         {carts.length === 0 ? (
@@ -238,8 +239,17 @@ const CartPage = () => {
           Thanh toán bằng nhiều địa chỉ!
         </p>
       </div>
+=======
+   
+
+  
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default CartPage;
+=======
+export default CartPage;
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a

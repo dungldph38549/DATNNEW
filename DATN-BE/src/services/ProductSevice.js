@@ -1,7 +1,7 @@
 // src/services/ProductService.js
 const Product = require("../models/ProductModel");
-const Brand = require('../models/Brands');
-const Category = require('../models/Categories');
+const Brand = require("../models/Brands");
+const Category = require("../models/Categories");
 
 const createProduct = async (data) => {
   const {
@@ -20,15 +20,15 @@ const createProduct = async (data) => {
     categoryId,
   } = data;
   try {
-
     if (brandId) {
       const brandExists = await Brand.exists({ _id: brandId });
-      if (!brandExists) throw new Error({ message: 'Brand không tồn tại' });
+      if (!brandExists) throw new Error({ message: "Brand không tồn tại" });
     }
 
     if (categoryId) {
       const categoryExists = await Category.exists({ _id: categoryId });
-      if (!categoryExists) throw new Error({ message: 'Category không tồn tại' });
+      if (!categoryExists)
+        throw new Error({ message: "Category không tồn tại" });
     }
 
     const product = new Product({
@@ -62,10 +62,7 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
       if (isListProductRemoved == 1) {
         query.deletedAt = { $ne: null };
       } else {
-        query.$or = [
-          { deletedAt: { $exists: false } },
-          { deletedAt: null }
-        ];
+        query.$or = [{ deletedAt: { $exists: false } }, { deletedAt: null }];
       }
       const filters = JSON.parse(filter);
       if (filters.name) {
@@ -89,8 +86,8 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
       const totalProduct = await Product.countDocuments(query);
 
       const allProduct = await Product.find(query)
-        .populate('brandId')
-        .populate('categoryId')
+        .populate("brandId")
+        .populate("categoryId")
         .limit(limit)
         .skip(page * limit)
         .sort({ createdAt: -1 });
@@ -111,30 +108,28 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
 
 const relationProduct = async (categoryId, brandId, id) => {
   try {
-
     const relationProducts = await Product.find({
-      $or: [
-        { categoryId },
-        { brandId }
-      ],
-      _id: { $ne: id }
-    }).sort({ createdAt: -1 }).limit(20);
+      $or: [{ categoryId }, { brandId }],
+      _id: { $ne: id },
+    })
+      .sort({ createdAt: -1 })
+      .limit(20);
     return relationProducts;
   } catch (e) {
     throw new Error(e.message);
   }
-}
-const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
+};
+const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
   return new Promise(async (resolve, reject) => {
     try {
       let sortOption = {};
-      if (sort === 'createdAt') {
+      if (sort === "createdAt") {
         sortOption = { createdAt: -1 };
-      } else if (sort === 'sold') {
+      } else if (sort === "sold") {
         sortOption = { totalSold: -1 };
-      } else if (sort === 'priceDecre') {
+      } else if (sort === "priceDecre") {
         sortOption = { minPrice: -1 };
-      } else if (sort === 'priceIncre') {
+      } else if (sort === "priceIncre") {
         sortOption = { minPrice: 1 };
       }
 
@@ -178,28 +173,33 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
               { $limit: limit },
               {
                 $lookup: {
-                  from: 'brands',
-                  localField: 'brandId',
-                  foreignField: '_id',
-                  as: 'brandId',
+                  from: "brands",
+                  localField: "brandId",
+                  foreignField: "_id",
+                  as: "brandId",
                 },
               },
-              { $unwind: { path: "$brandId", preserveNullAndEmptyArrays: true } },
+              {
+                $unwind: { path: "$brandId", preserveNullAndEmptyArrays: true },
+              },
               {
                 $lookup: {
-                  from: 'categories',
-                  localField: 'categoryId',
-                  foreignField: '_id',
-                  as: 'categoryId',
+                  from: "categories",
+                  localField: "categoryId",
+                  foreignField: "_id",
+                  as: "categoryId",
                 },
               },
-              { $unwind: { path: "$categoryId", preserveNullAndEmptyArrays: true } },
+              {
+                $unwind: {
+                  path: "$categoryId",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
             ],
-            totalCount: [
-              { $count: "total" }
-            ]
-          }
-        }
+            totalCount: [{ $count: "total" }],
+          },
+        },
       ]);
 
       const allProduct = result[0]?.data || [];
@@ -219,11 +219,10 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
   });
 };
 
-
 const getProductById = async (id) => {
   const product = await Product.findById(id)
-    .populate('brandId')
-    .populate('categoryId');
+    .populate("brandId")
+    .populate("categoryId");
   if (!product) {
     throw new Error("Product not found");
   }
@@ -322,5 +321,6 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
-  relationProduct
+
+  relationProduct,
 };

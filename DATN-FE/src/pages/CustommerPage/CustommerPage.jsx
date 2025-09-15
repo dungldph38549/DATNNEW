@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
+=======
+import React, { useState } from 'react';
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
 import {
   Avatar,
   Button,
@@ -10,6 +14,7 @@ import {
   Upload,
   message,
   Space,
+<<<<<<< HEAD
   Divider,
   Modal,
   InputNumber,
@@ -72,10 +77,31 @@ export default function UserProfile() {
       status: "completed",
     },
   ]);
+=======
+} from 'antd';
+import {
+  EditOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateCustomerById, uploadImage } from '../../api';
+import { GET_IMAGE } from '../../const/index.ts';
+import { useMutation } from '@tanstack/react-query';
+import { updateUserInfo } from '../../redux/user/index.js';
+
+export default function UserProfile() {
+  
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const [form] = Form.useForm();
+  const [isEdit, setIsEdit] = useState(false);
+  const [avatarPath, setAvatarPath] = useState(user.avatar || '');
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
 
   const { mutate: updateUser, isPending } = useMutation({
     mutationFn: (data) => updateCustomerById(data),
     onSuccess: (data) => {
+<<<<<<< HEAD
       message.success("Cập nhật thành công");
       dispatch(
         updateUserInfo({
@@ -122,6 +148,21 @@ export default function UserProfile() {
     },
     onError: () => {
       message.error("Nạp tiền thất bại!");
+=======
+      message.success('Cập nhật thành công');
+      dispatch(updateUserInfo({
+        id: data.data._id,
+        name: data.data.name,
+        email: data.data.email,
+        phone: data.data.phone,
+        address: data.data.address,
+        avatar: data.data.avatar
+      }));
+      setIsEdit(false);
+    },
+    onError: () => {
+      message.error('Lỗi khi cập nhật');
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     },
   });
 
@@ -132,9 +173,16 @@ export default function UserProfile() {
       id: user.id,
     };
 
+<<<<<<< HEAD
     if (values.newPassword) {
       if (values.newPassword !== values.confirmPassword) {
         return message.error("Mật khẩu xác nhận không khớp!");
+=======
+    // Nếu có mật khẩu mới, kiểm tra khớp
+    if (values.newPassword) {
+      if (values.newPassword !== values.confirmPassword) {
+        return message.error('Mật khẩu xác nhận không khớp!');
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       }
       payload.password = values.newPassword;
     }
@@ -148,11 +196,16 @@ export default function UserProfile() {
   const handleUploadFile = async ({ file }) => {
     try {
       const formD = new FormData();
+<<<<<<< HEAD
       formD.append("file", file);
+=======
+      formD.append('file', file);
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       const res = await uploadImage(formD);
       const fullPath = res.path;
       form.setFieldsValue({ avatar: fullPath });
       setAvatarPath(fullPath);
+<<<<<<< HEAD
       message.success("Tải ảnh thành công!");
     } catch (error) {
       message.error("Tải ảnh thất bại!");
@@ -193,10 +246,16 @@ export default function UserProfile() {
         return <HistoryOutlined />;
       default:
         return null;
+=======
+      message.success('Tải ảnh thành công!');
+    } catch (error) {
+      message.error('Tải ảnh thất bại!');
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     }
   };
 
   return (
+<<<<<<< HEAD
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       {/* Ví điện tử */}
       <Card
@@ -499,5 +558,103 @@ export default function UserProfile() {
         />
       </Modal>
     </div>
+=======
+    <Card title="Thông tin cá nhân" style={{ maxWidth: 700, margin: '0 auto' }}>
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={onEditInfo}
+        initialValues={{
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          avatar: user.avatar,
+          address: user.address,
+        }}
+      >
+        <Row gutter={16}>
+          <Col span={6} style={{ textAlign: 'center' }}>
+            <Avatar size={100} src={avatarPath ? GET_IMAGE(avatarPath) : undefined} />
+            <Upload
+              showUploadList={false}
+              customRequest={handleUploadFile}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />} size="small" style={{ marginTop: 10 }}>
+                Đổi ảnh
+              </Button>
+            </Upload>
+          </Col>
+
+          <Col span={18}>
+            <Form.Item name="avatar" hidden>
+              <Input />
+            </Form.Item>
+
+            <Form.Item label="Họ tên" name="name">
+              <Input disabled={!isEdit} />
+            </Form.Item>
+
+            <Form.Item label="Email" name="email">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item label="Số điện thoại" name="phone">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item
+              label="Địa chỉ giao hàng"
+              name="address"
+            >
+              <Input disabled={!isEdit} placeholder="Nhập địa chỉ" />
+            </Form.Item>
+
+            {isEdit && (
+              <>
+                <Form.Item label="Mật khẩu mới" name="newPassword">
+                  <Input.Password placeholder="Để trống nếu không đổi" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Xác nhận mật khẩu mới"
+                  name="confirmPassword"
+                  dependencies={['newPassword']}
+                  rules={[
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        const newPassword = getFieldValue('newPassword');
+                        if (!newPassword || newPassword === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('Mật khẩu không khớp!'));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password placeholder="Nhập lại mật khẩu mới" />
+                </Form.Item>
+              </>
+            )}
+
+            <Form.Item>
+              {isEdit ? (
+                <Space>
+                  <Button type="primary" htmlType="submit" loading={isPending}>
+                    Lưu thay đổi
+                  </Button>
+                  <Button onClick={() => setIsEdit(false)}>Huỷ</Button>
+                </Space>
+              ) : (
+                <Button icon={<EditOutlined />} onClick={() => setIsEdit(true)}>
+                  Chỉnh sửa thông tin
+                </Button>
+              )}
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Card>
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
   );
 }
