@@ -78,16 +78,13 @@ exports.detail = async (req, res) => {
 // ✅ User - Lấy danh sách voucher đang hoạt động
 exports.getActiveVouchers = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
     const now = new Date();
     const vouchers = await Voucher.find({
       status: "active",
       startDate: { $lte: now },
       endDate: { $gte: now },
       $expr: { $lt: ["$usedCount", "$count"] },
-    }).skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 });
 
     return successResponse({ res, data: vouchers });
   } catch (err) {
@@ -105,9 +102,9 @@ exports.checkVoucherCode = async (req, res) => {
     if (!voucher.isUsable()) {
       return res.status(400).json({ message: "Mã không còn hiệu lực" });
     }
-    successResponse({ res, data: voucher, message: "Mã hợp lệ" });
+    return successResponse({ res, data: voucher, message: "Mã hợp lệ" });
   } catch (err) {
-    errorResponse({ res, message: err.message, statusCode: 500});
+    return errorResponse({ res, message: err.message, statusCode: 500});
   }
 };
 

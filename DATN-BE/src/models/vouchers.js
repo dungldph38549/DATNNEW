@@ -89,9 +89,10 @@ VoucherSchema.methods.isUsable = function () {
   const now = new Date();
   return (
     this.status === "active" &&
-    this.startDate <= now &&
-    this.endDate >= now &&
-    (this.count === 0 || this.usedCount < this.count)
+    now >= this.startDate &&
+    now <= this.endDate &&
+    this.usedCount < this.count &&
+    this.count > 0
   );
 };
 

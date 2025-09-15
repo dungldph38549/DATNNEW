@@ -268,7 +268,7 @@ export default function Categories() {
   }
 
   return (
-    <div>
+    <div className="bg-white p-4 rounded-xl shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Danh sách</h2>
         <Button

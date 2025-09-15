@@ -1,8 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const STORAGE_KEY = "checkout_products";
+
 const loadFromLocalStorage = () => {
   try {
-    const data = localStorage.getItem("checkout_products");
+    const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
   } catch {
     return [];
@@ -18,39 +20,53 @@ const checkoutSlice = createSlice({
   initialState,
   reducers: {
     addProduct: (state, action) => {
-      const existing = state.products.find((p) => p._id === action.payload._id);
+      const { productId, sku } = action.payload;
+      const existing = state.products.find(
+        (p) => p.productId === productId && (p.sku || null) === (sku || null)
+      );
       if (existing) {
-        existing.quantity += 1;
+        existing.quantity += action.payload.quantity || 1;
       } else {
-        state.products.push({ ...action.payload, quantity: 1 });
+        state.products.push({ ...action.payload, quantity: action.payload.quantity || 1 });
       }
     },
     setMultiProducts: (state, action) => {
-      if(action.payload?.length) {
-        action.payload.forEach(product => {
-          const existing = state.products.find((p) => p._id === product._id);
+      if (Array.isArray(action.payload)) {
+        action.payload.forEach((product) => {
+          const existing = state.products.find(
+            (p) => p.productId === product.productId && (p.sku || null) === (product.sku || null)
+          );
           if (existing) {
-            existing.quantity += product.quantity;
+            existing.quantity += product.quantity || 1;
           } else {
-            state.products.push({ ...product, quantity: product.quantity });
+            state.products.push({ ...product, quantity: product.quantity || 1 });
           }
         });
-      } 
+      }
     },
     removeProduct: (state, action) => {
-      state.products = state.products.filter((p) => p._id !== action.payload);
+      // action.payload expected: { productId, sku? }
+      const { productId, sku = null } = action.payload;
+      state.products = state.products.filter(
+        (p) => !(p.productId === productId && (p.sku || null) === sku)
+      );
     },
     changeQuantity: (state, action) => {
-      const { id, delta } = action.payload;
-      const product = state.products.find((p) => p._id === id);
+      const { productId, sku = null, delta } = action.payload;
+      const product = state.products.find(
+        (p) => p.productId === productId && (p.sku || null) === sku
+      );
       if (product) {
         product.quantity = Math.max(1, product.quantity + delta);
       }
     },
     setQuantity: (state, action) => {
-      const { id, quantity } = action.payload;
-      const product = state.products.find((p) => p._id === id);
-      if (product && quantity >= 1) {
+      const { productId, sku = null, quantity } = action.payload;
+      if (quantity < 1) return;
+      const product = state.products.find(
+        (p) => p.productId === productId && (p.sku || null) === sku
+      );
+      if (product) {
         product.quantity = quantity;
       }
     },

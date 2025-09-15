@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { Table, Button, Tag, Spin  } from 'antd';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import { Table, Button, Tag, Spin, message } from 'antd';
 import Swal from 'sweetalert2';
-import { getAllOrders, deleteOrderById } from './../api/index';
+import { getAllOrders, deleteOrderById, acceptOrRejectReturn } from './../api/index';
 import { ORDER_STATUS_LABELS } from '../const/index.ts';
 import AdminOrderDetailPage from './AdminOrderDetail.jsx';
 
@@ -14,14 +14,25 @@ export default function Order() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-orders', page],
-    queryFn: () => getAllOrders(page-1, limit),
+    queryFn: () => getAllOrders(page - 1, limit),
     keepPreviousData: true,
+  });
+
+  const acceptOrRejectMutation = useMutation({
+    mutationFn: ({ id, note, status }) => acceptOrRejectReturn({ id, note, status }),
+    onSuccess: () => {
+      message.success('Thành công');
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+    },
+    onError: (err) => {
+      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
+    },
   });
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Bạn có chắc muốn xoá đơn hàng này?',
-      text: "Hành động này không thể hoàn tác!",
+      text: 'Hành động này không thể hoàn tác!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -38,6 +49,30 @@ export default function Order() {
       } catch (err) {
         Swal.fire('Thất bại', 'Không thể xoá đơn hàng.', 'error');
       }
+    }
+  };
+
+  const handleAcceptReject = async (id, status) => {
+    const result = await Swal.fire({
+      title: status === 'accepted' ? 'Xác nhận chấp nhận hoàn hàng' : 'Xác nhận từ chối hoàn hàng',
+      input: 'textarea',
+      inputPlaceholder: 'Nhập ghi chú...',
+      showCancelButton: true,
+      confirmButtonText: status === 'accepted' ? 'Chấp nhận' : 'Từ chối',
+      cancelButtonText: 'Huỷ',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Vui lòng nhập ghi chú!';
+        }
+      },
+    });
+
+    if (result.isConfirmed) {
+      acceptOrRejectMutation.mutate({
+        id,
+        note: result.value,
+        status,
+      });
     }
   };
 
@@ -67,10 +102,18 @@ export default function Order() {
       dataIndex: 'totalAmount',
       key: 'totalAmount',
 <<<<<<< HEAD
+      render: (value) => (
+        <span className="text-green-600 font-semibold">
+          {value.toLocaleString('vi-VN')}₫
+        </span>
+      ),
+=======
+<<<<<<< HEAD
       render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString('vi-VN')}₫</span>,
 =======
       render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString()}₫</span>,
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     },
     {
       title: 'Trạng thái',
@@ -88,6 +131,9 @@ export default function Order() {
     },
     {
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       title: 'Trạng thái thanh toán',
       dataIndex: 'paymentStatus',
       key: 'paymentStatus',
@@ -95,12 +141,23 @@ export default function Order() {
         let color = 'red';
         if (paymentStatus === 'paid') color = 'green';
 
+<<<<<<< HEAD
+        return (
+          <Tag color={color}>
+            {paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+          </Tag>
+        );
+      },
+    },
+    {
+=======
         return <Tag color={color}>{paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>;
       },
     },
     {
 =======
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -119,28 +176,46 @@ export default function Order() {
           >
             Sửa
           </Button>
-          <Button
-            type="link"
-            danger
-            onClick={() => handleDelete(record._id)}
-          >
+          <Button type="link" danger onClick={() => handleDelete(record._id)}>
             Xoá
           </Button>
+          {
+            record.status === 'return-request' &&
+            (
+              <>
+                <Button type="link" onClick={() => handleAcceptReject(record._id, 'accepted')}>
+                  Accept
+                </Button>
+                <Button type="link" danger onClick={() => handleAcceptReject(record._id, 'rejected')}>
+                  Reject
+                </Button>
+              </>
+            )
+          }
         </div>
       ),
     },
   ];
 
   if (orderSelected) {
-    return <AdminOrderDetailPage id={orderSelected} onClose={() => setOrderSelected(null)} />;
+    return (
+      <AdminOrderDetailPage
+        id={orderSelected}
+        onClose={() => setOrderSelected(null)}
+      />
+    );
   }
 
   return (
 <<<<<<< HEAD
     <div className="bg-white p-4 rounded-xl shadow w-100">
 =======
+<<<<<<< HEAD
+    <div className="bg-white p-4 rounded-xl shadow w-100">
+=======
     <div>
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       <h2 className="text-2xl font-semibold mb-4">Danh sách Đơn hàng</h2>
       {isLoading ? (
         <Spin tip="Đang tải đơn hàng..." />
@@ -151,7 +226,17 @@ export default function Order() {
         <div className="overflow-x-auto">
           <Table
             columns={columns}
+            dataSource={data.data?.map((order) => ({
+              ...order,
+              key: order._id,
+            }))}
+=======
+<<<<<<< HEAD
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
             dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
             pagination={{
               current: page,
               total: data.total,
@@ -161,6 +246,8 @@ export default function Order() {
             bordered
           />
         </div>
+<<<<<<< HEAD
+=======
 =======
         <Table
           columns={columns}
@@ -174,6 +261,7 @@ export default function Order() {
           bordered
         />
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       )}
     </div>
   );

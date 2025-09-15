@@ -1,169 +1,468 @@
-import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { useDispatch } from "react-redux";
-import { getProductById } from '../../api/index';
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useMemo, useState } from 'react';
+import { Form, Input, Button, Rate, List, message, Comment, Modal } from 'antd';
+import dayjs from 'dayjs';
+import { getProductById, getreviewById, relationProduct, repliesReview, createReview } from '../../api/index';
 import { GET_IMAGE } from '../../const/index.ts';
 import { addProduct } from "../../redux/cart/cartSlice";
-
+import { addProduct as addProductCheckout } from "../../redux/checkout/checkoutSlice";
+const { TextArea } = Input;
 const Detail = () => {
+
+    const user = useSelector(state => state.user);
+    const navigate = useNavigate();
     const { id } = useParams();
     const dispatch = useDispatch();
+
+    const [selectedAttributes, setSelectedAttributes] = useState({});
+    const [selectedVariant, setSelectedVariant] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null); // state ảnh lớn hiện tại
+
     const { data, isLoading, isError } = useQuery({
         queryKey: ['product-detail', id],
         queryFn: () => getProductById(id),
     });
-     const handleAddToCart = (item) => {
+
+    useEffect(() => {
+        if (!data) return;
+
+        // Đặt ảnh mặc định là ảnh chính sản phẩm
+        setSelectedImage(data.image);
+
+        if (!data.hasVariants) return;
+
+        // Tìm variant còn hàng đầu tiên để mặc định chọn
+        const inStockVariant = data.variants.find(v => v.stock > 0);
+        if (inStockVariant) {
+            const attrs = {};
+            for (const [key, value] of Object.entries(inStockVariant.attributes)) {
+                attrs[key] = value;
+            }
+            setSelectedAttributes(attrs);
+            setSelectedVariant(inStockVariant);
+        }
+    }, [data]);
+
+    const handleSelectAttribute = (attrName, value) => {
+        const updatedAttrs = { ...selectedAttributes, [attrName]: value };
+        setSelectedAttributes(updatedAttrs);
+
+        const matched = data.variants?.find((variant) =>
+            Object.entries(updatedAttrs).every(
+                ([key, val]) => variant.attributes?.[key] === val
+            )
+        );
+
+        setSelectedVariant(matched || null);
+    };
+
+    const handleAddToCart = () => {
+        if (data.hasVariants && !selectedVariant) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Vui lòng chọn đầy đủ các biến thể',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            return;
+        }
+
+        const item = {
+            productId: data._id,
+            name: data.name,
+            image: data.image,
+            price: data.hasVariants ? selectedVariant.price : data.price,
+            sku: data.hasVariants ? selectedVariant.sku : null,
+            attributes: data.hasVariants ? selectedVariant.attributes : {},
+            quantity: 1,
+        };
+
         dispatch(addProduct(item));
+
         Swal.fire({
-          icon: 'success',
-          title: 'Đã thêm vào giỏ hàng',
-          text: `"${item.name}" đã được thêm vào giỏ hàng.`,
-          timer: 1500,
-          showConfirmButton: false,
+            icon: 'success',
+            title: 'Đã thêm vào giỏ hàng',
+            text: `"${item.name}" ${Object.keys(item.attributes).length > 0 ? '(' + Object.entries(item.attributes)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join(', ') + ')' : ''} đã được thêm vào giỏ hàng .`,
+            timer: 1500,
+            showConfirmButton: false,
         });
-      };
-       
-    if(isLoading) return <div>Loading...</div>;
-    if(isError) return <div>Error</div>;
+    };
+
+    const handleCheckout = () => {
+        if (data.hasVariants && !selectedVariant) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Vui lòng chọn đầy đủ các biến thể',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            return;
+        }
+
+        const item = {
+            productId: data._id,
+            name: data.name,
+            image: data.image,
+            price: data.hasVariants ? selectedVariant.price : data.price,
+            sku: data.hasVariants ? selectedVariant.sku : null,
+            attributes: data.hasVariants ? selectedVariant.attributes : {},
+            quantity: 1,
+        };
+
+        dispatch(addProductCheckout(item));
+        navigate('/checkoutpage');
+    };
+
+    const {
+        data: products,
+        isLoading: isLoadingRelated,
+    } = useQuery({
+        queryKey: ['list-products-related', data?.brandId?._id, data?.categoryId?._id, id],
+        queryFn: () => relationProduct(
+            data?.brandId?._id ? data?.brandId?._id : null,
+            data?.brandId?._id ? data?.categoryId?._id : null,
+            id
+        ),
+        keepPreviousData: true,
+    });
+    const [activeTab, setActiveTab] = useState("description");
+    const queryClient = useQueryClient();
+
+    const {
+        data: reviews,
+    } = useQuery({
+        queryKey: [`list-review-${id}`, id],
+        queryFn: () => getreviewById(id),
+        keepPreviousData: true,
+    });
+
+
+    const averageRating = useMemo(() => {
+        if (!reviews) return 0;
+        const totalRating = reviews.data.reduce((acc, review) => acc + review.rating, 0);
+        return totalRating / reviews.data.length;
+    }, [reviews]);
+
+    const totalReviews = useMemo(() => {
+        if (!reviews) return 0;
+        return reviews.data.length;
+    }, [reviews]);
+
+    const [form] = Form.useForm();
+    const [replyForms, setReplyForms] = useState({});
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const handleSubmitReview = async (values) => {
+        try {
+            await createReview({
+                ...values,
+                productId: id,
+                userId: user.id,
+                role: user.isAdmin ? 'admin' : 'user',
+            });
+            message.success('Đánh giá đã được gửi');
+            setModalOpen(false);
+            queryClient.invalidateQueries({ queryKey: [`list-review-${id}`] })
+            form.resetFields();
+        } catch (err) {
+            message.error(err.message);
+        }
+    };
+
+    const handleReplySubmit = async (reviewId, content) => {
+        try {
+            await repliesReview({
+                content,
+                userId: user.id,
+                role: user.isAdmin ? 'admin' : 'user',
+                reviewId
+            });
+            message.success('Phản hồi thành công');
+            setReplyForms(prev => ({ ...prev, [reviewId]: '' }));
+            queryClient.invalidateQueries({ queryKey: [`list-review-${id}`] })
+        } catch (err) {
+            message.error('Lỗi khi phản hồi');
+        }
+    };
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error</div>;
+
     return (
         <div className="bg-gray-100 min-h-screen py-6 px-2">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
-                {/* Sidebar */}
-                <div className="md:col-span-3 space-y-6">
-                    {/* Download App */}
-                    {/* <div className="bg-yellow-400 rounded-lg p-4 flex flex-col items-center">
-                        <img src="https://i.imgur.com/3ZQ3Z5L.png" alt="Download App" className="w-28 h-28 object-contain mb-2" />
-                        <button className="bg-white text-gray-800 font-semibold px-4 py-2 rounded shadow">Download Flipmart App</button>
-                    </div> */}
-                    {/* Hot Deals */}
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <h3 className="font-semibold text-gray-700 mb-4">HOT DEALS</h3>
-                        <div className="relative">
-                            <img src="https://i.imgur.com/1Q9Z1Zm.png" alt="Hot Deal" className="w-full h-28 object-contain rounded" />
-                            <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">35% OFF</span>
-                        </div>
-                        <div className="mt-2">
-                            <div className="flex justify-between text-xs text-gray-600">
-                                <div>
-                                    <div className="font-bold text-gray-800">120</div>
-                                    <div>Days</div>
-                                </div>
-                                <div>
-                                    <div className="font-bold text-gray-800">20</div>
-                                    <div>Hrs</div>
-                                </div>
-                                <div>
-                                    <div className="font-bold text-gray-800">36</div>
-                                    <div>Mins</div>
-                                </div>
-                                <div>
-                                    <div className="font-bold text-gray-800">60</div>
-                                    <div>Secs</div>
-                                </div>
-                            </div>
-                            <div className="mt-2 font-semibold">Floral Print Buttoned</div>
-                            <div className="flex items-center text-yellow-400 text-xs mt-1">★★★★☆</div>
-                            <div className="flex items-center mt-1">
-                                <span className="text-lg font-bold text-blue-600 mr-2">$600.00</span>
-                                <span className="line-through text-gray-400">$800.00</span>
-                            </div>
-                            <button className="mt-2 w-full bg-blue-500 text-white py-1 rounded hover:bg-blue-600 transition">Add to cart</button>
-                        </div>
-                    </div>
-                    {/* Newsletter */}
-                    {/* <div className="bg-white rounded-lg shadow p-4">
-                        <h3 className="font-semibold text-gray-700 mb-2">NEWSLETTERS</h3>
-                        <p className="text-xs text-gray-500 mb-2">Sign Up for Our Newsletter!</p>
-                        <input type="email" placeholder="Subscribe to our newsletter" className="w-full border rounded px-2 py-1 mb-2 text-sm" />
-                        <button className="w-full bg-blue-500 text-white py-1 rounded hover:bg-blue-600 transition">Subscribe</button>
-                    </div> */}
-                    {/* Testimonial */}
-                    {/* <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-                        <img src="https://i.imgur.com/8Km9tLL.png" alt="John Doe" className="w-14 h-14 rounded-full mb-2 object-cover" />
-                        <p className="text-xs text-gray-600 text-center mb-2">
-                            "Vtae sodales aliq uam morbi non sem lacus port mollis. Nunc condime tum metus eud molest sed consectetuer."
-                        </p>
-                        <div className="text-sm font-semibold text-gray-700">John Doe</div>
-                        <div className="text-xs text-gray-400">Abc Company</div>
-                    </div> */}
-                </div>
-                {/* Main Content */}
-                <div className="md:col-span-9 space-y-6">
-                    {/* Product Top */}
+                <div className="md:col-span-1 space-y-6"></div>
+                <div className="md:col-span-10 space-y-6">
                     <div className="bg-white rounded-lg shadow p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        {/* Product Image */}
                         <div className="lg:col-span-4 flex flex-col items-center">
-                            <img src={GET_IMAGE(data?.image)} alt={data?.name} className="w-64 h-64 object-cover rounded-lg mb-4" />
+                            {/* Ảnh lớn sử dụng selectedImage */}
+                            <img
+                                src={GET_IMAGE(selectedImage)}
+                                alt={data?.name}
+                                className="w-64 h-64 object-cover rounded-lg mb-4"
+                            />
+                            {/* Ảnh con, click thay đổi ảnh lớn */}
                             <div className="flex space-x-2">
-                                {
-                                    data?.srcImages.map((image, index) => (
-                                        <img key={index} src={GET_IMAGE(image)} alt={data?.name} className="w-12 h-12 object-cover border-2 border-white rounded" />
-                                    ))
-                                }
+                                {data?.srcImages.map((image, index) => (
+                                    <img
+                                        key={index}
+                                        src={GET_IMAGE(image)}
+                                        alt={data?.name}
+                                        onClick={() => setSelectedImage(image)}
+                                        className={`w-12 h-12 object-cover border-2 rounded cursor-pointer transition
+                                            ${selectedImage === image ? 'border-blue-500' : 'border-white'}
+                                            hover:border-blue-400`}
+                                    />
+                                ))}
                             </div>
-                            {/* <div className="flex space-x-1 mt-2">
-                                {
-                                    data?.srcImages.map((image, index) => (
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
-                                    ))
-                                }
-                            </div> */}
                         </div>
-                        {/* Product Info */}
+
                         <div className="lg:col-span-8">
-                            <h1 className="text-2xl font-bold text-gray-800 mb-2">{data.name}</h1>
+                            <h1 className="text-2xl font-bold text-gray-800 mb-2 line-clamp-2">{data.name}</h1>
                             <div className="flex items-center text-yellow-400 text-sm mb-1">
+                                {!averageRating ? 'Chưa có đánh giá' :
+                                    (averageRating >= 4.6 ? `${averageRating.toFixed(1)} ★★★★★` :
+                                        (averageRating >= 3.6 ? `${averageRating.toFixed(1)} ★★★★☆` :
+                                            (averageRating >= 2.6 ? `${averageRating.toFixed(1)} ★★★☆☆` :
+                                                (averageRating >= 1.6 ? `${averageRating.toFixed(1)} ★★☆☆☆` :
+                                                    `${averageRating.toFixed(1)} ★☆☆☆☆`))))}
+
                                 {
-                                    !data?.rating ? 'Chưa có đánh giá' : 
-                                    data.rating >= 5 ? <span>★★★★★</span> : 
-                                    data.rating >= 4 ? <span>★★★★☆</span> : 
-                                    data.rating >= 3 ? <span>★★★☆☆</span> : 
-                                    data.rating >= 2 ? <span>★★☆☆☆</span> : 
-                                    <span>☆</span>
+                                    totalReviews > 0 && (
+                                        <span className="ml-2 text-gray-600">
+                                            | ({totalReviews} đánh giá)
+                                        </span>
+                                    )
                                 }
-                                {/* <span className="text-xs text-gray-500 ml-2">(13 Đánh giá)</span> */}
                             </div>
+
+                            <div className="text-sm text-gray-600 mb-2">Thương hiệu: <span className="text-red-500 font-semibold">{data.brandId?.name || 'No brand'}</span></div>
+                            <div className="text-sm text-gray-600 mb-2">Danh mục: <span className="text-red-500 font-semibold">{data.categoryId?.name || 'No category'}</span></div>
+
+                            {data.hasVariants && data.attributes.map((attr) => {
+                                const values = [...new Set(data.variants.map(v => v.attributes[attr]))];
+
+                                return (
+                                    <div key={attr} className="mb-3">
+                                        <div className="text-sm text-gray-600 mb-1">{attr}:</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {values.map((val) => {
+                                                const tempAttrs = { ...selectedAttributes, [attr]: val };
+                                                const variantExists = data.variants?.some(
+                                                    (variant) =>
+                                                        Object.entries(tempAttrs).every(
+                                                            ([k, v]) => variant.attributes?.[k] === v
+                                                        ) && variant.stock > 0
+                                                );
+                                                const isSelected = selectedAttributes[attr] === val;
+
+                                                return (
+                                                    <button
+                                                        key={val}
+                                                        disabled={!variantExists}
+                                                        onClick={() => handleSelectAttribute(attr, val)}
+                                                        className={`px-3 py-1 rounded border text-sm
+                                                            ${isSelected ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-800 border-gray-300 hover:bg-gray-100'}
+                                                            ${!variantExists ? 'opacity-50 cursor-not-allowed' : ''}
+                                                        `}
+                                                    >
+                                                        {val}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
                             <div className="text-sm text-gray-600 mb-2">
-                                Danh muc: <span className="text-red-500 font-semibold">{ data.type }</span>
+                                Còn: <span className="text-red-500 font-semibold">
+                                    {data.hasVariants
+                                        ? selectedVariant?.stock ?? 'Vui lòng chọn biến thể'
+                                        : data.countInStock}
+                                </span>
+                                <span className='ml-10'>
+                                    Đã bán: <span className="text-red-500 font-semibold">
+                                        {data.hasVariants
+                                            ? selectedVariant?.sold ?? 'Vui lòng chọn biến thể'
+                                            : data.sold}
+                                    </span>
+                                </span>
                             </div>
-                            <div className="text-sm text-gray-600 mb-2">
-                                Còn: <span className="text-red-500 font-semibold">{ data.countInStock }</span>
-                            </div>
-                            <p className="text-gray-600 mb-4">
-                                {data.sortDescription}
-                            </p>
+
                             <div className="flex items-center mb-4">
-                                <span className="text-3xl font-bold text-red-500 mr-3">{data.price}₫</span>
-                                {/* <span className="line-through text-gray-400 text-lg">$900.00</span> */}
+                                <span className="text-3xl font-bold text-red-500 mr-3">
+                                    {data.hasVariants
+                                        ? (selectedVariant?.price ? `${selectedVariant.price.toLocaleString('vi-VN')}₫` : "—")
+                                        : `${data.price.toLocaleString('vi-VN')}₫`}
+                                </span>
                             </div>
+
                             <div className="flex items-center mb-4 flex-wrap gap-2">
-                                {/* <span>QTY :</span>
-                                <select className="border rounded px-2 py-1">
-                                    <option>1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                </select> */}
-                                <button onClick={() => handleAddToCart(data)} className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">Thêm vào giỏ hàng </button>
+                                <button onClick={handleAddToCart} className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">Thêm vào giỏ hàng</button>
+                                <button onClick={handleCheckout} className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">Mua ngay</button>
                             </div>
                         </div>
                     </div>
-                    {/* Tabs */}
+
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="flex flex-wrap border-b mb-4 gap-2">
-                            <button className="px-4 py-2 border-b-2 border-blue-500 font-semibold text-blue-600">DESCRIPTION</button>
-                            <button className="px-4 py-2 text-gray-500">REVIEW</button>
-                            <button className="px-4 py-2 text-gray-500">TAGS</button>
+                            <button
+                                onClick={() => setActiveTab("description")}
+                                className={`px-4 py-2 font-semibold ${activeTab === "description"
+                                    ? "text-blue-600 border-b-2 border-blue-500"
+                                    : "text-gray-500"
+                                    }`}
+                            >
+                                MÔ TẢ SẢN PHẨM
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("review")}
+                                className={`px-4 py-2 font-semibold ${activeTab === "review"
+                                    ? "text-blue-600 border-b-2 border-blue-500"
+                                    : "text-gray-500"
+                                    }`}
+                            >
+                                ĐÁNH GIÁ SẢN PHẨM
+                            </button>
                         </div>
-                        <div className="text-gray-600 text-sm">
-                            {data.description}
-                        </div>
+                        {activeTab === "description" && (
+                            <div className="text-gray-600 text-sm whitespace-pre-line">
+                                {data.description}
+                            </div>
+                        )}
+
+                        {activeTab === "review" && (
+                            <div>
+                                {
+                                    user.login &&
+                                    <Button type="primary" onClick={() => setModalOpen(true)}>Thêm đánh giá</Button>
+                                }
+                                <Modal
+                                    title="Viết đánh giá"
+                                    open={modalOpen}
+                                    onCancel={() => setModalOpen(false)}
+                                    footer={null}
+                                >
+                                    <Form form={form} layout="vertical" onFinish={handleSubmitReview}>
+                                        <Form.Item label="Nội dung" name="content" rules={[{ required: true }]}>
+                                            <TextArea rows={4} />
+                                        </Form.Item>
+                                        <Form.Item label="Đánh giá sao" name="rating" rules={[{ required: true }]}>
+                                            <Rate />
+                                        </Form.Item>
+                                        <Form.Item>
+                                            <Button type="primary" htmlType="submit">Gửi đánh giá</Button>
+                                        </Form.Item>
+                                    </Form>
+                                </Modal>
+
+                                {/* Danh sách đánh giá */}
+                                <List
+                                    itemLayout="vertical"
+                                    dataSource={Array.isArray(reviews.data) ? reviews.data : []}
+                                    renderItem={review => (
+                                        <Comment
+                                            key={review._id}
+                                            author={`${review?.userId?.name} (Người dùng)`}
+                                            content={
+                                                <>
+                                                    <Rate disabled value={review.rating} />
+                                                    <p>{review.content}</p>
+                                                </>
+                                            }
+                                            datetime={dayjs(review.createdAt).format('HH:mm DD/MM/YYYY')}
+                                            actions={[
+                                                user.login &&
+                                                <span onClick={() => {
+                                                    setReplyForms(prev => ({
+                                                        ...prev,
+                                                        [review._id]: prev[review._id] === undefined ? '' : undefined
+                                                    }));
+                                                }}>
+                                                    💬 Phản hồi
+                                                </span>
+                                            ]}
+                                        >
+                                            {review.replies?.map((reply, index) => (
+                                                <Comment
+                                                    key={index}
+                                                    author={`${reply?.userId?.name} (${reply.role === 'admin' ? 'Shop' : 'Người dùng'})`}
+                                                    content={reply.content}
+                                                    datetime={dayjs(reply.createdAt).format('HH:mm DD/MM/YYYY')}
+                                                />
+                                            ))}
+
+                                            {replyForms[review._id] !== undefined && (
+                                                <div>
+                                                    <TextArea
+                                                        rows={2}
+                                                        placeholder="Nhập phản hồi..."
+                                                        value={replyForms[review._id]}
+                                                        onChange={e =>
+                                                            setReplyForms(prev => ({ ...prev, [review._id]: e.target.value }))
+                                                        }
+                                                    />
+                                                    <Button
+                                                        type="primary"
+                                                        size="small"
+                                                        onClick={() => handleReplySubmit(review._id, replyForms[review._id])}
+                                                    >
+                                                        Gửi phản hồi
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </Comment>
+                                    )}
+                                />
+                            </div>
+                        )}
                     </div>
-                    {/* Upsell Products */}
+
                     <div className="bg-white rounded-lg shadow p-6">
-                        <h2 className="text-lg font-semibold mb-4">UPSELL PRODUCTS</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {/* Product items giữ nguyên như cũ */}
+                        <h2 className="font-bold text-lg mb-3">Sản phẩm liên quan</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+                            {isLoadingRelated && (
+                                <div className="flex justify-center items-center h-40 col-span-full">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+                                </div>
+                            )}
+
+                            {products?.map((product) => {
+                                const item = product.hasVariants
+                                    ? (product.variants.reduce((max, v) => (v.sold || 0) > (max.sold || 0)
+                                        ? v
+                                        : max, product.variants[0]))
+                                    : product;
+                                return (
+                                    <div
+                                        key={product._id}
+                                        onClick={() => navigate(`/detail/${product._id}`)}
+                                        className="group relative bg-white border rounded-lg overflow-hidden shadow hover:shadow-lg transition cursor-pointer hover:-translate-y-1 duration-200"
+                                        style={{ height: '320px' }}
+                                    >
+                                        <img
+                                            src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${product.image}`}
+                                            alt={product.name}
+                                            loading="lazy"
+                                            style={{ height: '230px', width: '100%', objectFit: 'cover' }}
+                                        />
+                                        <div className="p-3 flex flex-col justify-between" style={{ height: '90px' }}>
+                                            <h3 className="text-gray-800 font-semibold text-sm line-clamp-2">
+                                                {product.name}
+                                            </h3>
+                                            <div className="flex justify-between text-sm mt-1">
+                                                <p className="text-blue-600 font-bold">{item.price.toLocaleString()}₫</p>
+                                                <p className="text-gray-600">Đã bán: {(item.sold || 0).toLocaleString('vi-VN')}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
