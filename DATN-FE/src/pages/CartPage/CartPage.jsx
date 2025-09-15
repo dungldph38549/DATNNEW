@@ -248,28 +248,5 @@ const CartPage = () => {
 };
 
 export default CartPage;
-    {/* Payment Summary */}
-      // <div className="border-t pt-4 mt-6">
-      //   <h3 className="text-lg font-semibold text-gray-800">Tóm tắt thanh toán</h3>
-
-      //   <div className="flex justify-between items-center mt-2">
-      //     <p className="text-gray-700 text-lg">Tổng cộng:</p>
-      //     <p className="text-green-500 text-xl font-bold">
-      //       {subtotal.toLocaleString('vi-VN')}₫
-      //     </p>
-      //   </div>
-
-      //   <button
-      //     className={`mt-4 w-full bg-yellow-500 text-white py-2 rounded-md font-semibold ${
-      //       selectedItems.length ? 'hover:bg-yellow-600' : 'opacity-50 cursor-not-allowed'
-      //     }`}
-      //     onClick={handleCheckout}
-      //     disabled={selectedItems.length === 0}
-      //   >
-      //     TIẾN HÀNH THANH TOÁN
-      //   </button>
-
-      //   <p className="text-sm text-gray-500 text-center mt-2">
-      //     Thanh toán bằng nhiều địa chỉ!
-      //   </p>
+   
 
