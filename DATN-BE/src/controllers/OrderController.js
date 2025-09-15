@@ -915,11 +915,9 @@ exports.acceptOrRejectReturn = async (req, res) => {
       } catch (walletError) {
         await session.abortTransaction();
         session.endSession();
-        return res
-          .status(500)
-          .json({
-            message: "Lỗi khi thêm tiền vào ví: " + walletError.message,
-          });
+        return res.status(500).json({
+          message: "Lỗi khi thêm tiền vào ví: " + walletError.message,
+        });
       }
     }
 
