@@ -1,0 +1,268 @@
+import { useState } from 'react';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import { Table, Button, Tag, Spin, message } from 'antd';
+import Swal from 'sweetalert2';
+import { getAllOrders, deleteOrderById, acceptOrRejectReturn } from './../api/index';
+import { ORDER_STATUS_LABELS } from '../const/index.ts';
+import AdminOrderDetailPage from './AdminOrderDetail.jsx';
+
+export default function Order() {
+  const queryClient = useQueryClient();
+  const [orderSelected, setOrderSelected] = useState(null);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['admin-orders', page],
+    queryFn: () => getAllOrders(page - 1, limit),
+    keepPreviousData: true,
+  });
+
+  const acceptOrRejectMutation = useMutation({
+    mutationFn: ({ id, note, status }) => acceptOrRejectReturn({ id, note, status }),
+    onSuccess: () => {
+      message.success('Thành công');
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+    },
+    onError: (err) => {
+      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
+    },
+  });
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc muốn xoá đơn hàng này?',
+      text: 'Hành động này không thể hoàn tác!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteOrderById({ id });
+        queryClient.refetchQueries({ queryKey: ['admin-orders'] });
+        Swal.fire('Đã xoá!', 'Đơn hàng đã được xoá.', 'success');
+      } catch (err) {
+        Swal.fire('Thất bại', 'Không thể xoá đơn hàng.', 'error');
+      }
+    }
+  };
+
+  const handleAcceptReject = async (id, status) => {
+    const result = await Swal.fire({
+      title: status === 'accepted' ? 'Xác nhận chấp nhận hoàn hàng' : 'Xác nhận từ chối hoàn hàng',
+      input: 'textarea',
+      inputPlaceholder: 'Nhập ghi chú...',
+      showCancelButton: true,
+      confirmButtonText: status === 'accepted' ? 'Chấp nhận' : 'Từ chối',
+      cancelButtonText: 'Huỷ',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Vui lòng nhập ghi chú!';
+        }
+      },
+    });
+
+    if (result.isConfirmed) {
+      acceptOrRejectMutation.mutate({
+        id,
+        note: result.value,
+        status,
+      });
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Mã đơn',
+      dataIndex: '_id',
+      key: '_id',
+    },
+    {
+      title: 'Khách hàng',
+      dataIndex: 'fullName',
+      key: 'fullName',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'SĐT',
+      dataIndex: 'phone',
+      key: 'phone',
+    },
+    {
+      title: 'Tổng tiền',
+      dataIndex: 'totalAmount',
+      key: 'totalAmount',
+<<<<<<< HEAD
+      render: (value) => (
+        <span className="text-green-600 font-semibold">
+          {value.toLocaleString('vi-VN')}₫
+        </span>
+      ),
+=======
+<<<<<<< HEAD
+      render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString('vi-VN')}₫</span>,
+=======
+      render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString()}₫</span>,
+>>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => {
+        let color = 'red';
+        if (status === 'pending') color = 'gold';
+        else if (status === 'confirmed') color = 'blue';
+        else if (status === 'shipped') color = 'purple';
+        else if (status === 'delivered') color = 'green';
+
+        return <Tag color={color}>{ORDER_STATUS_LABELS[status] || status}</Tag>;
+      },
+    },
+    {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+      title: 'Trạng thái thanh toán',
+      dataIndex: 'paymentStatus',
+      key: 'paymentStatus',
+      render: (paymentStatus) => {
+        let color = 'red';
+        if (paymentStatus === 'paid') color = 'green';
+
+<<<<<<< HEAD
+        return (
+          <Tag color={color}>
+            {paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+          </Tag>
+        );
+      },
+    },
+    {
+=======
+        return <Tag color={color}>{paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>;
+      },
+    },
+    {
+=======
+>>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (value) => new Date(value).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Hành động',
+      key: 'actions',
+      render: (_, record) => (
+        <div className="flex gap-2">
+          <Button
+            type="link"
+            onClick={() => {
+              setOrderSelected(record._id);
+            }}
+          >
+            Sửa
+          </Button>
+          <Button type="link" danger onClick={() => handleDelete(record._id)}>
+            Xoá
+          </Button>
+          {
+            record.status === 'return-request' &&
+            (
+              <>
+                <Button type="link" onClick={() => handleAcceptReject(record._id, 'accepted')}>
+                  Accept
+                </Button>
+                <Button type="link" danger onClick={() => handleAcceptReject(record._id, 'rejected')}>
+                  Reject
+                </Button>
+              </>
+            )
+          }
+        </div>
+      ),
+    },
+  ];
+
+  if (orderSelected) {
+    return (
+      <AdminOrderDetailPage
+        id={orderSelected}
+        onClose={() => setOrderSelected(null)}
+      />
+    );
+  }
+
+  return (
+<<<<<<< HEAD
+    <div className="bg-white p-4 rounded-xl shadow w-100">
+=======
+<<<<<<< HEAD
+    <div className="bg-white p-4 rounded-xl shadow w-100">
+=======
+    <div>
+>>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+      <h2 className="text-2xl font-semibold mb-4">Danh sách Đơn hàng</h2>
+      {isLoading ? (
+        <Spin tip="Đang tải đơn hàng..." />
+      ) : isError ? (
+        <p className="text-red-500">Lỗi khi tải danh sách đơn hàng</p>
+      ) : (
+<<<<<<< HEAD
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={data.data?.map((order) => ({
+              ...order,
+              key: order._id,
+            }))}
+=======
+<<<<<<< HEAD
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+            pagination={{
+              current: page,
+              total: data.total,
+              pageSize: limit,
+              onChange: (newPage) => setPage(newPage),
+            }}
+            bordered
+          />
+        </div>
+<<<<<<< HEAD
+=======
+=======
+        <Table
+          columns={columns}
+          dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
+          pagination={{
+            current: page,
+            total: data.total,
+            pageSize: limit,
+            onChange: (newPage) => setPage(newPage),
+          }}
+          bordered
+        />
+>>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+      )}
+    </div>
+  );
+}

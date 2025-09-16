@@ -1,83 +1,49 @@
-const ProductService = require("../services/ProductSevice");
+const Review = require("../models/review.js");
+const { successResponse, errorResponse } = require("../utils/response.js");
 
-exports.createProduct = async (req, res) => {
-  try {
-    const { name, image, type, price, countInStock, rating, description } =
-      req.body;
-
-    // Kiểm tra trường bắt buộc
-    if (
-      !name ||
-      !image ||
-      !type ||
-      !price ||
-      !countInStock ||
-      !rating ||
-      !description
-    ) {
-      return res.status(400).json({ message: "Missing required fields" });
+exports.create = async (req, res) => {
+    try {
+        const { productId, userId, content, rating } = req.body;
+        const newReview = await Review.create({ productId, userId, content, rating });
+        successResponse({ res, data: newReview, statusCode: 201 });
+    } catch (err) {
+        errorResponse({ res, message: err.message, statusCode: 500 });
     }
-
-    const newProduct = await ProductService.createProduct(req.body);
-    res.status(201).json(newProduct);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
 };
 
-exports.getAllProducts = async (req, res) => {
-  try {
-    const products = await ProductService.getAllProducts();
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+exports.reviewsByProduct = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const reviews = await Review.find({ productId })
+            .populate('userId') 
+            .populate('replies.userId')
+            .sort({ createdAt: -1 });
+        successResponse({ res, data: reviews, statusCode: 201 });
+    } catch (err) {
+        errorResponse({ res, message: err.message, statusCode: 500 });
+    }
 };
 
-exports.getProductById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+exports.repliesReview = async (req, res) => {
+    try {
+        const { content, userId, role, reviewId } = req.body;
+
+        if (!content || !userId || !role) {
+            return errorResponse({ res, statusCode: 400, message: "Vui lồng nhập đầy đủ thống tin" });
+        }
+
+        if (!['user', 'admin'].includes(role)) {
+            return errorResponse({ res, statusCode: 400, message: "Vai trò không hợp lệ" });
+        }
+
+        const review = await Review.findById(reviewId);
+        if (!review) return errorResponse({ res, statusCode: 404, message: "Không tìm thấy review này" });
+
+        review.replies.push({ content, userId, role, createdAt: new Date() });
+
+        await review.save();
+        successResponse({ res, data: review, statusCode: 201 });
+    } catch (err) {
+        errorResponse({ res, message: err.message, statusCode: 500 });
     }
-
-    const product = await ProductService.getProductById(id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    res.json(product);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-exports.updateProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid product ID" });
-    }
-
-    const updated = await ProductService.updateProduct(id, req.body);
-    if (!updated) return res.status(404).json({ message: "Product not found" });
-
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-exports.deleteProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid product ID" });
-    }
-
-    const deleted = await ProductService.deleteProduct(id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
-
-    res.json({ message: "Product deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
 };
