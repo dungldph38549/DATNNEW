@@ -1,25 +1,12 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { clearUser } from '../../redux/user';
-import { changeKeyword } from '../../redux/general';
+import { Link } from 'react-router-dom';
 
 const Hearder = () => {
-  const user = useSelector((state: any) => state.user);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const [search, setSearch] = useState('');
   const [topMenuOpen, setTopMenuOpen] = useState(false)
+  const [navMenuOpen, setNavMenuOpen] = useState(false)
+  const [currencyOpen, setCurrencyOpen] = useState(false)
+  const [languageOpen, setLanguageOpen] = useState(false)
 
-  const handleSearch = () => {
-    dispatch(changeKeyword(search));
-  }
-
-  const handleLogout = () => {
-    dispatch(clearUser());
-    navigate('/login');
-  }
   return (
     <div>
       <div>
@@ -27,18 +14,10 @@ const Hearder = () => {
         <div className="bg-[#0274be] text-white text-sm" >
           <div className="max-w-screen-xl mx-auto px-6 py-2 flex flex-wrap justify-end items-center space-x-2">
             {/* Các nút ẩn trên điện thoại */}
-            {
-              user.login &&
-              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-                <Link to={user?.login ? '/profile' : '/login'} className="flex items-center gap-1">👤 {user.name}</Link>
-              </button>
-            }
-            {user.isAdmin &&
-              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-                <Link to="/admin" className="flex items-center gap-1">🧑‍🔧 Admin page </Link >
-              </button>
-            }
-            {/* <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
+            <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
+              <span className="flex items-center gap-1">👤 Tài khoản</span>
+            </button>
+            <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
               <span className="flex items-center gap-1">💙 Sản phẩm yêu thích</span>
             </button> */}
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
@@ -48,18 +27,8 @@ const Hearder = () => {
               <Link className="flex items-center gap-1" to="/orders">✔ Đơn hàng</Link>
             </button>
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <Link className="flex items-center gap-1" to="/checkoutpage">✔ Thanh toán</Link>
+              <Link className="flex items-center gap-1" to="/login">🔒 Đăng nhập</Link>
             </button>
-
-            {!user.login ?
-              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-                <Link className="flex items-center gap-1" to="/login">🔒 Đăng nhập</Link>
-              </button>
-              :
-              <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-                <span className="flex items-center gap-1" onClick={handleLogout}>🔒 Đăng xuất</span>
-              </button>
-            }
 
             {/* Nút menu trên điện thoại */}
             <button
@@ -150,19 +119,15 @@ const Hearder = () => {
       {/* <nav className="bg-[#0f6cb2] text-white text-sm font-semibold">
         <div className="max-w-screen-xl mx-auto px-4 flex justify-between items-center">
           <ul className="hidden sm:flex justify-center items-center space-x-1">
-            {
-              menu.map((item, index) => (
-                <NavLink
-                  key={index}
-                  to={item.link}
-                  className={({ isActive }) =>
-                    `relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer ${isActive ? 'bg-[#0865a4] text-white font-semibold' : ''}`
-                  }
-                >
-                  {item.name}
-                </NavLink>
-              ))
-            }
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">HOME</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">CLOTHING</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">ELECTRONICS</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">WATCHES</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">JEWELLERY</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">SHOES</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">KIDS &amp; GIRLS</li>
+            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">PAGES</li>
+            <li className="relative px-4 py-3 text-yellow-400 hover:bg-[#0865a4] cursor-pointer">TODAYS OFFER</li>
           </ul>
 
           <button
