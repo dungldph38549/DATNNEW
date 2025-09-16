@@ -8,7 +8,6 @@ export const create = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 export const getAll = async (req, res) => {
   try {
     const banners = await Banner.find();
