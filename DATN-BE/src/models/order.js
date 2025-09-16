@@ -1,8 +1,8 @@
+// models/order.js
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    // ... existing fields ...
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -12,11 +12,19 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    address: {
+    fullName: {
       type: String,
       required: true,
     },
-    fullName: {
+    email: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    address: {
       type: String,
       required: true,
     },
@@ -28,14 +36,6 @@ const orderSchema = new mongoose.Schema(
     shippingMethod: {
       type: String,
       enum: ["standard", "fast"],
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
       required: true,
     },
     products: [
@@ -71,6 +71,7 @@ const orderSchema = new mongoose.Schema(
     voucherCode: {
       type: String,
       required: false,
+      default: null,
     },
     shippingFee: {
       type: Number,
@@ -96,7 +97,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "paid", "failed", "refunded", "unpaid"],
       default: "pending",
     },
     // NEW FIELDS FOR RETURN FLOW
@@ -141,7 +142,7 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// Index for better performance
+// 🔹 Indexes
 orderSchema.index({ userId: 1 });
 orderSchema.index({ guestId: 1 });
 orderSchema.index({ status: 1 });
@@ -149,26 +150,24 @@ orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ "products.productId": 1 });
 
-// Virtual for return eligibility
+// 🔹 Virtual: kiểm tra có thể trả hàng không
 orderSchema.virtual("canReturn").get(function () {
   if (this.status !== "delivered") return false;
 
-  // Check if within 7 days of delivery
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   return this.updatedAt > sevenDaysAgo;
 });
 
-// Method to calculate refund eligibility
+// 🔹 Method: tính tiền tối đa có thể hoàn
 orderSchema.methods.calculateMaxRefund = function () {
-  // Can refund up to total amount minus shipping fee for certain cases
   return (
     this.totalAmount - (this.paymentMethod === "cod" ? this.shippingFee : 0)
   );
 };
 
-// Pre-save middleware to set return dates
+// 🔹 Middleware: set ngày return
 orderSchema.pre("save", function (next) {
   if (this.isModified("status")) {
     if (this.status === "return-request" && !this.returnRequestDate) {
@@ -181,6 +180,13 @@ orderSchema.pre("save", function (next) {
       this.returnProcessedDate = new Date();
     }
   }
+
+  // đảm bảo ít nhất có userId hoặc guestId
+  if (!this.userId && !this.guestId) {
+    this.invalidate("userId", "Either userId or guestId is required.");
+    this.invalidate("guestId", "Either guestId or userId is required.");
+  }
+
   next();
 });
 

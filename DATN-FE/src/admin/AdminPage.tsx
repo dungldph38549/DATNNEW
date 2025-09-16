@@ -9,6 +9,7 @@ import Users from "./Users";
 import Vouchers from "./Vouchers";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser } from "../redux/user";
+
 const AdminPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -43,13 +44,6 @@ const AdminPage = () => {
         return <Users />;
       case "vouchers":
         return <Vouchers />;
-
-        return <Order />;
-      // case 'users':
-      //     return (<Users />);
-      // case 'vouchers':
-      //     return (<Vouchers />);
-
       case "brands":
         return <Brands />;
       case "categories":
@@ -65,7 +59,7 @@ const AdminPage = () => {
     <div className="flex relative">
       {/* Sidebar */}
       <div
-        className="w-[12rem] p-4 shadow-xl "
+        className="w-[12rem] p-4 shadow-xl"
         style={{ minWidth: "200px", zIndex: "1" }}
       >
         <div className="fixed">
@@ -76,7 +70,7 @@ const AdminPage = () => {
               className={`text-left p-3 rounded ${
                 selectedMenu === "dashboard"
                   ? "bg-blue-100"
-                  : "hover:bg-blue-100 "
+                  : "hover:bg-blue-100"
               }`}
             >
               Trang chủ
@@ -86,7 +80,7 @@ const AdminPage = () => {
               className={`text-left p-3 rounded ${
                 selectedMenu === "products"
                   ? "bg-blue-100"
-                  : "hover:bg-blue-100 "
+                  : "hover:bg-blue-100"
               }`}
             >
               Quản lý sản phẩm
@@ -94,7 +88,7 @@ const AdminPage = () => {
             <button
               onClick={() => handleMenuClick("orders")}
               className={`text-left p-3 rounded ${
-                selectedMenu === "orders" ? "bg-blue-100" : "hover:bg-blue-100 "
+                selectedMenu === "orders" ? "bg-blue-100" : "hover:bg-blue-100"
               }`}
             >
               Quản lý đơn hàng
@@ -102,7 +96,7 @@ const AdminPage = () => {
             <button
               onClick={() => handleMenuClick("users")}
               className={`text-left p-3 rounded ${
-                selectedMenu === "users" ? "bg-blue-100" : "hover:bg-blue-100 "
+                selectedMenu === "users" ? "bg-blue-100" : "hover:bg-blue-100"
               }`}
             >
               Quản lý người dùng
@@ -112,7 +106,7 @@ const AdminPage = () => {
               className={`text-left p-3 rounded ${
                 selectedMenu === "vouchers"
                   ? "bg-blue-100"
-                  : "hover:bg-blue-100 "
+                  : "hover:bg-blue-100"
               }`}
             >
               Quản lý voucher
@@ -122,7 +116,7 @@ const AdminPage = () => {
               className={`text-left p-3 rounded ${
                 selectedMenu === "categories"
                   ? "bg-blue-100"
-                  : "hover:bg-blue-100 "
+                  : "hover:bg-blue-100"
               }`}
             >
               Quản lý danh mục
@@ -130,15 +124,14 @@ const AdminPage = () => {
             <button
               onClick={() => handleMenuClick("brands")}
               className={`text-left p-3 rounded ${
-                selectedMenu === "brands" ? "bg-blue-100" : "hover:bg-blue-100 "
+                selectedMenu === "brands" ? "bg-blue-100" : "hover:bg-blue-100"
               }`}
             >
               Quản lý thương hiệu
             </button>
             <Link
               to="/"
-              onClick={() => {}}
-              className={`text-left p-3 rounded hover:bg-blue-100 hover:text-black`}
+              className="text-left p-3 rounded hover:bg-blue-100 hover:text-black"
             >
               Trang người dùng
             </Link>
@@ -147,7 +140,7 @@ const AdminPage = () => {
                 dispatch(clearUser());
                 navigate("/login");
               }}
-              className={`text-left p-3 rounded hover:bg-red-100 text-red-600`}
+              className="text-left p-3 rounded hover:bg-red-100 text-red-600"
             >
               Đăng xuất
             </button>

@@ -68,7 +68,7 @@ const CheckoutPage = () => {
     onError: (error) => {
       Swal.fire({
         title: 'Thất bại!',
-        text: error?.response.data.message || 'Có lỗi xảy ra, vui lòng thử lại.',
+        text: error?.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.',
         icon: 'error',
       });
     }
@@ -145,7 +145,7 @@ const CheckoutPage = () => {
     mutate(payload);
   };
 
-  // ✅ Thêm check tồn kho
+  // ✅ check tồn kho
   const { data } = useQuery({
     queryKey: ['product-stock', products],
     queryFn: () => getStocks(products),
@@ -166,22 +166,168 @@ const CheckoutPage = () => {
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Thanh toán</h2>
 
-      {/* ... giữ nguyên giao diện như bạn viết ... */}
+      {/* Thông tin sản phẩm */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Thông tin sản phẩm</h3>
+        {products.length === 0 ? (
+          <p className="text-gray-500 italic">Không có sản phẩm nào trong đơn hàng.</p>
+        ) : (
+          <div className="space-y-4">
+            {products.map((item) => (
+              <div
+                key={`${item.productId}-${item.sku || 'default'}`}
+                className="flex justify-between items-start border-b pb-2"
+              >
+                <div>
+                  <p className="font-medium text-gray-800">
+                    {item.name}
+                    {Object.keys(item.attributes || {}).length > 0 && (
+                      <span className="text-sm text-gray-500 ml-1">
+                        (
+                          {item.sku}: {Object.entries(item.attributes)
+                          .map(([key, value]) => `${key}: ${value}`)
+                          .join(', ')}
+                        )
+                      </span>
+                    )}
+                  </p>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <button
+                      onClick={() =>
+                        dispatch(changeQuantity({ productId: item.productId, sku: item.sku || null, delta: -1 }))
+                      }
+                      className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                      disabled={item.quantity <= 1}
+                    >
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button
+                      onClick={() =>
+                        dispatch(changeQuantity({ productId: item.productId, sku: item.sku || null, delta: 1 }))
+                      }
+                      className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                      disabled={item.quantity >= checkStock(item.productId, item.sku)}
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={() =>
+                        dispatch(removeProduct({ productId: item.productId, sku: item.sku || null }))
+                      }
+                      className="ml-4 text-red-500 hover:underline text-sm"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+                <span className="font-semibold text-gray-700">
+                  {(item.quantity * item.price).toLocaleString('vi-VN')}₫
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Trong chỗ nút tăng số lượng ✅ sửa disabled */}
-      {products.map((item) => (
-        <button
-          onClick={() =>
-            dispatch(changeQuantity({ productId: item.productId, sku: item.sku || null, delta: 1 }))
-          }
-          className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-          disabled={item.quantity >= checkStock(item.productId, item.sku)}
-        >
-          +
-        </button>
-      ))}
+      {/* Phương thức giao hàng */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Phương thức giao hàng</h3>
+        <div className="space-y-2">
+          <label className="flex items-center space-x-2">
+            <input
+              type="radio"
+              name="shipping"
+              value="standard"
+              checked={shippingMethod === "standard"}
+              onChange={(e) => setShippingMethod(e.target.value)}
+            />
+            <span>Giao hàng tiêu chuẩn (3-5 ngày) - Miễn phí</span>
+          </label>
+          <label className="flex items-center space-x-2">
+            <input
+              type="radio"
+              name="shipping"
+              value="fast"
+              checked={shippingMethod === "fast"}
+              onChange={(e) => setShippingMethod(e.target.value)}
+            />
+            <span>Giao hàng nhanh (1-2 ngày) - 30.000₫</span>
+          </label>
+        </div>
+      </div>
 
-      {/* ... phần còn lại không đổi ... */}
+      {/* Phương thức thanh toán */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Phương thức thanh toán</h3>
+        <div className="space-y-2">
+          <label className="flex items-center space-x-2">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="cod"
+              checked={paymentMethod === "cod"}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            />
+            <span>Thanh toán khi nhận hàng (COD)</span>
+          </label>
+          <label className="flex items-center space-x-2">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="vnpay"
+              checked={paymentMethod === "vnpay"}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            />
+            <span>Ví điện tử VNPay</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Tóm tắt đơn hàng */}
+      <div className="mb-6 border-t pt-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Tóm tắt đơn hàng</h3>
+
+        <div className="space-y-2 mb-4">
+          {products.map((item) => (
+            <div
+              key={`${item.productId}-${item.sku || 'default'}`}
+              className="flex justify-between text-sm text-gray-700"
+            >
+              <span>{item.name} (x{item.quantity})</span>
+              <span>{(item.quantity * item.price).toLocaleString('vi-VN')}₫</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-between mb-1">
+          <span>Tạm tính:</span>
+          <span>{subtotal.toLocaleString('vi-VN')}₫</span>
+        </div>
+        {discount > 0 && (
+          <div className="flex justify-between mb-1">
+            <span>Giảm giá:</span>
+            <span>{discount.toLocaleString('vi-VN')}₫</span>
+          </div>
+        )}
+        <div className="flex justify-between mb-1">
+          <span>Phí giao hàng:</span>
+          <span>{shippingFee.toLocaleString('vi-VN')}₫</span>
+        </div>
+        <div className="flex justify-between font-bold text-lg">
+          <span>Tổng cộng:</span>
+          <span className="text-green-600">{total.toLocaleString('vi-VN')}₫</span>
+        </div>
+      </div>
+
+      {/* Nút đặt hàng */}
+      <button
+        disabled={products.length === 0 || isPending}
+        onClick={handleSubmit}
+        className="w-full bg-yellow-500 text-white py-3 rounded-md hover:bg-yellow-600 font-semibold text-lg disabled:opacity-50"
+      >
+        ĐẶT HÀNG
+      </button>
     </div>
   );
 };

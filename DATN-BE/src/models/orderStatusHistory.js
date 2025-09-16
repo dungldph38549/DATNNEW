@@ -1,5 +1,4 @@
-// models/orderStatusHistory.js (Updated version)
-
+// models/orderStatusHistory.js
 const mongoose = require("mongoose");
 
 const orderStatusHistorySchema = new mongoose.Schema(
@@ -39,7 +38,7 @@ const orderStatusHistorySchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "paid", "failed", "refunded", "unpaid"],
       required: false,
     },
     note: {
@@ -148,12 +147,7 @@ orderStatusHistorySchema.methods.isReturnRelated = function () {
 
 // Pre-save middleware to validate status transitions
 orderStatusHistorySchema.pre("save", function (next) {
-  // Validate return-related fields
-  if (this.newStatus === "return-request" && !this.returnReason) {
-    // Don't require return reason at schema level, handle in controller
-  }
-
-  if (this.newStatus === "accepted" && this.refundAmount <= 0) {
+  if (this.newStatus === "accepted" && (!this.refundAmount || this.refundAmount <= 0)) {
     return next(new Error("Refund amount is required when accepting return"));
   }
 

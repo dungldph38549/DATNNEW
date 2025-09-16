@@ -1,12 +1,10 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import { comfirmDelivery, getOrdersByUserOrGuest } from "../../api/index.js";
-import { createReturnRequest } from "../../api/index.js";
+import { comfirmDelivery, getOrdersByUserOrGuest, returnOrder } from "../../api/index.js";
 import { useNavigate } from "react-router-dom";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD } from "../../const/index.ts";
-import { Table, Button, Tag, Spin, Typography, message, Modal } from "antd";
-import ReturnOrderModal from "../../components/ReturnOrderModal/ReturnOrderModal.jsx";
+import { Table, Button, Tag, Spin, Typography, message, Modal, Input } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -15,9 +13,12 @@ const OrderPage = () => {
   const queryClient = useQueryClient();
   const user = useSelector((state) => state.user);
   const [page, setPage] = React.useState(1);
-  const [isReturnModalOpen, setIsReturnModalOpen] = React.useState(false);
-  const [selectedOrder, setSelectedOrder] = React.useState(null);
   const limit = 10;
+
+  // state cho popup hoàn hàng
+  const [isReturnModalOpen, setIsReturnModalOpen] = React.useState(false);
+  const [returnNote, setReturnNote] = React.useState("");
+  const [selectedOrderId, setSelectedOrderId] = React.useState(null);
 
   const {
     data: orders = [],
@@ -44,17 +45,16 @@ const OrderPage = () => {
   });
 
   const returnMutation = useMutation({
-    mutationFn: createReturnRequest,
+    mutationFn: ({ id, note }) => returnOrder({ id, note }),
     onSuccess: () => {
-      message.success("Gửi yêu cầu hoàn hàng thành công");
+      message.success("Hoàn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["list-order"] });
       setIsReturnModalOpen(false);
-      setSelectedOrder(null);
+      setReturnNote("");
+      setSelectedOrderId(null);
     },
     onError: (err) => {
-      message.error(
-        err?.response?.data?.message || "Lỗi khi gửi yêu cầu hoàn hàng"
-      );
+      message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
     },
   });
 
@@ -62,29 +62,16 @@ const OrderPage = () => {
     updateMutation.mutate({ id });
   };
 
-  const handleOpenReturnModal = (order) => {
-    setSelectedOrder(order);
+  const handleOpenReturnModal = (id) => {
+    setSelectedOrderId(id);
     setIsReturnModalOpen(true);
   };
 
-  const handleReturnSubmit = async (returnData) => {
-    try {
-      await returnMutation.mutateAsync(returnData);
-    } catch (error) {
-      console.error("Return request failed:", error);
+  const handleReturnSubmit = () => {
+    if (!returnNote.trim()) {
+      return message.warning("Vui lòng nhập lý do hoàn hàng");
     }
-  };
-
-  const canReturn = (order) => {
-    if (order.status !== "delivered") return false;
-
-    const deliveredDate = order.deliveredAt
-      ? new Date(order.deliveredAt)
-      : new Date(order.updatedAt || order.createdAt);
-    const now = new Date();
-    const diffDays = Math.floor((now - deliveredDate) / (1000 * 60 * 60 * 24));
-
-    return diffDays <= 7 && !order.hasReturnRequest;
+    returnMutation.mutate({ id: selectedOrderId, note: returnNote });
   };
 
   const columns = [
@@ -104,28 +91,19 @@ const OrderPage = () => {
       title: "Trạng thái đơn hàng",
       dataIndex: "status",
       key: "status",
-      render: (status, order) => {
+      render: (status) => {
         let color = "red";
-        let text = ORDER_STATUS_LABELS[status];
-
         if (status === "pending") color = "gold";
         else if (status === "confirmed") color = "blue";
         else if (status === "shipped") color = "purple";
-        else if (status === "delivered") {
-          color = "green";
-          text = "Đã nhận";
-        } else if (status === "return-request") color = "orange";
+        else if (status === "delivered") color = "green";
+        else if (status === "return-request") color = "orange";
         else if (status === "canceled") color = "red";
 
         return (
-          <div>
-            <Tag color={color}>{text}</Tag>
-            {order.hasReturnRequest && (
-              <Tag color="orange" className="ml-1">
-                Có yêu cầu hoàn hàng
-              </Tag>
-            )}
-          </div>
+          <Tag color={color}>
+            {status === "delivered" ? "Đã nhận" : ORDER_STATUS_LABELS[status]}
+          </Tag>
         );
       },
     },
@@ -155,47 +133,45 @@ const OrderPage = () => {
     {
       title: "Hành động",
       key: "action",
-      render: (_, order) => (
-        <div className="space-x-2">
-          <Button type="link" onClick={() => navigate(`/order/${order._id}`)}>
-            Chi tiết
-          </Button>
+      render: (_, order) => {
+        const deliveredDate = order.deliveredAt
+          ? new Date(order.deliveredAt)
+          : new Date(order.updatedAt || order.createdAt);
+        const now = new Date();
+        const diffDays = Math.floor(
+          (now - deliveredDate) / (1000 * 60 * 60 * 24)
+        );
+        const canReturn = order.status === "delivered" && diffDays <= 7;
 
-          {order.status === "shipped" && (
-            <Button
-              type="link"
-              danger
-              onClick={() => handleUpdateSubmit(order._id)}
-              loading={updateMutation.isLoading}
-            >
-              Đã nhận
+        return (
+          <>
+            <Button type="link" onClick={() => navigate(`/order/${order._id}`)}>
+              Chi tiết
             </Button>
-          )}
-
-          {canReturn(order) && (
-            <Button type="link" onClick={() => handleOpenReturnModal(order)}>
-              Hoàn hàng
-            </Button>
-          )}
-
-          {order.hasReturnRequest && (
-            <Button type="link" onClick={() => navigate("/return-orders")}>
-              Xem hoàn hàng
-            </Button>
-          )}
-        </div>
-      ),
+            {order.status === "shipped" && (
+              <Button
+                type="link"
+                danger
+                onClick={() => handleUpdateSubmit(order._id)}
+                loading={updateMutation.isLoading}
+              >
+                Đã nhận
+              </Button>
+            )}
+            {canReturn && (
+              <Button type="link" onClick={() => handleOpenReturnModal(order._id)}>
+                Hoàn hàng
+              </Button>
+            )}
+          </>
+        );
+      },
     },
   ];
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow mt-10 mb-10">
-      <div className="flex justify-between items-center mb-6">
-        <Title level={2}>Đơn hàng của tôi</Title>
-        <Button type="default" onClick={() => navigate("/return-orders")}>
-          Quản lý hoàn hàng
-        </Button>
-      </div>
+      <Title level={2}>Đơn hàng của tôi</Title>
 
       {isLoading ? (
         <Spin size="large" className="mt-10" />
@@ -222,16 +198,24 @@ const OrderPage = () => {
         />
       )}
 
-      <ReturnOrderModal
-        visible={isReturnModalOpen}
-        onCancel={() => {
-          setIsReturnModalOpen(false);
-          setSelectedOrder(null);
-        }}
-        onSubmit={handleReturnSubmit}
-        order={selectedOrder}
-        loading={returnMutation.isLoading}
-      />
+      {/* Modal nhập lý do hoàn hàng */}
+      <Modal
+        title="Hoàn hàng"
+        open={isReturnModalOpen}
+        onOk={handleReturnSubmit}
+        onCancel={() => setIsReturnModalOpen(false)}
+        confirmLoading={returnMutation.isLoading}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <p>Vui lòng nhập lý do hoàn hàng:</p>
+        <Input.TextArea
+          rows={4}
+          value={returnNote}
+          onChange={(e) => setReturnNote(e.target.value)}
+          placeholder="Nhập lý do..."
+        />
+      </Modal>
     </div>
   );
 };
