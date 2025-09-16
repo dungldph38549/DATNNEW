@@ -102,10 +102,18 @@ export default function Order() {
       dataIndex: 'totalAmount',
       key: 'totalAmount',
 <<<<<<< HEAD
+      render: (value) => (
+        <span className="text-green-600 font-semibold">
+          {value.toLocaleString('vi-VN')}₫
+        </span>
+      ),
+=======
+<<<<<<< HEAD
       render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString('vi-VN')}₫</span>,
 =======
       render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString()}₫</span>,
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     },
     {
       title: 'Trạng thái',
@@ -123,6 +131,9 @@ export default function Order() {
     },
     {
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       title: 'Trạng thái thanh toán',
       dataIndex: 'paymentStatus',
       key: 'paymentStatus',
@@ -130,12 +141,23 @@ export default function Order() {
         let color = 'red';
         if (paymentStatus === 'paid') color = 'green';
 
+<<<<<<< HEAD
+        return (
+          <Tag color={color}>
+            {paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+          </Tag>
+        );
+      },
+    },
+    {
+=======
         return <Tag color={color}>{paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>;
       },
     },
     {
 =======
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -188,8 +210,12 @@ export default function Order() {
 <<<<<<< HEAD
     <div className="bg-white p-4 rounded-xl shadow w-100">
 =======
+<<<<<<< HEAD
+    <div className="bg-white p-4 rounded-xl shadow w-100">
+=======
     <div>
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       <h2 className="text-2xl font-semibold mb-4">Danh sách Đơn hàng</h2>
       {isLoading ? (
         <Spin tip="Đang tải đơn hàng..." />
@@ -200,7 +226,17 @@ export default function Order() {
         <div className="overflow-x-auto">
           <Table
             columns={columns}
+            dataSource={data.data?.map((order) => ({
+              ...order,
+              key: order._id,
+            }))}
+=======
+<<<<<<< HEAD
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
             dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
             pagination={{
               current: page,
               total: data.total,
@@ -210,6 +246,8 @@ export default function Order() {
             bordered
           />
         </div>
+<<<<<<< HEAD
+=======
 =======
         <Table
           columns={columns}
@@ -223,6 +261,7 @@ export default function Order() {
           bordered
         />
 >>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       )}
     </div>
   );

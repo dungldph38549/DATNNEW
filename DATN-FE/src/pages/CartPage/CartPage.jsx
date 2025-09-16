@@ -102,10 +102,10 @@ const CartPage = () => {
 
   const checkStock = (productId, sku) => {
     const stock = data?.find((item) => {
-      if(sku) {
-        return item.productId === productId && item.sku === sku
-      }else {
-        return item.productId === productId
+      if (sku) {
+        return item.productId === productId && item.sku === sku;
+      } else {
+        return item.productId === productId;
       }
     });
     return stock?.countInStock;
@@ -129,9 +129,11 @@ const CartPage = () => {
       {/* Cart Items */}
       <div className="border-t mt-3">
         {carts.length === 0 ? (
-          <p className="text-center text-gray-500 italic py-6">Giỏ hàng trống.</p>
+          <p className="text-center text-gray-500 italic py-6">
+            Giỏ hàng trống.
+          </p>
         ) : (
-          carts.map((item, index) => (
+          carts.map((item) => (
             <div
               key={`${item.productId}-${item.sku || 'default'}`}
               className="grid grid-cols-8 items-center py-4 border-b text-center"
@@ -151,8 +153,8 @@ const CartPage = () => {
                 alt={item.name}
                 className="w-20 h-20 object-cover rounded mx-auto"
               />
-              
-                {/* Name + Attributes */}
+
+              {/* Name + Attributes */}
               <div className="text-left px-2">
                 <p className="text-sm font-semibold whitespace-pre-line">
                   {item.name}
@@ -169,7 +171,7 @@ const CartPage = () => {
                 </p>
               </div>
 
-                {/* Quantity Controls */}
+              {/* Quantity Controls */}
               <div className="flex items-center justify-center space-x-2">
                 <button
                   className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
@@ -186,21 +188,25 @@ const CartPage = () => {
                   onClick={() =>
                     handleChangeQuantity(item.productId, item.sku || null, 1)
                   }
-                  disabled={item.quantity >= checkStock(item.productId, item.sku)}
+                  disabled={
+                    item.quantity >= checkStock(item.productId, item.sku)
+                  }
                 >
                   +
                 </button>
               </div>
 
-               {/* Price */}
-              <p className="text-lg font-semibold">{item.price.toLocaleString('vi-VN')}₫</p>
+              {/* Price */}
+              <p className="text-lg font-semibold">
+                {item.price.toLocaleString('vi-VN')}₫
+              </p>
 
               {/* Total per item */}
               <p className="text-lg font-semibold">
                 {(item.quantity * item.price).toLocaleString('vi-VN')}₫
               </p>
 
-                  {/* Remove button */}
+              {/* Remove button */}
               <button
                 className="text-red-500 font-bold text-xl"
                 onClick={() => handleRemove(item.productId, item.sku || null)}
@@ -208,19 +214,16 @@ const CartPage = () => {
               >
                 ×
               </button>
-              
-
-           
-
-            
-             
             </div>
           ))
         )}
       </div>
-       {/* Payment Summary */}
+
+      {/* Payment Summary */}
       <div className="border-t pt-4 mt-6">
-        <h3 className="text-lg font-semibold text-gray-800">Tóm tắt thanh toán</h3>
+        <h3 className="text-lg font-semibold text-gray-800">
+          Tóm tắt thanh toán
+        </h3>
 
         <div className="flex justify-between items-center mt-2">
           <p className="text-gray-700 text-lg">Tổng cộng:</p>
@@ -231,7 +234,9 @@ const CartPage = () => {
 
         <button
           className={`mt-4 w-full bg-yellow-500 text-white py-2 rounded-md font-semibold ${
-            selectedItems.length ? 'hover:bg-yellow-600' : 'opacity-50 cursor-not-allowed'
+            selectedItems.length
+              ? 'hover:bg-yellow-600'
+              : 'opacity-50 cursor-not-allowed'
           }`}
           onClick={handleCheckout}
           disabled={selectedItems.length === 0}

@@ -1,27 +1,14 @@
+// app.js - Main application file with all integrations
+
 const express = require("express");
-const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
-
-// Import routes
-const routes = require("./routes");
-const orderRoutes = require("./routes/orderRoutes");
-const walletRoutes = require("./routes/walletRoutes");
-const userRoutes = require("./routes/userRoutes");
-const authRoutes = require("./routes/authRoutes");
-const productRoutes = require("./routes/productRoutes");
-
-dotenv.config();
+require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 3001;
 
 // ==== SECURITY MIDDLEWARE ====
 app.use(
@@ -77,11 +64,7 @@ app.use(
 // ==== BODY PARSING MIDDLEWARE ====
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(bodyParser.json());
 app.use(compression());
-
-// ==== TRUST PROXY ====
-app.set("trust proxy", 1);
 
 // ==== REQUEST LOGGING ====
 app.use((req, res, next) => {
@@ -93,48 +76,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// ==== FILE UPLOAD CONFIGURATION ====
-// Thư mục lưu trữ ảnh upload
-const uploadDir = path.join(__dirname, "../public/uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// ==== TRUST PROXY ====
+app.set("trust proxy", 1);
 
-// Cấu hình Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
-  },
-});
+// ==== DATABASE CONNECTION ====
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/ecommerce", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("✅ Kết nối MongoDB thành công");
+  })
+  .catch((error) => {
+    console.error("❌ Lỗi kết nối MongoDB:", error);
+    process.exit(1);
+  });
 
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Check file type
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error("Chỉ chấp nhận file ảnh (JPEG, JPG, PNG, GIF, WEBP)"));
-    }
-  },
-});
-
-// Cho phép truy cập thư mục public
-app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
+// ==== ROUTES IMPORT ====
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const walletRoutes = require("./routes/walletRoutes");
+const voucherRoutes = require("./routes/voucherRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 // ==== HEALTH CHECK ====
 app.get("/health", (req, res) => {
@@ -146,89 +113,15 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ==== UPLOAD ROUTES ====
-// Upload 1 ảnh
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "Không có file được tải lên" });
-    }
-    const filePath = `${req.file.filename}`;
-    res.status(200).json({
-      message: "Tải lên thành công",
-      path: filePath,
-      url: `${req.protocol}://${req.get("host")}/uploads/${filePath}`,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Upload nhiều ảnh
-app.post("/api/uploads/multiple", upload.array("files", 10), (req, res) => {
-  try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "Không có ảnh nào được tải lên" });
-    }
-    const filePaths = req.files.map((file) => ({
-      filename: file.filename,
-      url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-    }));
-    res.status(200).json({
-      message: "Tải lên thành công",
-      files: filePaths,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Get image
-app.get("/api/image/:filename", (req, res) => {
-  const { filename } = req.params;
-  if (!filename) {
-    return res.status(400).json({ message: "Thiếu tên file" });
-  }
-
-  const filePath = path.join(__dirname, "../public/uploads", filename);
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      return res.status(404).json({ message: "Ảnh không tồn tại" });
-    }
-    res.sendFile(filePath);
-  });
-});
-
 // ==== API ROUTES ====
-// Authentication routes
-if (authRoutes) {
-  app.use("/api/auth", authRoutes);
-}
-
-// User routes
-if (userRoutes) {
-  app.use("/api/users", userRoutes);
-}
-
-// Product routes
-if (productRoutes) {
-  app.use("/api/products", productRoutes);
-}
-
-// Order routes (with return management)
-if (orderRoutes) {
-  app.use("/api/orders", orderRoutes);
-}
-
-// Wallet routes
-if (walletRoutes) {
-  app.use("/api/wallet", walletRoutes);
-}
-
-// Legacy routes (if exists)
-if (routes && typeof routes === "function") {
-  routes(app);
-}
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/vouchers", voucherRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // ==== API DOCUMENTATION ====
 app.get("/api", (req, res) => {
@@ -241,6 +134,8 @@ app.get("/api", (req, res) => {
       products: "/api/products",
       orders: "/api/orders",
       wallet: "/api/wallet",
+      vouchers: "/api/vouchers",
+      categories: "/api/categories",
       upload: "/api/upload",
     },
     features: [
@@ -252,41 +147,11 @@ app.get("/api", (req, res) => {
       "Admin Dashboard Analytics",
       "Return Request Management",
       "Refund Processing",
-      "File Upload System",
     ],
   });
 });
 
-// ==== DATABASE CONNECTION ====
-mongoose
-  .connect(process.env.MONGO_DB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("✅ Kết nối MongoDB thành công");
-  })
-  .catch((error) => {
-    console.error("❌ Lỗi kết nối MongoDB:", error);
-    process.exit(1);
-  });
-
 // ==== ERROR HANDLING MIDDLEWARE ====
-// Multer error handler
-app.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    if (error.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ message: "File quá lớn (tối đa 10MB)" });
-    }
-    if (error.code === "LIMIT_FILE_COUNT") {
-      return res
-        .status(400)
-        .json({ message: "Quá nhiều file (tối đa 10 file)" });
-    }
-  }
-  next(error);
-});
-
 // 404 Handler
 app.use("*", (req, res) => {
   res.status(404).json({
@@ -298,7 +163,8 @@ app.use("*", (req, res) => {
       products: "/api/products",
       orders: "/api/orders",
       wallet: "/api/wallet",
-      upload: "/api/upload",
+      vouchers: "/api/vouchers",
+      categories: "/api/categories",
     },
   });
 });
@@ -390,15 +256,25 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 // ==== SERVER START ====
-app.listen(port, () => {
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
   console.log(`
-🚀 Server đang chạy trên port ${port}
+🚀 Server đang chạy trên port ${PORT}
 🌍 Environment: ${process.env.NODE_ENV || "development"}
-📊 API Documentation: http://localhost:${port}/api
-💊 Health Check: http://localhost:${port}/health
+📊 API Documentation: http://localhost:${PORT}/api
+💊 Health Check: http://localhost:${PORT}/health
 🔗 Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:3000"}
-📁 Upload Directory: ${uploadDir}
   `);
+});
+
+// Handle server errors
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`❌ Port ${PORT} đã được sử dụng`);
+  } else {
+    console.error("❌ Server error:", error);
+  }
+  process.exit(1);
 });
 
 module.exports = app;

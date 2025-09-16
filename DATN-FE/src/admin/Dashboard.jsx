@@ -17,12 +17,16 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 
 const Dashboard = () => {
+<<<<<<< HEAD
+  const [overview, setOverview] = useState(null);
+=======
   // Khởi tạo state an toàn
   const [overview, setOverview] = useState({
     totalOrders: 0,
     totalRevenue: 0,
     canceledOrders: 0,
   });
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
   const [revenue, setRevenue] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [topVariants, setTopVariants] = useState([]);
@@ -71,6 +75,14 @@ const Dashboard = () => {
           }),
         ]);
 
+<<<<<<< HEAD
+        setOverview(overviewRes.data);
+        setRevenue(revenueRes.data);
+        setPaymentMethods(paymentRes.data);
+        setTopVariants(topVariantRes.data);
+        setLoading(false);
+      } catch (err) {
+=======
         setOverview(overviewRes.data || { totalOrders: 0, totalRevenue: 0, canceledOrders: 0 });
         setRevenue(revenueRes.data || []);
         setPaymentMethods(paymentRes.data || []);
@@ -83,6 +95,7 @@ const Dashboard = () => {
         setPaymentMethods([]);
         setTopVariants([]);
       } finally {
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
         setLoading(false);
       }
     };
@@ -107,6 +120,15 @@ const Dashboard = () => {
       {/* Tổng quan */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="shadow-md bg-blue-50">
+<<<<<<< HEAD
+          <Statistic title="Tổng đơn hàng" value={overview.totalOrders} />
+        </Card>
+        <Card className="shadow-md bg-green-50">
+          <Statistic title="Tổng doanh thu" value={overview.totalRevenue.toLocaleString('vi-VN')} suffix="₫" />
+        </Card>
+        <Card className="shadow-md bg-red-50">
+          <Statistic title="Đơn bị hủy" value={overview.canceledOrders} />
+=======
           <Statistic title="Tổng đơn hàng" value={overview?.totalOrders || 0} />
         </Card>
         <Card className="shadow-md bg-green-50">
@@ -118,6 +140,7 @@ const Dashboard = () => {
         </Card>
         <Card className="shadow-md bg-red-50">
           <Statistic title="Đơn bị hủy" value={overview?.canceledOrders || 0} />
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
         </Card>
       </div>
 
@@ -125,7 +148,11 @@ const Dashboard = () => {
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4">Doanh thu</h2>
         <ResponsiveContainer width="100%" height={300}>
+<<<<<<< HEAD
+          <LineChart data={revenue} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+=======
           <LineChart data={revenue || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
@@ -140,7 +167,11 @@ const Dashboard = () => {
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4">Đơn hàng</h2>
         <ResponsiveContainer width="100%" height={300}>
+<<<<<<< HEAD
+          <LineChart data={revenue} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+=======
           <LineChart data={revenue || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
@@ -156,7 +187,11 @@ const Dashboard = () => {
         <h2 className="text-lg font-semibold mb-4">Phương thức thanh toán</h2>
         <Table
           rowKey="_id"
+<<<<<<< HEAD
+          dataSource={paymentMethods}
+=======
           dataSource={paymentMethods || []}
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
           columns={[
             { title: 'Phương thức', dataIndex: '_id', key: '_id' },
             { title: 'Số đơn hàng', dataIndex: 'count', key: 'count' },
@@ -169,8 +204,13 @@ const Dashboard = () => {
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4">Top 10 sản phẩm bán chạy</h2>
         <Table
+<<<<<<< HEAD
+          rowKey={(record) => `${record.sku}-${record.productName}`}
+          dataSource={topVariants}
+=======
           rowKey={(record) => `${record?.sku || ''}-${record?.productName || ''}`}
           dataSource={topVariants || []}
+>>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
           columns={[
             { title: 'Sản phẩm', dataIndex: 'productName', key: 'productName' },
             { title: 'SKU', dataIndex: 'sku', key: 'sku' },

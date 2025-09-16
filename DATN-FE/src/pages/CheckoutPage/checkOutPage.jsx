@@ -1,4 +1,4 @@
-import React, {  useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -38,8 +38,8 @@ const CheckoutPage = () => {
   const subtotal = products.reduce((sum, item) => sum + item.quantity * item.price, 0);
   const shippingFee = shippingMethod === "fast" ? 30000 : 0;
   let discount = 0;
-  if(voucherData){
-    if(voucherData.type === 'percentage'){
+  if (voucherData) {
+    if (voucherData.type === 'percentage') {
       discount = subtotal * voucherData.value / 100;
     } else {
       discount = voucherData.value;
@@ -51,8 +51,8 @@ const CheckoutPage = () => {
     mutationFn: createOrder,
     onSuccess: async (data) => {
       dispatch(clearProduct());
-      if(paymentMethod === 'vnpay') {
-        window.location.href = data.vnpayPaymentUrl
+      if (paymentMethod === 'vnpay') {
+        window.location.href = data.vnpayPaymentUrl;
       } else {
         const result = await Swal.fire({
           title: 'Đặt hàng thành công!',
@@ -68,7 +68,7 @@ const CheckoutPage = () => {
     onError: (error) => {
       Swal.fire({
         title: 'Thất bại!',
-        text: error?.response.data.message || 'Có lỗi xảy ra, vui lòng thử lại.',
+        text: error?.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.',
         icon: 'error',
       });
     }
@@ -80,13 +80,12 @@ const CheckoutPage = () => {
       setForm({
         ...form,
         voucherCode
-      })
+      });
       setVoucherData(data.data);
       await Swal.fire({
         title: 'Áp dụng mã giảm giá thành công!',
         icon: 'success',
       });
-
     },
     onError: (error) => {
       Swal.fire({
@@ -99,7 +98,7 @@ const CheckoutPage = () => {
 
   const handleCheckVoucher = () => {
     checkVoucherApi(voucherCode);
-  }
+  };
 
   const validateForm = () => {
     const newErrors = {
@@ -107,13 +106,13 @@ const CheckoutPage = () => {
       email: form?.email?.trim() === ''
         ? 'Vui lòng nhập email'
         : !isValidEmail(form.email)
-        ? 'Email không hợp lệ'
-        : '',
+          ? 'Email không hợp lệ'
+          : '',
       phone: form?.phone?.trim() === ''
         ? 'Vui lòng nhập số điện thoại'
         : !isValidVietnamesePhone(form.phone)
-        ? 'Số điện thoại không hợp lệ'
-        : '',
+          ? 'Số điện thoại không hợp lệ'
+          : '',
       address: form.address.trim() === '' ? 'Vui lòng nhập địa chỉ' : '',
     };
 
@@ -146,6 +145,7 @@ const CheckoutPage = () => {
     mutate(payload);
   };
 
+  // ✅ check tồn kho
   const { data } = useQuery({
     queryKey: ['product-stock', products],
     queryFn: () => getStocks(products),
@@ -153,86 +153,18 @@ const CheckoutPage = () => {
 
   const checkStock = (productId, sku) => {
     const stock = data?.find((item) => {
-      if(sku) {
-        return item.productId === productId && item.sku === sku
-      }else {
-        return item.productId === productId
+      if (sku) {
+        return item.productId === productId && item.sku === sku;
+      } else {
+        return item.productId === productId;
       }
     });
-    return stock?.countInStock;
+    return stock?.countInStock || 0;
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Thanh toán</h2>
-
-      {/* Thông tin người nhận */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Thông tin người nhận</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Họ tên"
-              value={form.fullName}
-              onChange={(e) => handleChange('fullName', e.target.value)}
-              className={`p-2 border rounded-md w-full ${errors.fullName ? 'border-red-500' : ''}`}
-            />
-            {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
-          </div>
-          <div>
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              className={`p-2 border rounded-md w-full ${errors.email ? 'border-red-500' : ''}`}
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Số điện thoại"
-              value={form.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
-              className={`p-2 border rounded-md w-full ${errors.phone ? 'border-red-500' : ''}`}
-            />
-            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-          </div>
-          <div className="col-span-2">
-            <input
-              type="text"
-              placeholder="Địa chỉ giao hàng"
-              value={form.address}
-              onChange={(e) => handleChange('address', e.target.value)}
-              className={`p-2 border rounded-md w-full ${errors.address ? 'border-red-500' : ''}`}
-            />
-            {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
-          </div>
-        </div>
-      </div>
-
-      {/* Mã giảm giá */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Mã giảm giá</h3>
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            placeholder="Nhập mã giảm giá..."
-            value={voucherCode}
-            onChange={(e) => setVoucherCode(e.target.value)}
-            className="p-2 border rounded-md flex-1"
-          />
-          <button
-            type="button"
-            onClick={handleCheckVoucher}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Áp dụng
-          </button>
-        </div>
-      </div>
 
       {/* Thông tin sản phẩm */}
       <div className="mb-6">
@@ -372,12 +304,12 @@ const CheckoutPage = () => {
           <span>Tạm tính:</span>
           <span>{subtotal.toLocaleString('vi-VN')}₫</span>
         </div>
-        {  discount > 0 &&
-            <div className="flex justify-between mb-1">
-              <span>Giảm giá:</span>
-              <span>{discount.toLocaleString('vi-VN')}₫</span>
-            </div>
-        }
+        {discount > 0 && (
+          <div className="flex justify-between mb-1">
+            <span>Giảm giá:</span>
+            <span>{discount.toLocaleString('vi-VN')}₫</span>
+          </div>
+        )}
         <div className="flex justify-between mb-1">
           <span>Phí giao hàng:</span>
           <span>{shippingFee.toLocaleString('vi-VN')}₫</span>

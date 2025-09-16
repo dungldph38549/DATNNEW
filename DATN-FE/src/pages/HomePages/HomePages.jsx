@@ -12,13 +12,13 @@ import dayjs from "dayjs";
 
 const HomePages = () => {
   const navigate = useNavigate();
-  // const dispatch = useDispatch();
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [brandSelected, setBrandSelected] = useState("");
   const [categorySelected, setCategorySelected] = useState("");
   const keyword = useSelector((state) => state.general.keyword);
   const [sort, setSort] = useState("createdAt");
+
   const { data: products, isLoading } = useQuery({
     queryKey: [
       "list-products",
@@ -88,26 +88,24 @@ const HomePages = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
-    }, 4000); // chuyển slide mỗi 4 giây
-
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="px-6 bg-gray-100 pt-8">
-      <div>
-<div className="relative w-full h-64 md:h-96 overflow-hidden rounded-lg">
-          {bannerImages.map((url, index) => (
-            <img
-              key={index}
-              src={url}
-              alt={`Banner ${index}`}
-              className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                currentSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
-            />
-          ))}
-        </div>
+      {/* Banner */}
+      <div className="relative w-full h-64 md:h-96 overflow-hidden rounded-lg">
+        {bannerImages.map((url, index) => (
+          <img
+            key={index}
+            src={url}
+            alt={`Banner ${index}`}
+            className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              currentSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"
+            }`}
+          />
+        ))}
       </div>
 
       <main className="grid grid-cols-1 md:grid-cols-4 gap-6 py-8 bg-gray-100">
@@ -170,7 +168,8 @@ const HomePages = () => {
               ))}
             </ul>
           </div>
-{/* voucher */}
+
+          {/* Vouchers */}
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-3">Mã giảm giá</h2>
             <ul
@@ -240,7 +239,7 @@ const HomePages = () => {
                   </span>
                   <span className="text-xs text-gray-200 ml-2">31/05/2025</span>
                 </div>
-<h3 className="font-bold text-lg mb-2">
+                <h3 className="font-bold text-lg mb-2">
                   PSG lần đầu vô địch Champions League
                 </h3>
                 <p className="text-sm text-gray-200 mb-3">
@@ -298,7 +297,7 @@ const HomePages = () => {
                       UCL 25/26
                     </span>
                     <span className="text-xs text-gray-200 ml-2">Mới</span>
-</div>
+                  </div>
                   <h4 className="font-semibold mb-1">
                     Vệ điện Champions League
                   </h4>
@@ -334,55 +333,48 @@ const HomePages = () => {
                 Sắp xếp theo:
               </h2>
               <button
-                className={` ${
+                className={`${
                   sort === "createdAt"
                     ? "bg-blue-500 text-white"
                     : "bg-white text-black"
                 } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
-                onClick={() => {
-                  setSort("createdAt");
-                }}
+                onClick={() => setSort("createdAt")}
               >
                 Mới nhất
               </button>
               <button
-                className={` ${
+                className={`${
                   sort === "sold"
                     ? "bg-blue-500 text-white"
                     : "bg-white text-black"
                 } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
-                onClick={() => {
-                  setSort("sold");
-                }}
+                onClick={() => setSort("sold")}
               >
                 Bán chạy
               </button>
               <button
-                className={` ${
+                className={`${
                   sort === "priceIncre"
                     ? "bg-blue-500 text-white"
                     : "bg-white text-black"
                 } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
-                onClick={() => {
-                  setSort("priceIncre");
-                }}
+                onClick={() => setSort("priceIncre")}
               >
                 Giá từ thấp đến cao
               </button>
               <button
-                className={` ${
+                className={`${
                   sort === "priceDecre"
-? "bg-blue-500 text-white"
+                    ? "bg-blue-500 text-white"
                     : "bg-white text-black"
                 } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
-                onClick={() => {
-                  setSort("priceDecre");
-                }}
+                onClick={() => setSort("priceDecre")}
               >
                 Giá từ cao đến thấp
               </button>
             </div>
 
+            {/* Products Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
               {isLoading && (
                 <div className="flex justify-center items-center h-40 col-span-full">
@@ -440,7 +432,7 @@ const HomePages = () => {
               <div className="flex justify-center mt-4">
                 <button
                   onClick={handleLoadMore}
-className="border border-black bg-white text-black px-6 py-2 rounded hover:bg-black hover:text-white transition text-sm"
+                  className="border border-black bg-white text-black px-6 py-2 rounded hover:bg-black hover:text-white transition text-sm"
                 >
                   Xem thêm sản phẩm
                 </button>

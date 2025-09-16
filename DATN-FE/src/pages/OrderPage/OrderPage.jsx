@@ -1,10 +1,10 @@
-import React from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import { comfirmDelivery, getOrdersByUserOrGuest, returnOrder } from '../../api/index';
-import { useNavigate } from 'react-router-dom';
-import { ORDER_STATUS_LABELS, PAYMENT_METHOD } from '../../const/index.ts';
-import { Table, Button, Tag, Spin, Typography, message, Modal, Input } from 'antd';
+import React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { comfirmDelivery, getOrdersByUserOrGuest, returnOrder } from "../../api/index.js";
+import { useNavigate } from "react-router-dom";
+import { ORDER_STATUS_LABELS, PAYMENT_METHOD } from "../../const/index.ts";
+import { Table, Button, Tag, Spin, Typography, message, Modal, Input } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -17,11 +17,15 @@ const OrderPage = () => {
 
   // state cho popup hoàn hàng
   const [isReturnModalOpen, setIsReturnModalOpen] = React.useState(false);
-  const [returnNote, setReturnNote] = React.useState('');
+  const [returnNote, setReturnNote] = React.useState("");
   const [selectedOrderId, setSelectedOrderId] = React.useState(null);
 
-  const { data: orders = [], isLoading, isError } = useQuery({
-    queryKey: ['list-order', user.id, user.isGuest, page],
+  const {
+    data: orders = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["list-order", user.id, user.isGuest, page],
     queryFn: ({ queryKey }) => {
       const [, id, isGuest] = queryKey;
       return getOrdersByUserOrGuest({ id, isGuest, page, limit });
@@ -32,25 +36,25 @@ const OrderPage = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id }) => comfirmDelivery(id),
     onSuccess: () => {
-      message.success('Cập nhật thành công');
-      queryClient.invalidateQueries({ queryKey: ['list-order'] })
+      message.success("Cập nhật thành công");
+      queryClient.invalidateQueries({ queryKey: ["list-order"] });
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
+      message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
     },
   });
 
   const returnMutation = useMutation({
     mutationFn: ({ id, note }) => returnOrder({ id, note }),
     onSuccess: () => {
-      message.success('Hoàn hàng thành công');
-      queryClient.invalidateQueries({ queryKey: ['list-order'] })
+      message.success("Hoàn hàng thành công");
+      queryClient.invalidateQueries({ queryKey: ["list-order"] });
       setIsReturnModalOpen(false);
-      setReturnNote('');
+      setReturnNote("");
       setSelectedOrderId(null);
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
+      message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
     },
   });
 
@@ -65,84 +69,92 @@ const OrderPage = () => {
 
   const handleReturnSubmit = () => {
     if (!returnNote.trim()) {
-      return message.warning('Vui lòng nhập lý do hoàn hàng');
+      return message.warning("Vui lòng nhập lý do hoàn hàng");
     }
     returnMutation.mutate({ id: selectedOrderId, note: returnNote });
   };
 
   const columns = [
     {
-      title: 'Mã đơn',
-      dataIndex: '_id',
-      key: '_id',
+      title: "Mã đơn",
+      dataIndex: "_id",
+      key: "_id",
+      render: (id) => <Text code>{id.slice(-8)}</Text>,
     },
     {
-      title: 'Ngày đặt',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (createdAt) => new Date(createdAt).toLocaleDateString('vi-VN'),
+      title: "Ngày đặt",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (createdAt) => new Date(createdAt).toLocaleDateString("vi-VN"),
     },
     {
-      title: 'Trạng thái đơn hàng',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Trạng thái đơn hàng",
+      dataIndex: "status",
+      key: "status",
       render: (status) => {
-        let color = 'red';
-        if (status === 'pending') color = 'gold';
-        else if (status === 'confirmed') color = 'blue';
-        else if (status === 'shipped') color = 'purple';
-        else if (status === 'delivered') color = 'green';
-        else if (status === 'return-request') color = 'orange';
-        else if (status === 'canceled') color = 'red';
-        else color = 'red';
+        let color = "red";
+        if (status === "pending") color = "gold";
+        else if (status === "confirmed") color = "blue";
+        else if (status === "shipped") color = "purple";
+        else if (status === "delivered") color = "green";
+        else if (status === "return-request") color = "orange";
+        else if (status === "canceled") color = "red";
 
-        return <Tag color={color}>{status === 'delivered' ? 'Đã nhận' : ORDER_STATUS_LABELS[status]}</Tag>;
+        return (
+          <Tag color={color}>
+            {status === "delivered" ? "Đã nhận" : ORDER_STATUS_LABELS[status]}
+          </Tag>
+        );
       },
     },
     {
-      title: 'Thanh toán',
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
+      title: "Thanh toán",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
       render: (method) => <Tag color="blue">{PAYMENT_METHOD[method]}</Tag>,
     },
     {
-      title: 'Trạng thái thanh toán',
-      dataIndex: 'paymentStatus',
-      key: 'paymentStatus',
+      title: "Trạng thái thanh toán",
+      dataIndex: "paymentStatus",
+      key: "paymentStatus",
       render: (status) =>
-        status === 'paid' ? (
+        status === "paid" ? (
           <Tag color="green">Đã thanh toán</Tag>
         ) : (
           <Tag color="red">Chưa thanh toán</Tag>
         ),
     },
     {
-      title: 'Tổng tiền',
-      dataIndex: 'totalAmount',
-      key: 'totalAmount',
-      render: (amount) => (
-        <Text strong>{amount.toLocaleString('vi-VN')}₫</Text>
-      ),
+      title: "Tổng tiền",
+      dataIndex: "totalAmount",
+      key: "totalAmount",
+      render: (amount) => <Text strong>{amount.toLocaleString("vi-VN")}₫</Text>,
     },
     {
-      title: 'Hành động',
-      key: 'action',
+      title: "Hành động",
+      key: "action",
       render: (_, order) => {
-        const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt) : new Date(order.updatedAt || order.createdAt);
+        const deliveredDate = order.deliveredAt
+          ? new Date(order.deliveredAt)
+          : new Date(order.updatedAt || order.createdAt);
         const now = new Date();
-        const diffDays = Math.floor((now - deliveredDate) / (1000 * 60 * 60 * 24)); // số ngày
-        const canReturn = order.status === 'delivered' && diffDays <= 7;
+        const diffDays = Math.floor(
+          (now - deliveredDate) / (1000 * 60 * 60 * 24)
+        );
+        const canReturn = order.status === "delivered" && diffDays <= 7;
 
         return (
           <>
-            <Button
-              type="link"
-              onClick={() => navigate(`/order/${order._id}`)}
-            >
+            <Button type="link" onClick={() => navigate(`/order/${order._id}`)}>
               Chi tiết
             </Button>
-            {order.status === 'shipped' && (
-              <Button type="link" danger onClick={() => handleUpdateSubmit(order._id)}>
+            {order.status === "shipped" && (
+              <Button
+                type="link"
+                danger
+                onClick={() => handleUpdateSubmit(order._id)}
+                loading={updateMutation.isLoading}
+              >
                 Đã nhận
               </Button>
             )}
@@ -154,7 +166,7 @@ const OrderPage = () => {
           </>
         );
       },
-    }
+    },
   ];
 
   return (
@@ -167,7 +179,7 @@ const OrderPage = () => {
         <Text type="danger" className="mt-10 block">
           Lỗi khi tải đơn hàng.
         </Text>
-      ) : orders.data.length === 0 ? (
+      ) : orders.data?.length === 0 ? (
         <Text type="secondary" italic>
           Bạn chưa có đơn hàng nào.
         </Text>
@@ -182,7 +194,7 @@ const OrderPage = () => {
             current: page,
             onChange: (newPage) => setPage(newPage),
           }}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: "max-content" }}
         />
       )}
 
