@@ -1,17 +1,13 @@
+// src/models/Order.js
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    // ... existing fields ...
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false,
     },
-    guestId: {
-      type: String,
-      required: false,
-    },
+    guestId: String,
     address: {
       type: String,
       required: true,
@@ -45,10 +41,7 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        sku: {
-          type: String,
-          required: false,
-        },
+        sku: String,
         quantity: {
           type: Number,
           required: true,
@@ -68,10 +61,7 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    voucherCode: {
-      type: String,
-      required: false,
-    },
+    voucherCode: String,
     shippingFee: {
       type: Number,
       default: 0,
@@ -99,30 +89,11 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "paid", "failed", "refunded"],
       default: "pending",
     },
-    // NEW FIELDS FOR RETURN FLOW
     refundAmount: {
       type: Number,
-      required: false,
       min: 0,
     },
-    returnReason: {
-      type: String,
-      required: false,
-    },
-    returnRequestDate: {
-      type: Date,
-      required: false,
-    },
-    returnProcessedDate: {
-      type: Date,
-      required: false,
-    },
-    returnProcessedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: false,
-    },
-    adminNotes: [
+    internalNotes: [
       {
         note: String,
         createdBy: {
@@ -136,12 +107,10 @@ const orderSchema = new mongoose.Schema(
       },
     ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Index for better performance
+// ✅ Indexes chỉ đặt ở đây, sau khi khai báo schema, trước khi export
 orderSchema.index({ userId: 1 });
 orderSchema.index({ guestId: 1 });
 orderSchema.index({ status: 1 });
@@ -149,26 +118,22 @@ orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ "products.productId": 1 });
 
-// Virtual for return eligibility
+// Virtual: kiểm tra xem đơn hàng có thể trả hàng hay không
 orderSchema.virtual("canReturn").get(function () {
   if (this.status !== "delivered") return false;
-
-  // Check if within 7 days of delivery
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
   return this.updatedAt > sevenDaysAgo;
 });
 
-// Method to calculate refund eligibility
+// Method: tính số tiền hoàn tối đa
 orderSchema.methods.calculateMaxRefund = function () {
-  // Can refund up to total amount minus shipping fee for certain cases
   return (
     this.totalAmount - (this.paymentMethod === "cod" ? this.shippingFee : 0)
   );
 };
 
-// Pre-save middleware to set return dates
+// Middleware: tự động set ngày trả hàng khi thay đổi status
 orderSchema.pre("save", function (next) {
   if (this.isModified("status")) {
     if (this.status === "return-request" && !this.returnRequestDate) {

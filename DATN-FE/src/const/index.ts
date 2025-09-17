@@ -68,7 +68,7 @@ export const PAYMENT_METHOD_LABELS: Record<PAYMENT_METHOD, string> = {
   [PAYMENT_METHOD.VNPAY]: "VNPay",
 };
 
-<<<<<<< HEAD
+// Function để lấy URL hình ảnh từ backend
 export const GET_IMAGE = (pathName: string): string => {
   if (!pathName || typeof pathName !== "string") {
     return ""; // Hoặc trả về default image path
@@ -134,8 +134,44 @@ export const getStatusColor = (status: ORDER_STATUS): string => {
       return "default";
   }
 };
-=======
-export const GET_IMAGE = (path_name: string) => {
-  return process.env.REACT_APP_API_URL_BACKEND + '/image/' + path_name;
+
+// Utility function để format tiền tệ VND
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
 };
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
+
+// Utility function để format ngày tháng
+export const formatDate = (date: string | Date): string => {
+  return new Date(date).toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// Utility function để kiểm tra trạng thái đơn hàng có thể cập nhật không
+export const canUpdateOrderStatus = (
+  currentStatus: ORDER_STATUS,
+  newStatus: ORDER_STATUS
+): boolean => {
+  const statusFlow: Record<ORDER_STATUS, ORDER_STATUS[]> = {
+    [ORDER_STATUS.PENDING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELED],
+    [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.SHIPPED, ORDER_STATUS.CANCELED],
+    [ORDER_STATUS.SHIPPED]: [ORDER_STATUS.DELIVERED],
+    [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.RETURN_REQUEST],
+    [ORDER_STATUS.CANCELED]: [],
+    [ORDER_STATUS.RETURN_REQUEST]: [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.REJECTED,
+    ],
+    [ORDER_STATUS.ACCEPTED]: [],
+    [ORDER_STATUS.REJECTED]: [],
+  };
+
+  return statusFlow[currentStatus]?.includes(newStatus) || false;
+};

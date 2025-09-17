@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { changeQuantity, removeProduct } from '../../redux/cart/cartSlice';
-import { setMultiProducts } from '../../redux/checkout/checkoutSlice';
-import Swal from 'sweetalert2';
-import { useQuery } from '@tanstack/react-query';
-import { getStocks } from '../../api/index';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { changeQuantity, removeProduct } from "../../redux/cart/cartSlice";
+import { setMultiProducts } from "../../redux/checkout/checkoutSlice";
+import Swal from "sweetalert2";
+import { useQuery } from "@tanstack/react-query";
+import { getStocks } from "../../api/index";
 
 // Helper để so sánh sản phẩm (vì sku có thể null)
 const isSameItem = (a, b) =>
@@ -33,14 +33,14 @@ const CartPage = () => {
 
   const handleRemove = (productId, sku) => {
     Swal.fire({
-      title: 'Bạn có chắc chắn?',
-      text: 'Sản phẩm sẽ bị xoá khỏi giỏ hàng.',
-      icon: 'warning',
+      title: "Bạn có chắc chắn?",
+      text: "Sản phẩm sẽ bị xoá khỏi giỏ hàng.",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Xoá',
-      cancelButtonText: 'Huỷ',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xoá",
+      cancelButtonText: "Huỷ",
     }).then((result) => {
       if (result.isConfirmed) {
         dispatch(removeProduct({ productId, sku }));
@@ -49,8 +49,8 @@ const CartPage = () => {
         );
 
         Swal.fire({
-          icon: 'success',
-          title: 'Đã xoá khỏi giỏ hàng!',
+          icon: "success",
+          title: "Đã xoá khỏi giỏ hàng!",
           showConfirmButton: false,
           timer: 1000,
         });
@@ -74,8 +74,8 @@ const CartPage = () => {
   const handleCheckout = () => {
     if (selectedItems.length === 0) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Vui lòng chọn sản phẩm để thanh toán',
+        icon: "warning",
+        title: "Vui lòng chọn sản phẩm để thanh toán",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -92,20 +92,20 @@ const CartPage = () => {
       dispatch(removeProduct({ productId, sku }));
     });
 
-    navigate('/checkoutpage');
+    navigate("/checkoutpage");
   };
 
   const { data } = useQuery({
-    queryKey: ['product-stock', carts],
+    queryKey: ["product-stock", carts],
     queryFn: () => getStocks(carts),
   });
 
   const checkStock = (productId, sku) => {
     const stock = data?.find((item) => {
-      if(sku) {
-        return item.productId === productId && item.sku === sku
-      }else {
-        return item.productId === productId
+      if (sku) {
+        return item.productId === productId && item.sku === sku;
+      } else {
+        return item.productId === productId;
       }
     });
     return stock?.countInStock;
@@ -126,15 +126,16 @@ const CartPage = () => {
         <span>Xoá</span>
       </div>
 
-<<<<<<< HEAD
       {/* Cart Items */}
       <div className="border-t mt-3">
         {carts.length === 0 ? (
-          <p className="text-center text-gray-500 italic py-6">Giỏ hàng trống.</p>
+          <p className="text-center text-gray-500 italic py-6">
+            Giỏ hàng trống.
+          </p>
         ) : (
-          carts.map((item, index) => (
+          carts.map((item) => (
             <div
-              key={`${item.productId}-${item.sku || 'default'}`}
+              key={`${item.productId}-${item.sku || "default"}`}
               className="grid grid-cols-8 items-center py-4 border-b text-center"
             >
               {/* Checkbox */}
@@ -160,11 +161,11 @@ const CartPage = () => {
                   {item.attributes &&
                     Object.entries(item.attributes).length > 0 && (
                       <>
-                        {' ('}
+                        {" ("}
                         {Object.entries(item.attributes)
                           .map(([key, val]) => `${key}: ${val}`)
-                          .join(', ')}
-                        {')'}
+                          .join(", ")}
+                        {")"}
                       </>
                     )}
                 </p>
@@ -187,18 +188,22 @@ const CartPage = () => {
                   onClick={() =>
                     handleChangeQuantity(item.productId, item.sku || null, 1)
                   }
-                  disabled={item.quantity >= checkStock(item.productId, item.sku)}
+                  disabled={
+                    item.quantity >= checkStock(item.productId, item.sku)
+                  }
                 >
                   +
                 </button>
               </div>
 
               {/* Price */}
-              <p className="text-lg font-semibold">{item.price.toLocaleString('vi-VN')}₫</p>
+              <p className="text-lg font-semibold">
+                {item.price.toLocaleString("vi-VN")}₫
+              </p>
 
               {/* Total per item */}
               <p className="text-lg font-semibold">
-                {(item.quantity * item.price).toLocaleString('vi-VN')}₫
+                {(item.quantity * item.price).toLocaleString("vi-VN")}₫
               </p>
 
               {/* Remove button */}
@@ -216,18 +221,22 @@ const CartPage = () => {
 
       {/* Payment Summary */}
       <div className="border-t pt-4 mt-6">
-        <h3 className="text-lg font-semibold text-gray-800">Tóm tắt thanh toán</h3>
+        <h3 className="text-lg font-semibold text-gray-800">
+          Tóm tắt thanh toán
+        </h3>
 
         <div className="flex justify-between items-center mt-2">
           <p className="text-gray-700 text-lg">Tổng cộng:</p>
           <p className="text-green-500 text-xl font-bold">
-            {subtotal.toLocaleString('vi-VN')}₫
+            {subtotal.toLocaleString("vi-VN")}₫
           </p>
         </div>
 
         <button
           className={`mt-4 w-full bg-yellow-500 text-white py-2 rounded-md font-semibold ${
-            selectedItems.length ? 'hover:bg-yellow-600' : 'opacity-50 cursor-not-allowed'
+            selectedItems.length
+              ? "hover:bg-yellow-600"
+              : "opacity-50 cursor-not-allowed"
           }`}
           onClick={handleCheckout}
           disabled={selectedItems.length === 0}
@@ -239,17 +248,8 @@ const CartPage = () => {
           Thanh toán bằng nhiều địa chỉ!
         </p>
       </div>
-=======
-   
-
-  
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     </div>
   );
 };
 
-<<<<<<< HEAD
 export default CartPage;
-=======
-export default CartPage;
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
