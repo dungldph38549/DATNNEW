@@ -1,23 +1,24 @@
 import { v4 as uuidv4 } from "uuid";
 
+// ✅ Validate Email
 export const isValidEmail = (email: string): boolean => {
   if (!email || typeof email !== "string") return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 };
 
+// ✅ Validate số điện thoại Việt Nam
 export const isValidVietnamesePhone = (phone: string): boolean => {
   if (!phone || typeof phone !== "string") return false;
-  // Cải thiện regex để hỗ trợ nhiều định dạng số điện thoại Việt Nam hơn
-  const cleanPhone = phone.replace(/[\s\-\(\)]/g, ""); // Loại bỏ khoảng trắng và ký tự đặc biệt
+  const cleanPhone = phone.replace(/[\s\-\(\)]/g, "");
   return /^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-9]|9[0-9])[0-9]{7}$/.test(
     cleanPhone
   );
 };
 
+// ✅ Tạo hoặc lấy guestId từ localStorage
 export const getOrCreateGuestId = (): string => {
-  // Kiểm tra localStorage có khả dụng không (server-side rendering safe)
   if (typeof window === "undefined" || !window.localStorage) {
-    return uuidv4(); // Trả về UUID tạm thời nếu không có localStorage
+    return uuidv4();
   }
 
   try {
@@ -28,13 +29,12 @@ export const getOrCreateGuestId = (): string => {
     }
     return guestId;
   } catch (error) {
-    // Xử lý trường hợp localStorage bị disabled hoặc lỗi
     console.warn("Cannot access localStorage:", error);
     return uuidv4();
   }
 };
 
-// Enum cho trạng thái đơn hàng để type safety tốt hơn
+// ✅ Enum trạng thái đơn hàng
 export enum ORDER_STATUS {
   PENDING = "pending",
   CONFIRMED = "confirmed",
@@ -57,43 +57,43 @@ export const ORDER_STATUS_LABELS: Record<ORDER_STATUS, string> = {
   [ORDER_STATUS.RETURN_REQUEST]: "Yêu cầu hoàn hàng",
 };
 
-// Enum cho phương thức thanh toán
+// ✅ Enum phương thức thanh toán
 export enum PAYMENT_METHOD {
   COD = "cod",
   VNPAY = "vnpay",
+  BANK_TRANSFER = "bank_transfer",
 }
 
 export const PAYMENT_METHOD_LABELS: Record<PAYMENT_METHOD, string> = {
   [PAYMENT_METHOD.COD]: "Thanh toán khi nhận hàng",
   [PAYMENT_METHOD.VNPAY]: "VNPay",
+  [PAYMENT_METHOD.BANK_TRANSFER]: "Chuyển khoản ngân hàng",
 };
 
-// Function để lấy URL hình ảnh từ backend
+// ✅ Lấy URL hình ảnh từ server
 export const GET_IMAGE = (pathName: string): string => {
   if (!pathName || typeof pathName !== "string") {
-    return ""; // Hoặc trả về default image path
+    return "";
   }
 
   const baseUrl = process.env.REACT_APP_API_URL_BACKEND;
   if (!baseUrl) {
     console.warn("REACT_APP_API_URL_BACKEND is not defined");
-    return pathName; // Fallback to relative path
+    return pathName;
   }
 
-  // Đảm bảo không có double slashes
   const cleanPath = pathName.startsWith("/") ? pathName.slice(1) : pathName;
   const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 
   return `${cleanBaseUrl}/image/${cleanPath}`;
 };
 
-// Utility function để format số điện thoại
+// ✅ Format số điện thoại VN
 export const formatVietnamesePhone = (phone: string): string => {
   if (!phone) return "";
 
   const cleanPhone = phone.replace(/[\s\-\(\)]/g, "");
 
-  // Format theo pattern: 0xxx xxx xxx
   if (cleanPhone.startsWith("0") && cleanPhone.length === 10) {
     return `${cleanPhone.slice(0, 4)} ${cleanPhone.slice(
       4,
@@ -101,7 +101,6 @@ export const formatVietnamesePhone = (phone: string): string => {
     )} ${cleanPhone.slice(7)}`;
   }
 
-  // Format theo pattern: +84 xxx xxx xxx
   if (cleanPhone.startsWith("+84") && cleanPhone.length === 12) {
     return `+84 ${cleanPhone.slice(3, 6)} ${cleanPhone.slice(
       6,
@@ -109,10 +108,10 @@ export const formatVietnamesePhone = (phone: string): string => {
     )} ${cleanPhone.slice(9)}`;
   }
 
-  return phone; // Trả về original nếu không match pattern
+  return phone;
 };
 
-// Utility function để get status color
+// ✅ Màu sắc cho trạng thái đơn hàng
 export const getStatusColor = (status: ORDER_STATUS): string => {
   switch (status) {
     case ORDER_STATUS.PENDING:
@@ -135,7 +134,7 @@ export const getStatusColor = (status: ORDER_STATUS): string => {
   }
 };
 
-// Utility function để format tiền tệ VND
+// ✅ Format tiền tệ VND
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -143,7 +142,7 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-// Utility function để format ngày tháng
+// ✅ Format ngày tháng
 export const formatDate = (date: string | Date): string => {
   return new Date(date).toLocaleDateString("vi-VN", {
     year: "numeric",
@@ -154,7 +153,7 @@ export const formatDate = (date: string | Date): string => {
   });
 };
 
-// Utility function để kiểm tra trạng thái đơn hàng có thể cập nhật không
+// ✅ Kiểm tra luồng cập nhật trạng thái đơn hàng
 export const canUpdateOrderStatus = (
   currentStatus: ORDER_STATUS,
   newStatus: ORDER_STATUS

@@ -9,7 +9,6 @@ import {
   removeProduct,
   clearProduct,
 } from "../../redux/checkout/checkoutSlice.js";
-
 import { checkVoucher, createOrder, getStocks } from "../../api/index.js";
 
 const CheckoutPage = () => {
@@ -41,6 +40,7 @@ const CheckoutPage = () => {
     0
   );
   const shippingFee = shippingMethod === "fast" ? 30000 : 0;
+
   let discount = 0;
   if (voucherData) {
     discount =
@@ -48,6 +48,7 @@ const CheckoutPage = () => {
         ? (subtotal * voucherData.value) / 100
         : voucherData.value;
   }
+
   const total = subtotal + shippingFee - discount;
 
   // Tạo đơn hàng

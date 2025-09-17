@@ -51,6 +51,7 @@ const AdminOrderDetailPage = ({ id, onClose }) => {
       Swal.fire('Thành công', 'Đã cập nhật thông tin đơn hàng!', 'success');
       queryClient.invalidateQueries(['admin-order-detail', id]);
       onClose();
+      onClose();
     },
     onError: (error) => {
       if (error.response.data.message) return Swal.fire('Thất bại', error.response.data.message, 'warning');

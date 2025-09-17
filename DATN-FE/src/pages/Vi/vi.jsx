@@ -253,9 +253,3 @@ export default function UserWallet() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-

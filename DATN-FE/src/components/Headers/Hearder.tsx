@@ -27,13 +27,9 @@ const Hearder = () => {
       {/* Top bar */}
       <div className="bg-[#0274be] text-white text-sm">
         <div className="max-w-screen-xl mx-auto px-6 py-2 flex flex-wrap justify-end items-center space-x-2">
-          {/* Nếu đã login thì hiện tên */}
           {user.login && (
             <button className="hidden sm:inline transition duration-200 transform hover:scale-105">
-              <Link
-                to={user?.login ? "/profile" : "/login"}
-                className="flex items-center gap-1"
-              >
+              <Link to="/profile" className="flex items-center gap-1">
                 👤 {user.name}
               </Link>
             </button>
@@ -165,7 +161,7 @@ const Hearder = () => {
             </div>
           </div>
 
-          {/* Cart */}
+          {/* Cart button */}
           <button className="mt-3 sm:mt-0">
             <Link
               to="/cart"
@@ -179,74 +175,6 @@ const Hearder = () => {
           </button>
         </div>
       </div>
-
-      {/* Navigation */}
-      <nav className="bg-[#0f6cb2] text-white text-sm font-semibold">
-        <div className="max-w-screen-xl mx-auto px-4 flex justify-between items-center">
-          {/* Menu ngang */}
-          <ul className="hidden sm:flex justify-center items-center space-x-1">
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              HOME
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              CLOTHING
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              ELECTRONICS
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              WATCHES
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              JEWELLERY
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              SHOES
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              KIDS &amp; GIRLS
-            </li>
-            <li className="relative px-4 py-3 hover:bg-[#0865a4] cursor-pointer">
-              PAGES
-            </li>
-            <li className="relative px-4 py-3 text-yellow-400 hover:bg-[#0865a4] cursor-pointer">
-              TODAYS OFFER
-            </li>
-          </ul>
-
-          {/* Nút menu trên điện thoại */}
-          <button
-            className="sm:hidden px-3 py-2"
-            onClick={() => setNavMenuOpen(!navMenuOpen)}
-            aria-label="Toggle navigation menu"
-          >
-            ☰
-          </button>
-        </div>
-
-        {/* Menu mobile */}
-        {navMenuOpen && (
-          <ul className="sm:hidden bg-[#0f6cb2] text-white text-sm space-y-2 px-4 py-3">
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">HOME</li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">CLOTHING</li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">
-              ELECTRONICS
-            </li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">WATCHES</li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">
-              JEWELLERY
-            </li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">SHOES</li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">
-              KIDS &amp; GIRLS
-            </li>
-            <li className="py-2 hover:bg-[#0865a4] cursor-pointer">PAGES</li>
-            <li className="py-2 text-yellow-400 hover:bg-[#0865a4] cursor-pointer">
-              TODAYS OFFER
-            </li>
-          </ul>
-        )}
-      </nav>
     </div>
   );
 };

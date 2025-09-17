@@ -7,12 +7,22 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    guestId: String,
-    address: {
+    guestId: {
+      type: String,
+    },
+    fullName: {
       type: String,
       required: true,
     },
-    fullName: {
+    email: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    address: {
       type: String,
       required: true,
     },
@@ -24,14 +34,6 @@ const orderSchema = new mongoose.Schema(
     shippingMethod: {
       type: String,
       enum: ["standard", "fast"],
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
       required: true,
     },
     products: [
@@ -61,7 +63,10 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    voucherCode: String,
+    voucherCode: {
+      type: String,
+      default: null,
+    },
     shippingFee: {
       type: Number,
       default: 0,
@@ -86,7 +91,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "paid", "failed", "refunded", "unpaid"],
       default: "pending",
     },
     refundAmount: {
@@ -110,7 +115,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Indexes chỉ đặt ở đây, sau khi khai báo schema, trước khi export
+// 🔹 Indexes
 orderSchema.index({ userId: 1 });
 orderSchema.index({ guestId: 1 });
 orderSchema.index({ status: 1 });
@@ -118,7 +123,7 @@ orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ "products.productId": 1 });
 
-// Virtual: kiểm tra xem đơn hàng có thể trả hàng hay không
+// 🔹 Virtual: kiểm tra có thể trả hàng không
 orderSchema.virtual("canReturn").get(function () {
   if (this.status !== "delivered") return false;
   const sevenDaysAgo = new Date();
@@ -126,14 +131,14 @@ orderSchema.virtual("canReturn").get(function () {
   return this.updatedAt > sevenDaysAgo;
 });
 
-// Method: tính số tiền hoàn tối đa
+// 🔹 Method: tính số tiền hoàn tối đa
 orderSchema.methods.calculateMaxRefund = function () {
   return (
     this.totalAmount - (this.paymentMethod === "cod" ? this.shippingFee : 0)
   );
 };
 
-// Middleware: tự động set ngày trả hàng khi thay đổi status
+// 🔹 Middleware: tự động set ngày return khi status thay đổi
 orderSchema.pre("save", function (next) {
   if (this.isModified("status")) {
     if (this.status === "return-request" && !this.returnRequestDate) {
@@ -146,6 +151,13 @@ orderSchema.pre("save", function (next) {
       this.returnProcessedDate = new Date();
     }
   }
+
+  // đảm bảo ít nhất có userId hoặc guestId
+  if (!this.userId && !this.guestId) {
+    this.invalidate("userId", "Either userId or guestId is required.");
+    this.invalidate("guestId", "Either guestId or userId is required.");
+  }
+
   next();
 });
 
