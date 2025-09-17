@@ -1,4 +1,4 @@
-// models/order.js
+// src/models/Order.js
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
@@ -6,11 +6,9 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false,
     },
     guestId: {
       type: String,
-      required: false,
     },
     fullName: {
       type: String,
@@ -45,10 +43,7 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        sku: {
-          type: String,
-          required: false,
-        },
+        sku: String,
         quantity: {
           type: Number,
           required: true,
@@ -70,7 +65,6 @@ const orderSchema = new mongoose.Schema(
     },
     voucherCode: {
       type: String,
-      required: false,
       default: null,
     },
     shippingFee: {
@@ -100,30 +94,11 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "paid", "failed", "refunded", "unpaid"],
       default: "pending",
     },
-    // NEW FIELDS FOR RETURN FLOW
     refundAmount: {
       type: Number,
-      required: false,
       min: 0,
     },
-    returnReason: {
-      type: String,
-      required: false,
-    },
-    returnRequestDate: {
-      type: Date,
-      required: false,
-    },
-    returnProcessedDate: {
-      type: Date,
-      required: false,
-    },
-    returnProcessedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: false,
-    },
-    adminNotes: [
+    internalNotes: [
       {
         note: String,
         createdBy: {
@@ -137,9 +112,7 @@ const orderSchema = new mongoose.Schema(
       },
     ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 // 🔹 Indexes
@@ -153,21 +126,19 @@ orderSchema.index({ "products.productId": 1 });
 // 🔹 Virtual: kiểm tra có thể trả hàng không
 orderSchema.virtual("canReturn").get(function () {
   if (this.status !== "delivered") return false;
-
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
   return this.updatedAt > sevenDaysAgo;
 });
 
-// 🔹 Method: tính tiền tối đa có thể hoàn
+// 🔹 Method: tính số tiền hoàn tối đa
 orderSchema.methods.calculateMaxRefund = function () {
   return (
     this.totalAmount - (this.paymentMethod === "cod" ? this.shippingFee : 0)
   );
 };
 
-// 🔹 Middleware: set ngày return
+// 🔹 Middleware: tự động set ngày return khi status thay đổi
 orderSchema.pre("save", function (next) {
   if (this.isModified("status")) {
     if (this.status === "return-request" && !this.returnRequestDate) {

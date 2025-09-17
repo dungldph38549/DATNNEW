@@ -1,11 +1,5 @@
-
 const { default: mongoose } = require("mongoose");
 const Order = require("../models/order.js");
-
-
-const { default: mongoose } = require('mongoose');
-const Order = require('../models/order.js');
-
 const Product = require("../models/ProductModel.js");
 const Voucher = require("../models/vouchers.js");
 const OrderStatusHistory = require("../models/orderStatusHistory.js");
@@ -849,7 +843,6 @@ exports.acceptOrRejectReturn = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-
 };
 // Cập nhật hàm acceptOrRejectReturn để xử lý hoàn tiền
 exports.acceptOrRejectReturn = async (req, res) => {
@@ -1096,6 +1089,3 @@ exports.getReturnStatistics = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
