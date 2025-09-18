@@ -1,12 +1,7 @@
-// src/services/ProductService.js
+const mongoose = require("mongoose");
 const Product = require("../models/ProductModel");
-<<<<<<< HEAD
-const Brand = require('../models/Brands');
-const Category = require('../models/Categories');
-=======
 const Brand = require("../models/Brands");
 const Category = require("../models/Categories");
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7
 
 const createProduct = async (data) => {
   const {
@@ -25,10 +20,6 @@ const createProduct = async (data) => {
     categoryId,
   } = data;
   try {
-<<<<<<< HEAD
-
-=======
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7
     if (brandId) {
       const brandExists = await Brand.exists({ _id: brandId });
       if (!brandExists) throw new Error({ message: "Brand không tồn tại" });
@@ -71,148 +62,17 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
       if (isListProductRemoved == 1) {
         query.deletedAt = { $ne: null };
       } else {
-<<<<<<< HEAD
-        query.$or = [
-          { deletedAt: { $exists: false } },
-          { deletedAt: null }
-        ];
-=======
         query.$or = [{ deletedAt: { $exists: false } }, { deletedAt: null }];
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7
       }
       const filters = JSON.parse(filter);
       if (filters.name) {
         query.name = { $regex: filters.name, $options: "i" };
       }
-<<<<<<< HEAD
 
       if (filters.categoryId) {
         query.categoryId = filters.categoryId;
       }
 
-      if (filters.brandId) {
-        query.brandId = filters.brandId;
-      }
-
-      if (filters.priceFrom || filters.priceTo) {
-        query.price = {};
-        if (filters.priceFrom) query.price.$gte = filters.priceFrom;
-        if (filters.priceTo) query.price.$lte = filters.priceTo;
-      }
-
-      const totalProduct = await Product.countDocuments(query);
-
-      const allProduct = await Product.find(query)
-        .populate('brandId')
-        .populate('categoryId')
-        .limit(limit)
-        .skip(page * limit)
-        .sort({ createdAt: -1 });
-=======
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7
-
-      if (filters.categoryId) {
-        query.categoryId = filters.categoryId;
-      }
-
-<<<<<<< HEAD
-const relationProduct = async (categoryId, brandId, id) => {
-  try {
-
-    const relationProducts = await Product.find({
-      $or: [
-        { categoryId },
-        { brandId }
-      ],
-      _id: { $ne: id }
-    }).sort({ createdAt: -1 }).limit(20);
-    return relationProducts;
-  } catch (e) {
-    throw new Error(e.message);
-  }
-}
-const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let sortOption = {};
-      if (sort === 'createdAt') {
-        sortOption = { createdAt: -1 };
-      } else if (sort === 'sold') {
-        sortOption = { totalSold: -1 };
-      } else if (sort === 'priceDecre') {
-        sortOption = { minPrice: -1 };
-      } else if (sort === 'priceIncre') {
-        sortOption = { minPrice: 1 };
-      }
-
-      if (filter.keyword) {
-        filter.name = { $regex: filter.keyword, $options: "i" };
-        delete filter.keyword;
-      }
-
-      const matchCondition = {
-        deletedAt: null,
-        ...filter,
-      };
-
-      const result = await Product.aggregate([
-        { $match: matchCondition },
-
-        {
-          $addFields: {
-            minPrice: {
-              $cond: {
-                if: "$hasVariants",
-                then: { $min: "$variants.price" },
-                else: "$price",
-              },
-            },
-            totalSold: {
-              $cond: {
-                if: "$hasVariants",
-                then: { $sum: "$variants.sold" },
-                else: "$sold",
-              },
-            },
-          },
-        },
-
-        {
-          $facet: {
-            data: [
-              { $sort: sortOption },
-              { $skip: page * limit },
-              { $limit: limit },
-              {
-                $lookup: {
-                  from: 'brands',
-                  localField: 'brandId',
-                  foreignField: '_id',
-                  as: 'brandId',
-                },
-              },
-              { $unwind: { path: "$brandId", preserveNullAndEmptyArrays: true } },
-              {
-                $lookup: {
-                  from: 'categories',
-                  localField: 'categoryId',
-                  foreignField: '_id',
-                  as: 'categoryId',
-                },
-              },
-              { $unwind: { path: "$categoryId", preserveNullAndEmptyArrays: true } },
-            ],
-            totalCount: [
-              { $count: "total" }
-            ]
-          }
-        }
-      ]);
-
-      const allProduct = result[0]?.data || [];
-      const totalProduct = result[0]?.totalCount?.[0]?.total || 0;
-
-=======
       if (filters.brandId) {
         query.brandId = filters.brandId;
       }
@@ -232,7 +92,6 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = 'createdAt') => {
         .skip(page * limit)
         .sort({ createdAt: -1 });
 
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7
       return resolve({
         status: "ok",
         message: "Successfully fetched all products",
@@ -274,6 +133,12 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
         sortOption = { minPrice: 1 };
       }
 
+      if (filter.brandId) {
+        filter.brandId = new mongoose.Types.ObjectId(filter.brandId);
+      }
+      if (filter.categoryId) {
+        filter.categoryId = new mongoose.Types.ObjectId(filter.categoryId);
+      }
       if (filter.keyword) {
         filter.name = { $regex: filter.keyword, $options: "i" };
         delete filter.keyword;
@@ -362,13 +227,8 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
 
 const getProductById = async (id) => {
   const product = await Product.findById(id)
-<<<<<<< HEAD
-    .populate('brandId')
-    .populate('categoryId');
-=======
     .populate("brandId")
     .populate("categoryId");
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7
   if (!product) {
     throw new Error("Product not found");
   }
@@ -467,11 +327,5 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
-<<<<<<< HEAD
-  relationProduct
-};
-=======
-
   relationProduct,
 };
->>>>>>> b1738c5eb5d1946541b9889b03e17dda988c07e7

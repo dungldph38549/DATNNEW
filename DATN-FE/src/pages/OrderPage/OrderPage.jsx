@@ -1,10 +1,27 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import { comfirmDelivery, getOrdersByUserOrGuest, returnOrder } from "../../api/index.js";
+import {
+  comfirmDelivery,
+  getOrdersByUserOrGuest,
+  returnOrder,
+  uploadImage,
+} from "../../api/index";
 import { useNavigate } from "react-router-dom";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD } from "../../const/index.ts";
-import { Table, Button, Tag, Spin, Typography, message, Modal, Input } from "antd";
+import {
+  Table,
+  Button,
+  Tag,
+  Spin,
+  Typography,
+  message,
+  Modal,
+  Input,
+  Form,
+  Upload,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -21,7 +38,7 @@ const OrderPage = () => {
   const [selectedOrderId, setSelectedOrderId] = React.useState(null);
 
   const {
-    data: orders = [],
+    data: orders,
     isLoading,
     isError,
   } = useQuery({
@@ -45,13 +62,14 @@ const OrderPage = () => {
   });
 
   const returnMutation = useMutation({
-    mutationFn: ({ id, note }) => returnOrder({ id, note }),
+    mutationFn: ({ id, note, image }) => returnOrder({ id, note, image }),
     onSuccess: () => {
       message.success("Hoàn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["list-order"] });
       setIsReturnModalOpen(false);
       setReturnNote("");
       setSelectedOrderId(null);
+      form.resetFields();
     },
     onError: (err) => {
       message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
@@ -67,11 +85,26 @@ const OrderPage = () => {
     setIsReturnModalOpen(true);
   };
 
+  const [form] = Form.useForm();
+
   const handleReturnSubmit = () => {
-    if (!returnNote.trim()) {
-      return message.warning("Vui lòng nhập lý do hoàn hàng");
-    }
-    returnMutation.mutate({ id: selectedOrderId, note: returnNote });
+    form.validateFields().then((values) => {
+      if (!returnNote.trim()) {
+        return message.warning("Vui lòng nhập lý do hoàn hàng");
+      }
+      returnMutation.mutate({
+        id: selectedOrderId,
+        note: returnNote,
+        image: values.image,
+      });
+    });
+  };
+
+  const handleMainUpload = async ({ file }) => {
+    const formD = new FormData();
+    formD.append("file", file);
+    const res = await uploadImage(formD);
+    form.setFieldsValue({ image: res.path });
   };
 
   const columns = [
@@ -79,7 +112,6 @@ const OrderPage = () => {
       title: "Mã đơn",
       dataIndex: "_id",
       key: "_id",
-      render: (id) => <Text code>{id.slice(-8)}</Text>,
     },
     {
       title: "Ngày đặt",
@@ -139,9 +171,9 @@ const OrderPage = () => {
           : new Date(order.updatedAt || order.createdAt);
         const now = new Date();
         const diffDays = Math.floor(
-          (now - deliveredDate) / (1000 * 60 * 60 * 24)
+          (now.getTime() - deliveredDate.getTime()) / (1000 * 60 * 60 * 24)
         );
-        const canReturn = order.status === "delivered" && diffDays <= 7;
+        const canReturn = order.status === "delivered" && diffDays <= 3;
 
         return (
           <>
@@ -153,13 +185,15 @@ const OrderPage = () => {
                 type="link"
                 danger
                 onClick={() => handleUpdateSubmit(order._id)}
-                loading={updateMutation.isLoading}
               >
                 Đã nhận
               </Button>
             )}
             {canReturn && (
-              <Button type="link" onClick={() => handleOpenReturnModal(order._id)}>
+              <Button
+                type="link"
+                onClick={() => handleOpenReturnModal(order._id)}
+              >
                 Hoàn hàng
               </Button>
             )}
@@ -179,7 +213,7 @@ const OrderPage = () => {
         <Text type="danger" className="mt-10 block">
           Lỗi khi tải đơn hàng.
         </Text>
-      ) : orders.data?.length === 0 ? (
+      ) : !orders || orders.data.length === 0 ? (
         <Text type="secondary" italic>
           Bạn chưa có đơn hàng nào.
         </Text>
@@ -208,13 +242,42 @@ const OrderPage = () => {
         okText="Xác nhận"
         cancelText="Hủy"
       >
-        <p>Vui lòng nhập lý do hoàn hàng:</p>
-        <Input.TextArea
-          rows={4}
-          value={returnNote}
-          onChange={(e) => setReturnNote(e.target.value)}
-          placeholder="Nhập lý do..."
-        />
+        <Form form={form} layout="vertical">
+          <Form.Item label="Lý do" required>
+            <Input.TextArea
+              rows={4}
+              value={returnNote}
+              onChange={(e) => setReturnNote(e.target.value)}
+              placeholder="Nhập lý do..."
+            />
+          </Form.Item>
+
+          <Form.Item name="image" label="Ảnh chính" className="mt-4">
+            <Upload
+              customRequest={handleMainUpload}
+              showUploadList={false}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+            </Upload>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, cur) => prev.image !== cur.image}
+            >
+              {({ getFieldValue }) =>
+                getFieldValue("image") ? (
+                  <img
+                    src={`${
+                      process.env.REACT_APP_API_URL_BACKEND
+                    }/image/${getFieldValue("image")}`}
+                    alt="Preview"
+                    style={{ width: 120, marginTop: 10 }}
+                  />
+                ) : null
+              }
+            </Form.Item>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

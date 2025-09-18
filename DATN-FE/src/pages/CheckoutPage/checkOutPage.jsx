@@ -19,10 +19,10 @@ const CheckoutPage = () => {
   const user = useSelector((state) => state.user);
 
   const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
+    fullName: user.name || "",
+    email: user.email || "",
+    phone: user.phone || "",
+    address: user.address || "",
   });
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -40,18 +40,16 @@ const CheckoutPage = () => {
     0
   );
   const shippingFee = shippingMethod === "fast" ? 30000 : 0;
-
   let discount = 0;
   if (voucherData) {
-    discount =
-      voucherData.type === "percentage"
-        ? (subtotal * voucherData.value) / 100
-        : voucherData.value;
+    if (voucherData.type === "percentage") {
+      discount = (subtotal * voucherData.value) / 100;
+    } else {
+      discount = voucherData.value;
+    }
   }
-
   const total = subtotal + shippingFee - discount;
 
-  // Tạo đơn hàng
   const { mutate, isPending } = useMutation({
     mutationFn: createOrder,
     onSuccess: async (data) => {
@@ -74,16 +72,19 @@ const CheckoutPage = () => {
       Swal.fire({
         title: "Thất bại!",
         text:
-          error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại.",
+          error?.response.data.message || "Có lỗi xảy ra, vui lòng thử lại.",
         icon: "error",
       });
     },
   });
 
-  // Check voucher
   const { mutate: checkVoucherApi } = useMutation({
     mutationFn: checkVoucher,
     onSuccess: async (data) => {
+      setForm({
+        ...form,
+        voucherCode,
+      });
       setVoucherData(data.data);
       await Swal.fire({
         title: "Áp dụng mã giảm giá thành công!",
@@ -101,26 +102,27 @@ const CheckoutPage = () => {
   });
 
   const handleCheckVoucher = () => {
-    if (voucherCode.trim()) checkVoucherApi(voucherCode);
+    checkVoucherApi(voucherCode);
   };
 
   const validateForm = () => {
     const newErrors = {
       fullName: form.fullName.trim() === "" ? "Vui lòng nhập họ tên" : "",
       email:
-        form.email.trim() === ""
+        form?.email?.trim() === ""
           ? "Vui lòng nhập email"
           : !isValidEmail(form.email)
           ? "Email không hợp lệ"
           : "",
       phone:
-        form.phone.trim() === ""
+        form?.phone === ""
           ? "Vui lòng nhập số điện thoại"
           : !isValidVietnamesePhone(form.phone)
           ? "Số điện thoại không hợp lệ"
           : "",
       address: form.address.trim() === "" ? "Vui lòng nhập địa chỉ" : "",
     };
+
     setErrors(newErrors);
     return Object.values(newErrors).every((e) => e === "");
   };
@@ -144,25 +146,26 @@ const CheckoutPage = () => {
       products,
       discount,
       totalAmount: total,
-      shippingFee,
+      shippingFee: shippingMethod === "fast" ? 30000 : 0,
     };
 
     mutate(payload);
   };
 
-  // Kiểm tra tồn kho
   const { data } = useQuery({
     queryKey: ["product-stock", products],
     queryFn: () => getStocks(products),
   });
 
   const checkStock = (productId, sku) => {
-    const stock = data?.find((item) =>
-      sku
-        ? item.productId === productId && item.sku === sku
-        : item.productId === productId
-    );
-    return stock?.countInStock ?? 0;
+    const stock = data?.find((item) => {
+      if (sku) {
+        return item.productId === productId && item.sku === sku;
+      } else {
+        return item.productId === productId;
+      }
+    });
+    return stock?.countInStock;
   };
 
   return (
@@ -205,7 +208,7 @@ const CheckoutPage = () => {
           </div>
           <div>
             <input
-              type="text"
+              type="number"
               placeholder="Số điện thoại"
               value={form.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
@@ -430,8 +433,10 @@ const CheckoutPage = () => {
         </div>
         {discount > 0 && (
           <div className="flex justify-between mb-1">
-            <span>Giảm giá:</span>
-            <span>{discount.toLocaleString("vi-VN")}₫</span>
+            <span className="text-red-600">Giảm giá:</span>
+            <span className="text-red-600">
+              -{discount.toLocaleString("vi-VN")}₫
+            </span>
           </div>
         )}
         <div className="flex justify-between mb-1">

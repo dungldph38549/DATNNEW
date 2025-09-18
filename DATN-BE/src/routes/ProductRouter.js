@@ -11,8 +11,16 @@ router.post("/stocks", ProductController.getStock);
 router.get("/:id", ProductController.getProductById);
 router.post("/relationProduct", ProductController.relationProduct);
 router.put("/update/:id", authAdminMiddleware, ProductController.updateProduct);
-router.delete("/delete/:id", authAdminMiddleware, ProductController.deleteProductById);
-router.put("/restore/:id", authAdminMiddleware, ProductController.restoreProductById);
+router.delete(
+  "/delete/:id",
+  authAdminMiddleware,
+  ProductController.deleteProductById
+);
+router.put(
+  "/restore/:id",
+  authAdminMiddleware,
+  ProductController.restoreProductById
+);
 router.delete("/delete", authAdminMiddleware, ProductController.deleteProduct);
 
 module.exports = router;

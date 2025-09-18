@@ -173,6 +173,7 @@ const CartPage = () => {
 
               {/* Quantity Controls */}
               <div className="flex items-center justify-center space-x-2">
+                {/* Nút trừ */}
                 <button
                   className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
                   onClick={() =>
@@ -182,7 +183,34 @@ const CartPage = () => {
                 >
                   -
                 </button>
-                <span>{item.quantity}</span>
+
+                {/* Input số lượng */}
+                <input
+                  type="number"
+                  value={item.quantity}
+                  min={1}
+                  max={checkStock(item.productId, item.sku) || 1}
+                  onChange={(e) => {
+                    let value = parseInt(e.target.value, 10);
+
+                    if (isNaN(value)) value = 1;
+                    if (value < 1) value = 1;
+
+                    const maxStock = checkStock(item.productId, item.sku);
+                    if (maxStock && value > maxStock) value = maxStock;
+
+                    dispatch(
+                      changeQuantity({
+                        productId: item.productId,
+                        sku: item.sku || null,
+                        delta: value - item.quantity,
+                      })
+                    );
+                  }}
+                  className="w-16 text-center border rounded"
+                />
+
+                {/* Nút cộng */}
                 <button
                   className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
                   onClick={() =>
@@ -253,4 +281,3 @@ const CartPage = () => {
 };
 
 export default CartPage;
-// tuanphong

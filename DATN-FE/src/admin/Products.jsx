@@ -1,9 +1,24 @@
-import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Space, Spin, Form, Input, Select, InputNumber } from 'antd';
-import Swal from 'sweetalert2';
-import ProductDetail from './ProductDetail.jsx';
-import { getAllProducts, deleteProductById, restoreProductById, getAllCategories, getAllBrands } from './../api/index';
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Table,
+  Button,
+  Space,
+  Spin,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+} from "antd";
+import Swal from "sweetalert2";
+import ProductDetail from "./ProductDetail.jsx";
+import {
+  getAllProducts,
+  deleteProductById,
+  restoreProductById,
+  getAllCategories,
+  getAllBrands,
+} from "./../api/index";
 
 export default function Products() {
   const queryClient = useQueryClient();
@@ -14,18 +29,19 @@ export default function Products() {
   const [filter, setFilter] = useState({});
 
   const { data: brands } = useQuery({
-    queryKey: ['admin-brands'],
-    queryFn: () => getAllBrands('all'),
+    queryKey: ["admin-brands"],
+    queryFn: () => getAllBrands("all"),
     keepPreviousData: true,
   });
   const { data: categories } = useQuery({
-    queryKey: ['admin-categories'],
-    queryFn: () => getAllCategories('all'),
+    queryKey: ["admin-categories"],
+    queryFn: () => getAllCategories("all"),
     keepPreviousData: true,
-  })
+  });
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin-products', page, limit, isListProductRemoved, filter],
-    queryFn: () => getAllProducts({ page: page - 1, limit, isListProductRemoved, filter }),
+    queryKey: ["admin-products", page, limit, isListProductRemoved, filter],
+    queryFn: () =>
+      getAllProducts({ page: page - 1, limit, isListProductRemoved, filter }),
     keepPreviousData: true,
   });
 
@@ -36,100 +52,116 @@ export default function Products() {
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: 'Bạn có chắc muốn xoá sản phẩm này?',
-      text: 'Hành động này không thể hoàn tác!',
-      icon: 'warning',
+      title: "Bạn có chắc muốn xoá sản phẩm này?",
+      text: "Hành động này không thể hoàn tác!",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Xoá',
-      cancelButtonText: 'Huỷ',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xoá",
+      cancelButtonText: "Huỷ",
     });
 
     if (result.isConfirmed) {
       try {
         await deleteProductById({ id });
-        queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-        Swal.fire('Đã xoá!', 'Sản phẩm đã được xoá.', 'success');
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        Swal.fire("Đã xoá!", "Sản phẩm đã được xoá.", "success");
       } catch (err) {
-        Swal.fire('Thất bại', 'Không thể xoá sản phẩm.', 'error');
+        Swal.fire("Thất bại", "Không thể xoá sản phẩm.", "error");
       }
     }
   };
 
   const handleRestore = async (id) => {
     const result = await Swal.fire({
-      title: 'Bạn có chắc muốn khôi phục sản phẩm này?',
-      icon: 'warning',
+      title: "Bạn có chắc muốn khôi phục sản phẩm này?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Khôi phục',
-      cancelButtonText: 'Huỷ',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Khôi phục",
+      cancelButtonText: "Huỷ",
     });
 
     if (result.isConfirmed) {
       try {
         await restoreProductById({ id });
-        queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-        Swal.fire('Đã khôi phục!', 'Sản phẩm đã được khôi phục.', 'success');
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        Swal.fire("Đã khôi phục!", "Sản phẩm đã được khôi phục.", "success");
         setPage(1);
       } catch (err) {
-        Swal.fire('Thất bại', 'Không thể khôi phục sản phẩm.', 'error');
+        Swal.fire("Thất bại", "Không thể khôi phục sản phẩm.", "error");
       }
     }
   };
 
   const columns = [
-    { title: 'Mã sản phẩm', dataIndex: '_id', key: '_id' },
-    { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name' },
+    { title: "Mã sản phẩm", dataIndex: "_id", key: "_id" },
+    { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
     {
-      title: 'Danh mục',
-      key: 'category',
-      render: (_, record) => record.categoryId?.name || 'không có',
+      title: "Danh mục",
+      key: "category",
+      render: (_, record) => record.categoryId?.name || "không có",
     },
     {
-      title: 'Thương hiệu',
-      key: 'brand',
-      render: (_, record) => record.brandId?.name || 'không có',
+      title: "Thương hiệu",
+      key: "brand",
+      render: (_, record) => record.brandId?.name || "không có",
     },
     {
-      title: 'Giá tiền',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price, record) => (record.hasVariants ? '--' : `${price.toLocaleString('vi-VN')}₫`),
+      title: "Giá tiền",
+      dataIndex: "price",
+      key: "price",
+      render: (price, record) =>
+        record.hasVariants ? "--" : `${price.toLocaleString("vi-VN")}₫`,
     },
     {
-      title: 'Tồn kho',
-      dataIndex: 'countInStock',
-      key: 'countInStock',
-      render: (countInStock, record) => (record.hasVariants ? '--' : countInStock),
+      title: "Tồn kho",
+      dataIndex: "countInStock",
+      key: "countInStock",
+      render: (countInStock, record) =>
+        record.hasVariants ? "--" : countInStock,
     },
     {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date) => new Date(date).toLocaleDateString('vi-VN'),
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
-      title: 'Ngày xoá',
-      dataIndex: 'deletedAt',
-      key: 'deletedAt',
-      render: (date) => (date ? new Date(date).toLocaleDateString('vi-VN') : '-'),
+      title: "Ngày xoá",
+      dataIndex: "deletedAt",
+      key: "deletedAt",
+      render: (date) =>
+        date ? new Date(date).toLocaleDateString("vi-VN") : "-",
     },
     {
-      title: 'Hành động',
-      key: 'actions',
+      title: "Hành động",
+      key: "actions",
       render: (_, record) => (
         <Space>
           {!record.deletedAt && (
             <>
-              <Button type="link" onClick={() => setProductSelected(record._id)}>Sửa</Button>
-              <Button type="link" danger onClick={() => handleDelete(record._id)}>Xoá</Button>
+              <Button
+                type="link"
+                onClick={() => setProductSelected(record._id)}
+              >
+                Sửa
+              </Button>
+              <Button
+                type="link"
+                danger
+                onClick={() => handleDelete(record._id)}
+              >
+                Xoá
+              </Button>
             </>
           )}
           {record.deletedAt && (
-            <Button type="link" onClick={() => handleRestore(record._id)}>Khôi phục</Button>
+            <Button type="link" onClick={() => handleRestore(record._id)}>
+              Khôi phục
+            </Button>
           )}
         </Space>
       ),
@@ -137,7 +169,12 @@ export default function Products() {
   ];
 
   if (productSelected) {
-    return <ProductDetail productId={productSelected} onClose={() => setProductSelected(null)} />;
+    return (
+      <ProductDetail
+        productId={productSelected}
+        onClose={() => setProductSelected(null)}
+      />
+    );
   }
 
   return (
@@ -146,9 +183,13 @@ export default function Products() {
         <h2 className="text-2xl font-semibold">Danh sách Sản phẩm</h2>
         <div>
           <Button type="primary" className="mr-4" onClick={handleList}>
-            {isListProductRemoved ? 'Danh sách sản phẩm' : 'Danh sách sản phẩm bị xóa'}
+            {isListProductRemoved
+              ? "Danh sách sản phẩm"
+              : "Danh sách sản phẩm bị xóa"}
           </Button>
-          <Button type="primary" onClick={() => setProductSelected('create')}>Tạo sản phẩm</Button>
+          <Button type="primary" onClick={() => setProductSelected("create")}>
+            Tạo sản phẩm
+          </Button>
         </div>
       </div>
 
@@ -162,8 +203,8 @@ export default function Products() {
             brandId: values.brandId || undefined,
             priceFrom: values.priceFrom,
             priceTo: values.priceTo,
-            createdFrom: values.createdAt?.[0]?.startOf('day').toISOString(),
-            createdTo: values.createdAt?.[1]?.endOf('day').toISOString(),
+            createdFrom: values.createdAt?.[0]?.startOf("day").toISOString(),
+            createdTo: values.createdAt?.[1]?.endOf("day").toISOString(),
           };
           setFilter(filterData);
           setPage(1);
@@ -179,20 +220,20 @@ export default function Products() {
         </Form.Item>
         <Form.Item name="categoryId">
           <Select placeholder="Danh mục" style={{ width: 150 }} allowClear>
-            {
-              categories?.data?.map(c => (
-                <Select.Option key={c._id} value={c._id}>{c.name}</Select.Option>
-              ))
-            }
+            {categories?.data?.map((c) => (
+              <Select.Option key={c._id} value={c._id}>
+                {c.name}
+              </Select.Option>
+            ))}
           </Select>
         </Form.Item>
         <Form.Item name="brandId">
           <Select placeholder="Thương hiệu" style={{ width: 150 }} allowClear>
-            {
-              brands?.data?.map(c => (
-                <Select.Option key={c._id} value={c._id}>{c.name}</Select.Option>
-              ))
-            }
+            {brands?.data?.map((c) => (
+              <Select.Option key={c._id} value={c._id}>
+                {c.name}
+              </Select.Option>
+            ))}
           </Select>
         </Form.Item>
         <Form.Item name="priceFrom">
@@ -202,7 +243,9 @@ export default function Products() {
           <InputNumber placeholder="Giá đến" min={0} />
         </Form.Item>
         <Form.Item>
-          <Button htmlType="submit" type="primary">Lọc</Button>
+          <Button htmlType="submit" type="primary">
+            Lọc
+          </Button>
         </Form.Item>
         <Form.Item>
           <Button htmlType="reset">Reset</Button>
@@ -228,27 +271,27 @@ export default function Products() {
           expandable={{
             expandedRowRender: (record) => {
               if (!record.hasVariants || !Array.isArray(record.variants)) {
-                return 'Sản phẩm không có biến thể';
+                return "Sản phẩm không có biến thể";
               }
 
               const variantColumns = [
-                { title: 'SKU', dataIndex: 'sku', key: 'sku' },
+                { title: "SKU", dataIndex: "sku", key: "sku" },
                 {
-                  title: 'Giá',
-                  dataIndex: 'price',
-                  key: 'price',
-                  render: (val) => `${val.toLocaleString('vi-VN')}₫`,
+                  title: "Giá",
+                  dataIndex: "price",
+                  key: "price",
+                  render: (val) => `${val.toLocaleString("vi-VN")}₫`,
                 },
-                { title: 'Tồn kho', dataIndex: 'stock', key: 'stock' },
+                { title: "Tồn kho", dataIndex: "stock", key: "stock" },
                 {
-                  title: 'Thuộc tính',
-                  key: 'attributes',
+                  title: "Thuộc tính",
+                  key: "attributes",
                   render: (_, variant) =>
                     variant.attributes
                       ? Object.entries(variant.attributes)
-                        .map(([key, val]) => `${key}: ${val}`)
-                        .join(', ')
-                      : 'Không có',
+                          .map(([key, val]) => `${key}: ${val}`)
+                          .join(", ")
+                      : "Không có",
                 },
               ];
 
@@ -256,7 +299,10 @@ export default function Products() {
                 <div className="overflow-auto">
                   <Table
                     columns={variantColumns}
-                    dataSource={record.variants.map((v, i) => ({ ...v, key: i }))}
+                    dataSource={record.variants.map((v, i) => ({
+                      ...v,
+                      key: i,
+                    }))}
                     pagination={false}
                     size="small"
                   />

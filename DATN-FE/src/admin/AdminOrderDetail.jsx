@@ -51,7 +51,6 @@ const AdminOrderDetailPage = ({ id, onClose }) => {
       Swal.fire('Thành công', 'Đã cập nhật thông tin đơn hàng!', 'success');
       queryClient.invalidateQueries(['admin-order-detail', id]);
       onClose();
-      onClose();
     },
     onError: (error) => {
       if (error.response.data.message) return Swal.fire('Thất bại', error.response.data.message, 'warning');
@@ -226,7 +225,7 @@ const AdminOrderDetailPage = ({ id, onClose }) => {
           </div>
 
           <div className="flex justify-end mt-6 text-xl font-medium">
-            <span>Giảm giá: <span className="text-green-600">{(order?.discount).toLocaleString('vi-VN')}₫</span></span>
+            <span>Giảm giá: <span className="text-red-600">{(order?.discount).toLocaleString('vi-VN')}₫</span></span>
           </div>
           {/* Tổng tiền */}
           <div className="flex justify-end mt-6 text-xl font-bold">

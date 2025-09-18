@@ -1,6 +1,6 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const { genneralAcessToken } = require("./JwtService");
+const { genneralAcessToken } = require("./JwtSevice");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
@@ -66,25 +66,15 @@ const loginUser = (userLogin) => {
       const checkUser = await User.findOne({
         email: email,
       });
+      const comfirmPassword = bcrypt.compareSync(password, checkUser.password);
 
-      // Kiểm tra user có tồn tại không
-      if (!checkUser) {
+      if (!comfirmPassword) {
         return reject({
           status: false,
           message: "Email hoặc mật khẩu không chính xác",
         });
       }
-
-      const confirmPassword = bcrypt.compareSync(password, checkUser.password);
-
-      if (!confirmPassword) {
-        return reject({
-          status: false,
-          message: "Email hoặc mật khẩu không chính xác",
-        });
-      }
-
-      const access_token = await genneralAcessToken({
+      const acess_token = await genneralAcessToken({
         id: checkUser.id,
         isAdmin: checkUser.isAdmin,
       });
@@ -96,7 +86,7 @@ const loginUser = (userLogin) => {
       return resolve({
         status: true,
         message: "Đăng nhập thành công",
-        access_token,
+        acess_token,
         refresh_token,
         data: {
           _id: checkUser._id,
@@ -109,10 +99,7 @@ const loginUser = (userLogin) => {
         },
       });
     } catch (e) {
-      return reject({
-        status: false,
-        message: e.message || "Lỗi đăng nhập",
-      });
+      return reject(e.message);
     }
   });
 };
@@ -132,7 +119,7 @@ const updateUser = async (id, data) => {
       const hash = await bcrypt.hashSync(data.password, 10);
       update.password = hash;
     }
-    if (data.isAdmin !== undefined) update.isAdmin = data.isAdmin;
+    if (data.isAdmin) update.isAdmin = data.isAdmin;
 
     if (data.name) update.name = data.name;
     if (data.email) update.email = data.email;
@@ -159,7 +146,7 @@ const deleteUser = async (id) => {
     if (!checkUser) {
       return {
         status: false,
-        message: "Không tìm thấy người dùng",
+        message: "User not found",
       };
     }
 
@@ -167,12 +154,12 @@ const deleteUser = async (id) => {
 
     return {
       status: true,
-      message: "Xóa người dùng thành công",
+      message: "Delete successfully",
     };
   } catch (e) {
     return {
       status: false,
-      message: "Có lỗi xảy ra khi xóa người dùng",
+      message: "Something went wrong",
       error: e.message,
     };
   }
@@ -184,7 +171,7 @@ const getAllUser = async () => {
       const allUser = await User.find();
       resolve({
         status: true,
-        message: "Lấy danh sách người dùng thành công",
+        message: "Get all user successfully",
         data: allUser,
       });
     } catch (e) {

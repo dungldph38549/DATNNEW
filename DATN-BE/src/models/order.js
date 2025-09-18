@@ -1,4 +1,3 @@
-// src/models/Order.js
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
@@ -28,13 +27,13 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["cod", "vnpay", "bank_transfer"],
       required: true,
+      enum: ["cod", "vnpay"],
     },
     shippingMethod: {
       type: String,
-      enum: ["standard", "fast"],
       required: true,
+      enum: ["standard", "fast"],
     },
     products: [
       {
@@ -43,7 +42,9 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        sku: String,
+        sku: {
+          type: String,
+        },
         quantity: {
           type: Number,
           required: true,
@@ -69,11 +70,16 @@ const orderSchema = new mongoose.Schema(
     },
     shippingFee: {
       type: Number,
-      default: 0,
+      required: true,
     },
     totalAmount: {
       type: Number,
       required: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["paid", "unpaid"],
+      default: "unpaid",
     },
     status: {
       type: String,
@@ -89,75 +95,16 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
-    paymentStatus: {
-      type: String,
-      enum: ["pending", "paid", "failed", "refunded", "unpaid"],
-      default: "pending",
-    },
-    refundAmount: {
-      type: Number,
-      min: 0,
-    },
-    internalNotes: [
-      {
-        note: String,
-        createdBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
   },
   { timestamps: true }
 );
 
-// 🔹 Indexes
-orderSchema.index({ userId: 1 });
-orderSchema.index({ guestId: 1 });
-orderSchema.index({ status: 1 });
-orderSchema.index({ paymentStatus: 1 });
-orderSchema.index({ createdAt: -1 });
-orderSchema.index({ "products.productId": 1 });
-
-// 🔹 Virtual: kiểm tra có thể trả hàng không
-orderSchema.virtual("canReturn").get(function () {
-  if (this.status !== "delivered") return false;
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  return this.updatedAt > sevenDaysAgo;
-});
-
-// 🔹 Method: tính số tiền hoàn tối đa
-orderSchema.methods.calculateMaxRefund = function () {
-  return (
-    this.totalAmount - (this.paymentMethod === "cod" ? this.shippingFee : 0)
-  );
-};
-
-// 🔹 Middleware: tự động set ngày return khi status thay đổi
-orderSchema.pre("save", function (next) {
-  if (this.isModified("status")) {
-    if (this.status === "return-request" && !this.returnRequestDate) {
-      this.returnRequestDate = new Date();
-    }
-    if (
-      ["accepted", "rejected"].includes(this.status) &&
-      !this.returnProcessedDate
-    ) {
-      this.returnProcessedDate = new Date();
-    }
-  }
-
-  // đảm bảo ít nhất có userId hoặc guestId
+// Đảm bảo ít nhất 1 trong 2: userId hoặc guestId
+orderSchema.pre("validate", function (next) {
   if (!this.userId && !this.guestId) {
     this.invalidate("userId", "Either userId or guestId is required.");
     this.invalidate("guestId", "Either guestId or userId is required.");
   }
-
   next();
 });
 

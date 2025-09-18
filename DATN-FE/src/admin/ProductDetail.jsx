@@ -1,12 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import {
-  Form, Input, InputNumber, Button, Checkbox, Upload,
-  Select, Space, Card, Divider, message,
-  Table
-} from 'antd';
-import { PlusOutlined, UploadOutlined, MinusCircleOutlined } from '@ant-design/icons';
-import Swal from 'sweetalert2';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+  Form,
+  Input,
+  InputNumber,
+  Button,
+  Checkbox,
+  Upload,
+  Select,
+  Space,
+  Card,
+  Divider,
+  message,
+  Table,
+} from "antd";
+import {
+  PlusOutlined,
+  UploadOutlined,
+  MinusCircleOutlined,
+} from "@ant-design/icons";
+import Swal from "sweetalert2";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getProductById,
   createProduct,
@@ -14,8 +27,8 @@ import {
   uploadImage,
   uploadImages,
   getAllBrands,
-  getAllCategories
-} from './../api/index';
+  getAllCategories,
+} from "./../api/index";
 
 const { TextArea } = Input;
 
@@ -24,34 +37,37 @@ const ProductDetail = ({ productId = null, onClose }) => {
   const queryClient = useQueryClient();
 
   const { data: productData, isLoading } = useQuery({
-    queryKey: ['admin-product-detail', productId],
+    queryKey: ["admin-product-detail", productId],
     queryFn: () => getProductById(productId),
-    enabled: productId !== null && productId !== 'create',
+    enabled: productId !== null && productId !== "create",
   });
 
   const { data: brands } = useQuery({
-    queryKey: ['admin-brands'],
-    queryFn: () => getAllBrands('all'),
+    queryKey: ["admin-brands"],
+    queryFn: () => getAllBrands("all"),
     keepPreviousData: true,
   });
   const { data: categories } = useQuery({
-    queryKey: ['admin-categories'],
-    queryFn: () => getAllCategories('all'),
+    queryKey: ["admin-categories"],
+    queryFn: () => getAllCategories("all"),
     keepPreviousData: true,
-  })
+  });
 
   const mutation = useMutation({
-    mutationFn: productId !== 'create' ? updateProduct : createProduct,
+    mutationFn: productId !== "create" ? updateProduct : createProduct,
     onSuccess: () => {
-      Swal.fire('Thành công', `${productId !== 'create' ? 'Cập nhật' : 'Tạo'
-        } sản phẩm thành công!`, 'success');
-      queryClient.invalidateQueries(['admin-products']);
+      Swal.fire(
+        "Thành công",
+        `${productId !== "create" ? "Cập nhật" : "Tạo"} sản phẩm thành công!`,
+        "success"
+      );
+      queryClient.invalidateQueries(["admin-products"]);
       onClose();
     },
     onError: (err) => {
       if (err.response?.data?.message)
-        Swal.fire('Thất bại', err.response.data.message, 'warning');
-    }
+        Swal.fire("Thất bại", err.response.data.message, "warning");
+    },
   });
 
   useEffect(() => {
@@ -66,7 +82,7 @@ const ProductDetail = ({ productId = null, onClose }) => {
 
   const handleMainUpload = async ({ file }) => {
     const formD = new FormData();
-    formD.append('file', file);
+    formD.append("file", file);
     const res = await uploadImage(formD);
     form.setFieldsValue({ image: res.path });
   };
@@ -76,27 +92,32 @@ const ProductDetail = ({ productId = null, onClose }) => {
 
     try {
       const formDataMulti = new FormData();
-      files?.forEach((file) => formDataMulti.append('files', file));
+      files?.forEach((file) => formDataMulti.append("files", file));
       const result = await uploadImages(formDataMulti);
       form.setFieldsValue({ srcImages: result.paths });
     } catch (err) {
-      console.error('Upload ảnh phụ thất bại:', err);
+      console.error("Upload ảnh phụ thất bại:", err);
     }
   };
 
   const handleRemoveSubImage = (indexToRemove) => {
-    const currrent = form.getFieldValue('srcImages') || [];
-    form.setFieldsValue({ srcImages: currrent.filter((_, i) => i !== indexToRemove) });
+    const currrent = form.getFieldValue("srcImages") || [];
+    form.setFieldsValue({
+      srcImages: currrent.filter((_, i) => i !== indexToRemove),
+    });
   };
 
   const onFinish = (values) => {
-    mutation.mutate({ id: productId !== 'create' ? productId : undefined, payload: { ...values, srcImages: form.getFieldValue('srcImages') } });
+    mutation.mutate({
+      id: productId !== "create" ? productId : undefined,
+      payload: { ...values, srcImages: form.getFieldValue("srcImages") },
+    });
   };
 
   return (
     <Card
       className="bg-white rounded-xl shadow"
-      title={productId !== 'create' ? '✏️ Sửa sản phẩm' : '➕ Tạo sản phẩm mới'}
+      title={productId !== "create" ? "✏️ Sửa sản phẩm" : "➕ Tạo sản phẩm mới"}
       loading={isLoading}
     >
       <Form
@@ -109,22 +130,44 @@ const ProductDetail = ({ productId = null, onClose }) => {
           attributes: [],
         }}
       >
-        <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true }]}>
+        <Form.Item
+          name="name"
+          label="Tên sản phẩm"
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
 
-        <Form.Item name="brandId" label="Thương hiệu" rules={[{ required: true }]}>
-          <Select options={brands?.data?.map(b => ({ label: b.name, value: b._id }))} />
+        <Form.Item
+          name="brandId"
+          label="Thương hiệu"
+          rules={[{ required: true }]}
+        >
+          <Select
+            options={brands?.data?.map((b) => ({
+              label: b.name,
+              value: b._id,
+            }))}
+          />
         </Form.Item>
 
-        <Form.Item name="categoryId" label="Danh mục" rules={[{ required: true }]}>
-          <Select options={categories?.data?.map(c => ({ label: c.name, value: c._id }))} />
+        <Form.Item
+          name="categoryId"
+          label="Danh mục"
+          rules={[{ required: true }]}
+        >
+          <Select
+            options={categories?.data?.map((c) => ({
+              label: c.name,
+              value: c._id,
+            }))}
+          />
         </Form.Item>
 
         <Form.Item
           name="image"
           label="Ảnh chính"
-          rules={[{ required: true, message: 'Ảnh chính là bắt buộc' }]}
+          rules={[{ required: true, message: "Ảnh chính là bắt buộc" }]}
         >
           <Upload
             customRequest={handleMainUpload}
@@ -133,11 +176,16 @@ const ProductDetail = ({ productId = null, onClose }) => {
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh chính</Button>
           </Upload>
-          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.image !== cur.image}>
+          <Form.Item
+            noStyle
+            shouldUpdate={(prev, cur) => prev.image !== cur.image}
+          >
             {({ getFieldValue }) =>
-              getFieldValue('image') ? (
+              getFieldValue("image") ? (
                 <img
-                  src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${getFieldValue('image')}`}
+                  src={`${
+                    process.env.REACT_APP_API_URL_BACKEND
+                  }/image/${getFieldValue("image")}`}
                   alt="Preview"
                   style={{ width: 120, marginTop: 10 }}
                 />
@@ -161,11 +209,15 @@ const ProductDetail = ({ productId = null, onClose }) => {
             {/* Hiển thị ảnh preview */}
             <Form.Item shouldUpdate>
               {({ getFieldValue }) => {
-                const images = getFieldValue('srcImages') || [];
+                const images = getFieldValue("srcImages") || [];
                 return (
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ display: "flex", gap: "10px" }}>
                     {images.map((imgPath, index) => (
-                      <div key={index} className="relative" style={{ width: "120px" }}>
+                      <div
+                        key={index}
+                        className="relative"
+                        style={{ width: "120px" }}
+                      >
                         <img
                           src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${imgPath}`}
                           alt={`Ảnh phụ ${index + 1}`}
@@ -193,15 +245,20 @@ const ProductDetail = ({ productId = null, onClose }) => {
           <Form.Item
             name="price"
             label="Giá tiền"
-            rules={[{ required: true, type: 'number', min: 0 }]}
+            rules={[{ required: true, type: "number", min: 0 }]}
           >
-            <InputNumber formatter={val => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} style={{ width: 200 }} />
+            <InputNumber
+              formatter={(val) =>
+                `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              style={{ width: 200 }}
+            />
           </Form.Item>
 
           <Form.Item
             name="countInStock"
             label="Tồn kho"
-            rules={[{ required: true, type: 'number', min: 0 }]}
+            rules={[{ required: true, type: "number", min: 0 }]}
           >
             <InputNumber style={{ width: 200 }} />
           </Form.Item>
@@ -211,9 +268,11 @@ const ProductDetail = ({ productId = null, onClose }) => {
           <Checkbox>Có biến thể?</Checkbox>
         </Form.Item>
 
-        <Form.Item shouldUpdate={(prev, cur) => prev.hasVariants !== cur.hasVariants}>
+        <Form.Item
+          shouldUpdate={(prev, cur) => prev.hasVariants !== cur.hasVariants}
+        >
           {({ getFieldValue }) =>
-            getFieldValue('hasVariants') && (
+            getFieldValue("hasVariants") && (
               <>
                 <Divider orientation="left">Thuộc tính biến thể</Divider>
 
@@ -225,7 +284,7 @@ const ProductDetail = ({ productId = null, onClose }) => {
                       validator: (_, val) =>
                         Array.isArray(val)
                           ? Promise.resolve()
-                          : Promise.reject('Cần nhập thuộc tính'),
+                          : Promise.reject("Cần nhập thuộc tính"),
                     },
                   ]}
                 >
@@ -233,70 +292,76 @@ const ProductDetail = ({ productId = null, onClose }) => {
                 </Form.Item>
 
                 {/* Bao toàn bộ Form.List trong shouldUpdate để re-render khi attributes đổi */}
-                <Form.Item shouldUpdate={(prev, cur) => prev.attributes !== cur.attributes}>
+                <Form.Item
+                  shouldUpdate={(prev, cur) =>
+                    prev.attributes !== cur.attributes
+                  }
+                >
                   {({ getFieldValue }) => {
-                    const attributes = getFieldValue('attributes') || [];
+                    const attributes = getFieldValue("attributes") || [];
                     // color, size
                     return (
                       <Form.List name="variants">
                         {(fields, { add, remove }) => {
                           const columns = [
                             {
-                              title: 'SKU',
-                              dataIndex: 'sku',
+                              title: "SKU",
+                              dataIndex: "sku",
                               render: (_, __, index) => (
                                 <Form.Item
-                                  name={[index, 'sku']}
-                                  rules={[{ required: true, message: 'Nhập SKU' }]}
+                                  name={[index, "sku"]}
+                                  rules={[
+                                    { required: true, message: "Nhập SKU" },
+                                  ]}
                                 >
                                   <Input />
                                 </Form.Item>
                               ),
                             },
                             {
-                              title: 'Giá',
-                              dataIndex: 'price',
+                              title: "Giá",
+                              dataIndex: "price",
                               render: (_, __, index) => (
                                 <Form.Item
-                                  name={[index, 'price']}
+                                  name={[index, "price"]}
                                   rules={[
                                     {
                                       required: true,
-                                      type: 'number',
+                                      type: "number",
                                       min: 1,
-                                      message: 'Nhập giá hợp lệ',
+                                      message: "Nhập giá hợp lệ",
                                     },
                                   ]}
                                 >
-                                  <InputNumber style={{ width: '100%' }} />
+                                  <InputNumber style={{ width: "100%" }} />
                                 </Form.Item>
                               ),
                             },
                             {
-                              title: 'Tồn kho',
-                              dataIndex: 'stock',
+                              title: "Tồn kho",
+                              dataIndex: "stock",
                               render: (_, __, index) => (
                                 <Form.Item
-                                  name={[index, 'stock']}
+                                  name={[index, "stock"]}
                                   rules={[
                                     {
                                       required: true,
-                                      type: 'number',
+                                      type: "number",
                                       min: 0,
-                                      message: 'Nhập tồn kho hợp lệ',
+                                      message: "Nhập tồn kho hợp lệ",
                                     },
                                   ]}
                                 >
-                                  <InputNumber style={{ width: '100%' }} />
+                                  <InputNumber style={{ width: "100%" }} />
                                 </Form.Item>
                               ),
                             },
                             ...attributes.map((attr) => ({
                               title: attr,
-                              dataIndex: ['attributes', attr],
+                              dataIndex: ["attributes", attr],
                               render: (_, __, index) => (
                                 <Form.Item
-                                  name={[index, 'attributes', attr]}
+                                  name={[index, "attributes", attr]}
                                   rules={[
                                     {
                                       required: true,
@@ -309,12 +374,16 @@ const ProductDetail = ({ productId = null, onClose }) => {
                               ),
                             })),
                             {
-                              title: 'Hành động',
-                              dataIndex: 'action',
+                              title: "Hành động",
+                              dataIndex: "action",
                               render: (_, __, index) => (
                                 <Button
                                   danger
-                                  style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginBottom: 24,
+                                  }}
                                   type="link"
                                   icon={<MinusCircleOutlined />}
                                   onClick={() => remove(index)}
@@ -360,15 +429,18 @@ const ProductDetail = ({ productId = null, onClose }) => {
           }
         </Form.Item>
 
-
-        <Form.Item name="description" label="Mô tả" rules={[{ required: true }]}>
+        <Form.Item
+          name="description"
+          label="Mô tả"
+          rules={[{ required: true }]}
+        >
           <TextArea rows={4} />
         </Form.Item>
 
         <Form.Item>
           <Space>
             <Button type="primary" htmlType="submit">
-              {productId !== 'create' ? 'Cập nhật' : 'Tạo mới'}
+              {productId !== "create" ? "Cập nhật" : "Tạo mới"}
             </Button>
             <Button onClick={onClose}>Hủy</Button>
           </Space>

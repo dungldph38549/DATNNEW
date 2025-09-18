@@ -5,8 +5,15 @@ const createUser = async (req, res) => {
     const { name, email, password, comfirmPassword, phone } = req.body;
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isCheckEmail = reg.test(email);
-    
-    if (!name || !email || !password || !comfirmPassword || !phone || !isCheckEmail) {
+
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !comfirmPassword ||
+      !phone ||
+      !isCheckEmail
+    ) {
       return res.status(422).json({
         status: false,
         message: "Vui lòng điền đầy đủ thông tin",
@@ -29,7 +36,7 @@ const createUser = async (req, res) => {
 
 const listUser = async (req, res) => {
   try {
-    const {page, limit} = req.query
+    const { page, limit } = req.query;
     const response = await UserService.listUser(Number(page), Number(limit));
     return res.status(200).json(response);
   } catch (e) {
@@ -38,7 +45,6 @@ const listUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  
   try {
     const { email, password } = req.body;
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,7 +54,7 @@ const loginUser = async (req, res) => {
         status: false,
         message: "Vui lòng điền đầy đủ thông tin",
       });
-    } 
+    }
 
     const response = await UserService.loginUser(req.body);
     return res.status(200).json(response);
@@ -86,12 +92,12 @@ const updateCustomer = async (req, res) => {
       });
     }
     const userInfor = {};
-    if(data.name) userInfor.name = data.fullName
-    if(data.email) userInfor.email = data.email
-    if(data.phone) userInfor.phone = data.phone
-    if(data.address) userInfor.address = data.address 
-    if(data.password) userInfor.password = data.password
-    if(data.avatar) userInfor.avatar = data.avatar
+    if (data.name) userInfor.name = data.fullName;
+    if (data.email) userInfor.email = data.email;
+    if (data.phone) userInfor.phone = data.phone;
+    if (data.address) userInfor.address = data.address;
+    if (data.password) userInfor.password = data.password;
+    if (data.avatar) userInfor.avatar = data.avatar;
     const response = await UserService.updateUser(data.id, userInfor);
     return res.status(200).json(response);
   } catch (e) {
@@ -138,5 +144,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   listUser,
-  updateCustomer
+  updateCustomer,
 };
