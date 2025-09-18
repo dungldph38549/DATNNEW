@@ -13,13 +13,7 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        let { status } = req.query;
-        let brands
-        if(status !== 'all') {
-          brands =  await Brand.find({ status });
-        } else {
-          brands = await Brand.find();
-        }
+        const brands =  await Brand.find({ status: 'active' });
         return successResponse({ res, data: brands });
     } catch (err) {
         return errorResponse({ res, message: err.message, statusCode: 500 });

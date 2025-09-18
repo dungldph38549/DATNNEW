@@ -69,6 +69,22 @@ export default function Brands() {
     createMutation.mutate(transformFormValues(values));
   };
 
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Xác nhận xoá',
+      content: `Bạn có chắc chắn muốn xoá thương hiệu "${record.name}" không?`,
+      okText: 'Xoá',
+      okType: 'danger',
+      cancelText: 'Huỷ',
+      onOk: () => {
+        updateMutation.mutate({
+          id: record._id,
+          data: { status: 'inactive' },
+        });
+      },
+    });
+  };
+
   const handleEdit = (record) => {
     setSelected(record);
     setImagePreview(record.image);
@@ -94,16 +110,16 @@ export default function Brands() {
         />
       )
     },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (s) => (
-        <Tag color={s === 'active' ? 'green' : 'red'}>
-          {s}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: 'Trạng thái',
+    //   dataIndex: 'status',
+    //   key: 'status',
+    //   render: (s) => (
+    //     <Tag color={s === 'active' ? 'green' : 'red'}>
+    //       {s}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
@@ -118,9 +134,12 @@ export default function Brands() {
     {
       title: 'Hành động',
       key: 'action',
-      width: 150,
+      width: 200,
       render: (_, record) => (
-        <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
+        <div className="flex space-x-2">
+          <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
+          <Button type="link" danger onClick={() => handleDelete(record)}>Xoá</Button>
+        </div>
       ),
     },
   ];
@@ -178,9 +197,9 @@ export default function Brands() {
           )}
         </div>
 
-        <Form.Item label="Trạng thái" name="status" valuePropName="checked">
+        {/* <Form.Item label="Trạng thái" name="status" valuePropName="checked">
           <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
@@ -244,10 +263,10 @@ export default function Brands() {
             />
           )}
         </div>
-
-        <Form.Item label="Trạng thái" name="status" valuePropName="checked">
+        
+        {/* <Form.Item label="Trạng thái" name="status" valuePropName="checked">
           <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={createMutation.isPending}>

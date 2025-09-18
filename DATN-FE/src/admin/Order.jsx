@@ -18,17 +18,6 @@ export default function Order() {
     keepPreviousData: true,
   });
 
-  const acceptOrRejectMutation = useMutation({
-    mutationFn: ({ id, note, status }) => acceptOrRejectReturn({ id, note, status }),
-    onSuccess: () => {
-      message.success('Thành công');
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-    },
-    onError: (err) => {
-      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
-    },
-  });
-
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Bạn có chắc muốn xoá đơn hàng này?',
@@ -49,30 +38,6 @@ export default function Order() {
       } catch (err) {
         Swal.fire('Thất bại', 'Không thể xoá đơn hàng.', 'error');
       }
-    }
-  };
-
-  const handleAcceptReject = async (id, status) => {
-    const result = await Swal.fire({
-      title: status === 'accepted' ? 'Xác nhận chấp nhận hoàn hàng' : 'Xác nhận từ chối hoàn hàng',
-      input: 'textarea',
-      inputPlaceholder: 'Nhập ghi chú...',
-      showCancelButton: true,
-      confirmButtonText: status === 'accepted' ? 'Chấp nhận' : 'Từ chối',
-      cancelButtonText: 'Huỷ',
-      inputValidator: (value) => {
-        if (!value) {
-          return 'Vui lòng nhập ghi chú!';
-        }
-      },
-    });
-
-    if (result.isConfirmed) {
-      acceptOrRejectMutation.mutate({
-        id,
-        note: result.value,
-        status,
-      });
     }
   };
 
@@ -101,19 +66,11 @@ export default function Order() {
       title: 'Tổng tiền',
       dataIndex: 'totalAmount',
       key: 'totalAmount',
-<<<<<<< HEAD
       render: (value) => (
         <span className="text-green-600 font-semibold">
           {value.toLocaleString('vi-VN')}₫
         </span>
       ),
-=======
-<<<<<<< HEAD
-      render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString('vi-VN')}₫</span>,
-=======
-      render: (value) => <span className="text-green-600 font-semibold">{value.toLocaleString()}₫</span>,
->>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
     },
     {
       title: 'Trạng thái',
@@ -130,10 +87,6 @@ export default function Order() {
       },
     },
     {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       title: 'Trạng thái thanh toán',
       dataIndex: 'paymentStatus',
       key: 'paymentStatus',
@@ -141,7 +94,6 @@ export default function Order() {
         let color = 'red';
         if (paymentStatus === 'paid') color = 'green';
 
-<<<<<<< HEAD
         return (
           <Tag color={color}>
             {paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
@@ -150,14 +102,6 @@ export default function Order() {
       },
     },
     {
-=======
-        return <Tag color={color}>{paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>;
-      },
-    },
-    {
-=======
->>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -179,19 +123,6 @@ export default function Order() {
           <Button type="link" danger onClick={() => handleDelete(record._id)}>
             Xoá
           </Button>
-          {
-            record.status === 'return-request' &&
-            (
-              <>
-                <Button type="link" onClick={() => handleAcceptReject(record._id, 'accepted')}>
-                  Accept
-                </Button>
-                <Button type="link" danger onClick={() => handleAcceptReject(record._id, 'rejected')}>
-                  Reject
-                </Button>
-              </>
-            )
-          }
         </div>
       ),
     },
@@ -207,22 +138,13 @@ export default function Order() {
   }
 
   return (
-<<<<<<< HEAD
     <div className="bg-white p-4 rounded-xl shadow w-100">
-=======
-<<<<<<< HEAD
-    <div className="bg-white p-4 rounded-xl shadow w-100">
-=======
-    <div>
->>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       <h2 className="text-2xl font-semibold mb-4">Danh sách Đơn hàng</h2>
       {isLoading ? (
         <Spin tip="Đang tải đơn hàng..." />
       ) : isError ? (
         <p className="text-red-500">Lỗi khi tải danh sách đơn hàng</p>
       ) : (
-<<<<<<< HEAD
         <div className="overflow-x-auto">
           <Table
             columns={columns}
@@ -230,13 +152,6 @@ export default function Order() {
               ...order,
               key: order._id,
             }))}
-=======
-<<<<<<< HEAD
-        <div className="overflow-x-auto">
-          <Table
-            columns={columns}
-            dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
             pagination={{
               current: page,
               total: data.total,
@@ -246,22 +161,6 @@ export default function Order() {
             bordered
           />
         </div>
-<<<<<<< HEAD
-=======
-=======
-        <Table
-          columns={columns}
-          dataSource={data.data?.map((order) => ({ ...order, key: order._id }))}
-          pagination={{
-            current: page,
-            total: data.total,
-            pageSize: limit,
-            onChange: (newPage) => setPage(newPage),
-          }}
-          bordered
-        />
->>>>>>> a266cd63afdf4a4b655bb5200ac27cbef6fcd42a
->>>>>>> 1d8791b76dc9ed52559d7716952435fbeaf3202a
       )}
     </div>
   );

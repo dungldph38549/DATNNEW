@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { changeQuantity, removeProduct } from "../../redux/cart/cartSlice";
-import { setMultiProducts } from "../../redux/checkout/checkoutSlice";
-import Swal from "sweetalert2";
-import { useQuery } from "@tanstack/react-query";
-import { getStocks } from "../../api/index";
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { changeQuantity, removeProduct } from '../../redux/cart/cartSlice';
+import { setMultiProducts } from '../../redux/checkout/checkoutSlice';
+import Swal from 'sweetalert2';
+import { useQuery } from '@tanstack/react-query';
+import { getStocks } from '../../api/index';
 
 // Helper để so sánh sản phẩm (vì sku có thể null)
 const isSameItem = (a, b) =>
@@ -33,14 +33,14 @@ const CartPage = () => {
 
   const handleRemove = (productId, sku) => {
     Swal.fire({
-      title: "Bạn có chắc chắn?",
-      text: "Sản phẩm sẽ bị xoá khỏi giỏ hàng.",
-      icon: "warning",
+      title: 'Bạn có chắc chắn?',
+      text: 'Sản phẩm sẽ bị xoá khỏi giỏ hàng.',
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Xoá",
-      cancelButtonText: "Huỷ",
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
     }).then((result) => {
       if (result.isConfirmed) {
         dispatch(removeProduct({ productId, sku }));
@@ -49,8 +49,8 @@ const CartPage = () => {
         );
 
         Swal.fire({
-          icon: "success",
-          title: "Đã xoá khỏi giỏ hàng!",
+          icon: 'success',
+          title: 'Đã xoá khỏi giỏ hàng!',
           showConfirmButton: false,
           timer: 1000,
         });
@@ -74,8 +74,8 @@ const CartPage = () => {
   const handleCheckout = () => {
     if (selectedItems.length === 0) {
       Swal.fire({
-        icon: "warning",
-        title: "Vui lòng chọn sản phẩm để thanh toán",
+        icon: 'warning',
+        title: 'Vui lòng chọn sản phẩm để thanh toán',
         timer: 1500,
         showConfirmButton: false,
       });
@@ -92,11 +92,11 @@ const CartPage = () => {
       dispatch(removeProduct({ productId, sku }));
     });
 
-    navigate("/checkoutpage");
+    navigate('/checkoutpage');
   };
 
   const { data } = useQuery({
-    queryKey: ["product-stock", carts],
+    queryKey: ['product-stock', carts],
     queryFn: () => getStocks(carts),
   });
 
@@ -135,7 +135,7 @@ const CartPage = () => {
         ) : (
           carts.map((item) => (
             <div
-              key={`${item.productId}-${item.sku || "default"}`}
+              key={`${item.productId}-${item.sku || 'default'}`}
               className="grid grid-cols-8 items-center py-4 border-b text-center"
             >
               {/* Checkbox */}
@@ -161,11 +161,11 @@ const CartPage = () => {
                   {item.attributes &&
                     Object.entries(item.attributes).length > 0 && (
                       <>
-                        {" ("}
+                        {' ('}
                         {Object.entries(item.attributes)
                           .map(([key, val]) => `${key}: ${val}`)
-                          .join(", ")}
-                        {")"}
+                          .join(', ')}
+                        {')'}
                       </>
                     )}
                 </p>
@@ -173,6 +173,7 @@ const CartPage = () => {
 
               {/* Quantity Controls */}
               <div className="flex items-center justify-center space-x-2">
+                {/* Nút trừ */}
                 <button
                   className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
                   onClick={() =>
@@ -182,15 +183,40 @@ const CartPage = () => {
                 >
                   -
                 </button>
-                <span>{item.quantity}</span>
+
+                {/* Input số lượng */}
+                <input
+                  type="number"
+                  value={item.quantity}
+                  min={1}
+                  max={checkStock(item.productId, item.sku) || 1}
+                  onChange={(e) => {
+                    let value = parseInt(e.target.value, 10);
+
+                    if (isNaN(value)) value = 1;
+                    if (value < 1) value = 1;
+
+                    const maxStock = checkStock(item.productId, item.sku);
+                    if (maxStock && value > maxStock) value = maxStock;
+
+                    dispatch(
+                      changeQuantity({
+                        productId: item.productId,
+                        sku: item.sku || null,
+                        delta: value - item.quantity,
+                      })
+                    );
+                  }}
+                  className="w-16 text-center border rounded"
+                />
+
+                {/* Nút cộng */}
                 <button
                   className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
                   onClick={() =>
                     handleChangeQuantity(item.productId, item.sku || null, 1)
                   }
-                  disabled={
-                    item.quantity >= checkStock(item.productId, item.sku)
-                  }
+                  disabled={item.quantity >= checkStock(item.productId, item.sku)}
                 >
                   +
                 </button>
@@ -198,12 +224,12 @@ const CartPage = () => {
 
               {/* Price */}
               <p className="text-lg font-semibold">
-                {item.price.toLocaleString("vi-VN")}₫
+                {item.price.toLocaleString('vi-VN')}₫
               </p>
 
               {/* Total per item */}
               <p className="text-lg font-semibold">
-                {(item.quantity * item.price).toLocaleString("vi-VN")}₫
+                {(item.quantity * item.price).toLocaleString('vi-VN')}₫
               </p>
 
               {/* Remove button */}
@@ -228,15 +254,15 @@ const CartPage = () => {
         <div className="flex justify-between items-center mt-2">
           <p className="text-gray-700 text-lg">Tổng cộng:</p>
           <p className="text-green-500 text-xl font-bold">
-            {subtotal.toLocaleString("vi-VN")}₫
+            {subtotal.toLocaleString('vi-VN')}₫
           </p>
         </div>
 
         <button
           className={`mt-4 w-full bg-yellow-500 text-white py-2 rounded-md font-semibold ${
             selectedItems.length
-              ? "hover:bg-yellow-600"
-              : "opacity-50 cursor-not-allowed"
+              ? 'hover:bg-yellow-600'
+              : 'opacity-50 cursor-not-allowed'
           }`}
           onClick={handleCheckout}
           disabled={selectedItems.length === 0}

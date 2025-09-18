@@ -13,13 +13,7 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const { status } = req.query;
-        let categories
-        if(status !== 'all') {
-            categories =  await Category.find({ status });
-        } else {
-            categories = await Category.find();
-        }
+        const categories = await Category.find({ status: 'active' });
         return successResponse({ res, data: categories });
     } catch (err) {
         return errorResponse({ res, message: err.message, statusCode: 500 });
@@ -38,7 +32,7 @@ exports.getOne = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const {name,status,id,image } = req.body;
+        const { name, status, id, image } = req.body;
         if(!id) {
             return errorResponse({ res, message: "ID danh mục không hợp lệ", statusCode: 422 });
         }
