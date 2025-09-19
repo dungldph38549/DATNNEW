@@ -2,11 +2,11 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import {
-  comfirmDelivery,
+  confirmDelivery,
   getOrdersByUserOrGuest,
   returnOrder,
   uploadImage,
-} from "../../api/index";
+} from "../../api/index.js";
 import { useNavigate } from "react-router-dom";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD } from "../../const/index.ts";
 import {
@@ -51,7 +51,7 @@ const OrderPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id }) => comfirmDelivery(id),
+    mutationFn: ({ id }) => confirmDelivery(id),
     onSuccess: () => {
       message.success("Cập nhật thành công");
       queryClient.invalidateQueries({ queryKey: ["list-order"] });
