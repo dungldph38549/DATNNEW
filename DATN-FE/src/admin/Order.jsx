@@ -1,3 +1,4 @@
+// src/pages/Order.jsx
 import { useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
@@ -167,11 +168,11 @@ export default function Order() {
         <div className="flex gap-2">
           <Input
             prefix={<SearchOutlined />}
-            placeholder="Tìm kiếm theo tên, email..."
+            placeholder="Tìm kiếm theo tên, email, mã đơn..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             allowClear
-            style={{ width: 220 }}
+            style={{ width: 250 }}
           />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Làm mới

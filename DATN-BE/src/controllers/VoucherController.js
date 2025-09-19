@@ -22,7 +22,12 @@ exports.update = async (req, res) => {
       new: true,
       runValidators: true,
     });
-    if (!updated) return errorResponse({ res, message: "Voucher không tồn tại", statusCode: 404 });
+    if (!updated)
+      return errorResponse({
+        res,
+        message: "Voucher không tồn tại",
+        statusCode: 404,
+      });
     return successResponse({ res, data: updated });
   } catch (err) {
     errorResponse({ res, message: err.message, statusCode: 500 });
@@ -34,10 +39,15 @@ exports.delete = async (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
-        return errorResponse({ res, message: "Danh sách ID không hợp lệ", statusCode: 422 });
-    } 
+      return errorResponse({
+        res,
+        message: "Danh sách ID không hợp lệ",
+        statusCode: 422,
+      });
+    }
     const deleted = await Voucher.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ message: "Voucher không tồn tại" });
+    if (!deleted)
+      return res.status(404).json({ message: "Voucher không tồn tại" });
     return successResponse({ res, data: deleted });
   } catch (err) {
     return errorResponse({ res, message: err.message, statusCode: 500 });
@@ -57,7 +67,7 @@ exports.getAll = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
-    
+
     return successResponse({ res, data: vouchers });
   } catch (err) {
     errorResponse({ res, message: err.message, statusCode: 500 });
@@ -68,7 +78,12 @@ exports.detail = async (req, res) => {
   try {
     const { id } = req.params;
     const voucher = await Voucher.findById(id);
-    if (!voucher) return errorResponse({ res, message: "Voucher không tồn tại", statusCode: 404 });
+    if (!voucher)
+      return errorResponse({
+        res,
+        message: "Voucher không tồn tại",
+        statusCode: 404,
+      });
     return successResponse({ res, data: voucher });
   } catch (err) {
     errorResponse({ res, message: err.message, statusCode: 500 });
@@ -104,6 +119,10 @@ exports.checkVoucherCode = async (req, res) => {
     }
     return successResponse({ res, data: voucher, message: "Mã hợp lệ" });
   } catch (err) {
-    return errorResponse({ res, message: err.message, statusCode: 500});
+    return errorResponse({ res, message: err.message, statusCode: 500 });
   }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2

@@ -1,61 +1,67 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const VoucherSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Tên voucher là bắt buộc"],
-    trim: true,
-  },
-  code: {
-    type: String,
-    required: [true, "Mã voucher là bắt buộc"],
-    unique: true,
-    uppercase: true,
-    trim: true,
-    match: [/^[A-Z0-9]+$/, "Mã voucher chỉ được chứa các ký tự từ A-Z và số từ 0-9"],
-  },
-  value: {
-    type: Number,
-    required: [true, "Giá trị giảm giá là bắt buộc"],
-    min: [0, "Giá trị không được âm"],
-  },
-  type: {
-    type: String,
-    enum: {
-      values: ["percentage", "fixed"],
-      message: "Loại giảm giá phải là 'percentage' hoặc 'fixed'",
+const VoucherSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Tên voucher là bắt buộc"],
+      trim: true,
     },
-    required: [true, "Loại giảm giá là bắt buộc"],
-  },
-  startDate: {
-    type: Date,
-    required: [true, "Ngày bắt đầu là bắt buộc"],
-  },
-  endDate: {
-    type: Date,
-    required: [true, "Ngày kết thúc là bắt buộc"],
-  },
-  status: {
-    type: String,
-    enum: {
-      values: ["active", "inactive"],
-      message: "Trạng thái phải là 'active' hoặc 'inactive'",
+    code: {
+      type: String,
+      required: [true, "Mã voucher là bắt buộc"],
+      unique: true,
+      uppercase: true,
+      trim: true,
+      match: [
+        /^[A-Z0-9]+$/,
+        "Mã voucher chỉ được chứa các ký tự từ A-Z và số từ 0-9",
+      ],
     },
-    default: "inactive",
+    value: {
+      type: Number,
+      required: [true, "Giá trị giảm giá là bắt buộc"],
+      min: [0, "Giá trị không được âm"],
+    },
+    type: {
+      type: String,
+      enum: {
+        values: ["percentage", "fixed"],
+        message: "Loại giảm giá phải là 'percentage' hoặc 'fixed'",
+      },
+      required: [true, "Loại giảm giá là bắt buộc"],
+    },
+    startDate: {
+      type: Date,
+      required: [true, "Ngày bắt đầu là bắt buộc"],
+    },
+    endDate: {
+      type: Date,
+      required: [true, "Ngày kết thúc là bắt buộc"],
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ["active", "inactive"],
+        message: "Trạng thái phải là 'active' hoặc 'inactive'",
+      },
+      default: "inactive",
+    },
+    count: {
+      type: Number,
+      default: 0,
+      min: [0, "Số lượng không được âm"],
+    },
+    usedCount: {
+      type: Number,
+      default: 0,
+      min: [0, "Số lần sử dụng không được âm"],
+    },
   },
-  count: {
-    type: Number,
-    default: 0,
-    min: [0, "Số lượng không được âm"],
-  },
-  usedCount: {
-    type: Number,
-    default: 0,
-    min: [0, "Số lần sử dụng không được âm"],
-  },
-}, {
-  timestamps: true,
-});
+  {
+    timestamps: true,
+  }
+);
 
 VoucherSchema.pre("validate", function (next) {
   // Check thời gian
@@ -98,4 +104,7 @@ VoucherSchema.methods.isUsable = function () {
 
 const Voucher = mongoose.model("Voucher", VoucherSchema);
 module.exports = Voucher;
+<<<<<<< HEAD
 
+=======
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2

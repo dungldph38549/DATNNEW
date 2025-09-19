@@ -1,15 +1,26 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
+=======
+import React, { useState } from "react";
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
 import {
-  Table, Tag, Spin, Modal, Button, Form,
-  Input, message, Switch
-} from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+  Table,
+  Tag,
+  Spin,
+  Modal,
+  Button,
+  Form,
+  Input,
+  message,
+  Switch,
+} from "antd";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllCategories,
   updateCategory,
   createCategory,
-  uploadImage
-} from '../api/index';
+  uploadImage,
+} from "../api/index";
 
 export default function Categories() {
   const queryClient = useQueryClient();
@@ -17,45 +28,45 @@ export default function Categories() {
   const [selected, setSelected] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [imagePreview, setImagePreview] = useState('');
-  const [createImagePreview, setCreateImagePreview] = useState('');
+  const [imagePreview, setImagePreview] = useState("");
+  const [createImagePreview, setCreateImagePreview] = useState("");
 
   const [form] = Form.useForm(); // Edit form
   const [createForm] = Form.useForm(); // Create form
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin-categories'],
-    queryFn: () => getAllCategories('all'),
+    queryKey: ["admin-categories"],
+    queryFn: () => getAllCategories("all"),
     keepPreviousData: true,
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => updateCategory({ id, ...data }),
     onSuccess: () => {
-      message.success('Cập nhật thành công');
-      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      message.success("Cập nhật thành công");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       setIsEditModalVisible(false);
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
+      message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
     },
   });
 
   const createMutation = useMutation({
     mutationFn: createCategory,
     onSuccess: () => {
-      message.success('Tạo thành công');
-      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      message.success("Tạo thành công");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       setIsCreateModalVisible(false);
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || 'Lỗi khi tạo mới');
+      message.error(err?.response?.data?.message || "Lỗi khi tạo mới");
     },
   });
 
   const transformFormValues = (values) => ({
     ...values,
-    status: values.status ? 'active' : 'inactive',
+    status: values.status ? "active" : "inactive",
   });
 
   const handleUpdateSubmit = (values) => {
@@ -75,13 +86,14 @@ export default function Categories() {
     form.setFieldsValue({
       name: record.name,
       image: record.image,
-      status: record.status === 'active',
+      status: record.status === "active",
     });
     setIsEditModalVisible(true);
   };
 
   const handleDelete = (record) => {
     Modal.confirm({
+<<<<<<< HEAD
       title: 'Xác nhận xoá',
       content: `Bạn có chắc chắn muốn xoá thương hiệu "${record.name}" không?`,
       okText: 'Xoá',
@@ -91,37 +103,56 @@ export default function Categories() {
         updateMutation.mutate({
           id: record._id,
           data: { status: 'inactive' },
+=======
+      title: "Xác nhận xoá",
+      content: `Bạn có chắc chắn muốn xoá thương hiệu "${record.name}" không?`,
+      okText: "Xoá",
+      okType: "danger",
+      cancelText: "Huỷ",
+      onOk: () => {
+        updateMutation.mutate({
+          id: record._id,
+          data: { status: "inactive" },
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
         });
       },
     });
   };
 
   const columns = [
-    { title: 'Tên', dataIndex: 'name', key: 'name' },
+    { title: "Tên", dataIndex: "name", key: "name" },
     {
-      title: 'Hình ảnh',
-      dataIndex: 'image',
-      key: 'image',
-      render: (img) => img && (
-        <img
-          src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${img}`}
-          alt="Ảnh"
-          className="w-12 h-12 object-cover rounded"
-        />
-      )
+      title: "Hình ảnh",
+      dataIndex: "image",
+      key: "image",
+      render: (img) =>
+        img && (
+          <img
+            src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${img}`}
+            alt="Ảnh"
+            className="w-12 h-12 object-cover rounded"
+          />
+        ),
     },
     {
+<<<<<<< HEAD
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
+=======
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
       render: (date) =>
-        new Date(date).toLocaleDateString('vi-VN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
+        new Date(date).toLocaleDateString("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
         }),
     },
     {
+<<<<<<< HEAD
       title: 'Hành động',
       key: 'action',
       width: 200,
@@ -129,6 +160,19 @@ export default function Categories() {
         <div className="flex space-x-2">
           <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
           <Button type="link" danger onClick={() => handleDelete(record)}>Xoá</Button>
+=======
+      title: "Hành động",
+      key: "action",
+      width: 200,
+      render: (_, record) => (
+        <div className="flex space-x-2">
+          <Button type="link" onClick={() => handleEdit(record)}>
+            Sửa
+          </Button>
+          <Button type="link" danger onClick={() => handleDelete(record)}>
+            Xoá
+          </Button>
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
         </div>
       ),
     },
@@ -141,24 +185,20 @@ export default function Categories() {
       if (!file) return;
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       try {
         const result = await uploadImage(formData);
         form.setFieldsValue({ image: result.path });
         setImagePreview(result.path);
-        message.success('Tải ảnh thành công');
+        message.success("Tải ảnh thành công");
       } catch (err) {
-        message.error('Upload ảnh thất bại');
+        message.error("Upload ảnh thất bại");
       }
     };
 
     return (
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleUpdateSubmit}
-      >
+      <Form form={form} layout="vertical" onFinish={handleUpdateSubmit}>
         <Form.Item label="Tên" name="name" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
@@ -192,7 +232,11 @@ export default function Categories() {
         </Form.Item> */}
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={updateMutation.isPending}
+          >
             Lưu
           </Button>
         </Form.Item>
@@ -207,15 +251,15 @@ export default function Categories() {
       if (!file) return;
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       try {
         const result = await uploadImage(formData);
         createForm.setFieldsValue({ image: result.path });
         setCreateImagePreview(result.path);
-        message.success('Tải ảnh thành công');
+        message.success("Tải ảnh thành công");
       } catch (err) {
-        message.error('Upload ảnh thất bại');
+        message.error("Upload ảnh thất bại");
       }
     };
 
@@ -223,7 +267,7 @@ export default function Categories() {
       <Form
         form={createForm}
         layout="vertical"
-        initialValues={{ name: '', image: '', status: true }}
+        initialValues={{ name: "", image: "", status: true }}
         onFinish={handleCreateSubmit}
       >
         <Form.Item label="Tên" name="name" rules={[{ required: true }]}>
@@ -259,7 +303,11 @@ export default function Categories() {
         </Form.Item> */}
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={createMutation.isPending}
+          >
             Lưu
           </Button>
         </Form.Item>
@@ -268,11 +316,15 @@ export default function Categories() {
   };
 
   if (isLoading) {
-    return <Spin tip="Đang tải danh sách ..." className="mt-10 block text-center" />;
+    return (
+      <Spin tip="Đang tải danh sách ..." className="mt-10 block text-center" />
+    );
   }
 
   if (isError || !data) {
-    return <div className="text-center text-red-500">Lỗi khi tải danh sách.</div>;
+    return (
+      <div className="text-center text-red-500">Lỗi khi tải danh sách.</div>
+    );
   }
 
   return (
@@ -282,7 +334,7 @@ export default function Categories() {
         <Button
           type="primary"
           onClick={() => {
-            setCreateImagePreview('');
+            setCreateImagePreview("");
             createForm.resetFields();
             setIsCreateModalVisible(true);
           }}

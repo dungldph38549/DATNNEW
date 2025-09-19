@@ -11,9 +11,9 @@ export const store = configureStore({
     counter: counterReducer,
     user: userReducer,
     cart: cartReducer,
-    general: generalReducer
+    general: generalReducer,
   },
-})
+});
 
 store.subscribe(() => {
   try {

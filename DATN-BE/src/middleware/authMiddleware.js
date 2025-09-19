@@ -5,7 +5,7 @@ dotenv.config();
 // Middleware xác thực user thường hoặc admin (chỉ cần token hợp lệ)
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
       message: "No token provided",
@@ -32,7 +32,14 @@ const authMiddleware = (req, res, next) => {
 // Middleware dành riêng cho admin
 const authAdminMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      message: "No token provided",
+      status: "Err",
+    });
+  }
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
       message: "No token provided",

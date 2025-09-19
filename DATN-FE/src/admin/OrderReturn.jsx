@@ -1,44 +1,44 @@
-import {
-  Table, Spin, Button, message
-} from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  orderReturn,
-  acceptOrRejectReturn
-} from '../api/index';
-import Swal from 'sweetalert2';
+// src/pages/ReturnOrders.jsx
+import { Table, Spin, Button, message } from "antd";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { orderReturn, acceptOrRejectReturn } from "../api/index";
+import Swal from "sweetalert2";
 
-export default function Brands() {
+export default function ReturnOrders() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['return-orders'],
+    queryKey: ["return-orders"],
     queryFn: () => orderReturn(),
     keepPreviousData: true,
   });
 
   const acceptOrRejectMutation = useMutation({
-    mutationFn: ({ id, note, status }) => acceptOrRejectReturn({ id, note, status }),
+    mutationFn: ({ id, note, status }) =>
+      acceptOrRejectReturn({ id, note, status }),
     onSuccess: () => {
-      message.success('Thành công');
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      message.success("Thành công");
+      queryClient.invalidateQueries({ queryKey: ["return-orders"] });
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
+      message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
     },
   });
 
   const handleAcceptReject = async (id, status) => {
     const result = await Swal.fire({
-      title: status === 'accepted' ? 'Xác nhận chấp nhận hoàn hàng' : 'Xác nhận từ chối hoàn hàng',
-      input: 'textarea',
-      inputPlaceholder: 'Nhập ghi chú...',
+      title:
+        status === "accepted"
+          ? "Xác nhận chấp nhận hoàn hàng"
+          : "Xác nhận từ chối hoàn hàng",
+      input: "textarea",
+      inputPlaceholder: "Nhập ghi chú...",
       showCancelButton: true,
-      confirmButtonText: status === 'accepted' ? 'Chấp nhận' : 'Từ chối',
-      cancelButtonText: 'Huỷ',
+      confirmButtonText: status === "accepted" ? "Chấp nhận" : "Từ chối",
+      cancelButtonText: "Huỷ",
       inputValidator: (value) => {
         if (!value) {
-          return 'Vui lòng nhập ghi chú!';
+          return "Vui lòng nhập ghi chú!";
         }
       },
     });
@@ -54,74 +54,77 @@ export default function Brands() {
 
   const columns = [
     {
-      title: 'Mã đơn hàng',
-      dataIndex: 'orderId',
-      key: 'orderId',
-      render: (order) => {
-        return order._id;
-      }
+      title: "Mã đơn hàng",
+      dataIndex: "orderId",
+      key: "orderId",
+      render: (order) => order._id,
     },
-     {
-      title: 'Hình ảnh',
-      dataIndex: 'image',
-      key: 'image',
+    {
+      title: "Hình ảnh",
+      dataIndex: "image",
+      key: "image",
       width: 140,
-      render: (img) => img && (
+      render: (img) =>
+        img && (
           <img
             src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${img}`}
             alt="Ảnh"
             width={120}
-            height={'auto'}
+            height="auto"
             className="object-cover rounded"
           />
-      )
+        ),
     },
     {
-      title: 'Lý do',
-      dataIndex: 'note',
-      key: 'note',
-      render: (note) => {
-        return note;
-      }
+      title: "Lý do",
+      dataIndex: "note",
+      key: "note",
     },
     {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (date) =>
-        new Date(date).toLocaleDateString('vi-VN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
+        new Date(date).toLocaleDateString("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
         }),
     },
     {
-      title: 'Hành động',
-      key: 'action',
+      title: "Hành động",
+      key: "action",
       width: 150,
-      render: (_, record) => {
-        console.log(record);
-        
-        return (
-          <>
-          <Button type="link" onClick={() => handleAcceptReject(record.orderId._id, 'accepted')}>
+      render: (_, record) => (
+        <>
+          <Button
+            type="link"
+            onClick={() => handleAcceptReject(record.orderId._id, "accepted")}
+          >
             Đồng ý
           </Button>
-          <Button type="link" danger onClick={() => handleAcceptReject(record.orderId._id, 'rejected')}>
+          <Button
+            type="link"
+            danger
+            onClick={() => handleAcceptReject(record.orderId._id, "rejected")}
+          >
             Từ chối
           </Button>
         </>
-        )
-      },
+      ),
     },
   ];
 
   if (isLoading) {
-    return <Spin tip="Đang tải danh sách ..." className="mt-10 block text-center" />;
+    return (
+      <Spin tip="Đang tải danh sách ..." className="mt-10 block text-center" />
+    );
   }
 
   if (isError || !data) {
-    return <div className="text-center text-red-500">Lỗi khi tải danh sách.</div>;
+    return (
+      <div className="text-center text-red-500">Lỗi khi tải danh sách.</div>
+    );
   }
 
   return (

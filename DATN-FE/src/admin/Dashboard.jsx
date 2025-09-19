@@ -17,11 +17,7 @@ import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 
 const Dashboard = () => {
-  const [overview, setOverview] = useState({
-    totalOrders: 0,
-    totalRevenue: 0,
-    canceledOrders: 0,
-  });
+  const [overview, setOverview] = useState(null);
   const [revenue, setRevenue] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [topVariants, setTopVariants] = useState([]);
@@ -49,12 +45,6 @@ const Dashboard = () => {
       try {
         const unit = determineTimeUnit(dateRange[0], dateRange[1]);
 
-        console.log("Fetching dashboard data:", {
-          startDate: dateRange[0].toISOString(),
-          endDate: dateRange[1].toISOString(),
-          unit,
-        });
-
         const [overviewRes, revenueRes, paymentRes, topVariantRes] =
           await Promise.all([
             axiosInstance.get("/order/dashboard", {
@@ -67,7 +57,7 @@ const Dashboard = () => {
               params: {
                 startDate: dateRange[0].toISOString(),
                 endDate: dateRange[1].toISOString(),
-                unit: unit,
+                unit,
               },
             }),
             axiosInstance.get("/order/paymentMethod", {
@@ -84,19 +74,12 @@ const Dashboard = () => {
             }),
           ]);
 
-        // Safe data extraction với fallbacks
+        // Safe extract
         const overviewData = overviewRes.data?.data || overviewRes.data || {};
         const revenueData = revenueRes.data?.data || revenueRes.data || [];
         const paymentData = paymentRes.data?.data || paymentRes.data || [];
         const topVariantsData =
           topVariantRes.data?.data || topVariantRes.data || [];
-
-        console.log("Dashboard API responses:", {
-          overview: overviewData,
-          revenue: revenueData,
-          payment: paymentData,
-          topVariants: topVariantsData,
-        });
 
         setOverview({
           totalOrders: overviewData.totalOrders || 0,
@@ -109,20 +92,14 @@ const Dashboard = () => {
         setTopVariants(Array.isArray(topVariantsData) ? topVariantsData : []);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
-
-        // Set error message
         const errorMessage =
           err?.response?.data?.message ||
           err?.message ||
           "Không thể tải dữ liệu dashboard";
         setError(errorMessage);
 
-        // Set fallback data
-        setOverview({
-          totalOrders: 0,
-          totalRevenue: 0,
-          canceledOrders: 0,
-        });
+        // fallback
+        setOverview({ totalOrders: 0, totalRevenue: 0, canceledOrders: 0 });
         setRevenue([]);
         setPaymentMethods([]);
         setTopVariants([]);
@@ -201,7 +178,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Doanh thu theo thời gian */}
+      {/* Doanh thu */}
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-gray-800">
           Biểu đồ doanh thu
@@ -215,7 +192,7 @@ const Dashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis
-                tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                tickFormatter={(value) => `${(value / 1_000_000).toFixed(1)}M`}
               />
               <Tooltip
                 formatter={(value) => [
@@ -240,7 +217,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Đơn hàng theo thời gian */}
+      {/* Đơn hàng */}
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-gray-800">
           Biểu đồ đơn hàng
@@ -279,7 +256,7 @@ const Dashboard = () => {
         </h2>
         <Table
           rowKey="_id"
-          dataSource={paymentMethods || []}
+          dataSource={paymentMethods}
           columns={[
             {
               title: "Phương thức",
@@ -314,7 +291,7 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Top sản phẩm biến thể bán chạy */}
+      {/* Top sản phẩm bán chạy */}
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-gray-800">
           Top 10 sản phẩm bán chạy
