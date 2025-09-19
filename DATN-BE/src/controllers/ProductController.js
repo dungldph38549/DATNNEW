@@ -1,5 +1,5 @@
 const Product = require("../models/ProductModel.js");
-const ProductService = require("../services/ProductSevice");
+const ProductService = require("../services/ProductService");
 const { successResponse, errorResponse } = require("../utils/response.js");
 
 exports.createProduct = async (req, res) => {
@@ -15,17 +15,11 @@ exports.getProducts = async (req, res) => {
   try {
     const { limit, page, sort, brandId, categoryId, keyword } = req.body;
 
-<<<<<<< HEAD
-    const filter = {}
-    if(brandId) filter.brandId = brandId;
-    if(categoryId) filter.categoryId = categoryId;
-    if(keyword) filter.keyword = keyword;
-=======
     const filter = {};
     if (brandId) filter.brandId = brandId;
     if (categoryId) filter.categoryId = categoryId;
     if (keyword) filter.keyword = keyword;
->>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
+
     const products = await ProductService.getProducts(
       Number(limit) || 10,
       Number(page) || 0,
@@ -41,21 +35,6 @@ exports.getProducts = async (req, res) => {
 exports.getAllProducts = async (req, res) => {
   try {
     const { limit, page, filter, isListProductRemoved } = req.query;
-<<<<<<< HEAD
-    const products = await ProductService.getAllProducts(Number(limit) || 10, Number(page) || 0, filter, isListProductRemoved);
-    
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-exports.relationProduct = async (req, res) => {
-  try {
-    const { categoryId, brandId } = req.body;
-    const products = await ProductService.relationProduct(categoryId, brandId, req.body.id);
-    
-=======
     const products = await ProductService.getAllProducts(
       Number(limit) || 10,
       Number(page) || 0,
@@ -78,7 +57,6 @@ exports.relationProduct = async (req, res) => {
       req.body.id
     );
 
->>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -88,9 +66,6 @@ exports.relationProduct = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    //   return res.status(400).json({ message: "Invalid product ID" });
-    // }
 
     const product = await ProductService.getProductById(id);
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -113,13 +88,6 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProductById = async (req, res) => {
   try {
     const { id } = req.params;
-<<<<<<< HEAD
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {  
-=======
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
->>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
-    //   return res.status(400).json({ message: "Invalid product ID" });
-    // }
     const deleted = await ProductService.deleteProduct(id);
     if (!deleted) return res.status(404).json({ message: "Product not found" });
 
@@ -132,11 +100,9 @@ exports.deleteProductById = async (req, res) => {
 exports.restoreProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    //   return res.status(400).json({ message: "Invalid product ID" });
-    // }
-    const deleted = await ProductService.restoreProductById(id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    const restored = await ProductService.restoreProductById(id);
+    if (!restored)
+      return res.status(404).json({ message: "Product not found" });
 
     res.json({ message: "Product restored" });
   } catch (err) {
@@ -167,10 +133,11 @@ exports.uploadImage = async (req, res) => {
       return res.status(400).json({ message: "Invalid product ID" });
     }
 
-    const deleted = await ProductService.deleteProduct(id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    // TODO: Viết lại logic upload ảnh, hiện tại bạn đang gọi deleteProduct nhầm
+    // const result = await ProductService.uploadImage(id, req.file);
+    // return res.json({ message: "Upload thành công", data: result });
 
-    res.json({ message: "Product deleted successfully" });
+    res.status(400).json({ message: "Chưa implement uploadImage" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -179,31 +146,10 @@ exports.uploadImage = async (req, res) => {
 exports.getStock = async (req, res) => {
   try {
     const data = req.body || [];
-<<<<<<< HEAD
-    if(!Array.isArray(data) && data.length === 0 ) return res.status(400).json({ message: "Invalid data" });
-    const results = await Promise.all(data.map(async item => {
-      const { productId, sku } = item;
-      if (sku) {
-        const product = await Product.findOne({
-          _id: productId,
-          "variants.sku": sku
-        });
-        return {
-          productId,
-          sku,
-          countInStock: product.variants.find(variant => variant.sku === sku).stock
-        };
-      } else {
-        const product = await Product.findById(productId);
-        return {
-          productId,
-          countInStock: product?.countInStock
-        }
-      }
-    }));
-=======
-    if (!Array.isArray(data) && data.length === 0)
+    if (!Array.isArray(data) || data.length === 0) {
       return res.status(400).json({ message: "Invalid data" });
+    }
+
     const results = await Promise.all(
       data.map(async (item) => {
         const { productId, sku } = item;
@@ -228,13 +174,8 @@ exports.getStock = async (req, res) => {
         }
       })
     );
->>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
     res.status(200).json(results);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
