@@ -6,7 +6,7 @@ const userWalletSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
+      unique: true, // ✅ đã đủ, không cần index thêm
     },
     balance: {
       type: Number,
@@ -55,11 +55,11 @@ const userWalletSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-userWalletSchema.index({ userId: 1 });
+
 userWalletSchema.index({ "transactions.createdAt": -1 });
 
 // Method to add money to wallet
-userWalletSchema.methods.addMoney = function (
+userWalletSchema.methods.addMoney = async function (
   amount,
   type,
   description,
@@ -73,10 +73,16 @@ userWalletSchema.methods.addMoney = function (
     description,
     status: "completed",
   });
+  await this.save();
 };
 
 // Method to subtract money from wallet
-userWalletSchema.methods.subtractMoney = function (amount, type, description) {
+userWalletSchema.methods.subtractMoney = async function (
+  amount,
+  type,
+  description,
+  orderId = null
+) {
   if (this.balance < amount) {
     throw new Error("Insufficient balance");
   }
@@ -84,9 +90,11 @@ userWalletSchema.methods.subtractMoney = function (amount, type, description) {
   this.transactions.push({
     type,
     amount: -amount,
+    orderId,
     description,
     status: "completed",
   });
+  await this.save();
 };
 
 module.exports = mongoose.model("UserWallet", userWalletSchema);

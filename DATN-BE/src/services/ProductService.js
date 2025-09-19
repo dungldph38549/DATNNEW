@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+// src/services/ProductService.js
 const Product = require("../models/ProductModel");
 const Brand = require("../models/Brands");
 const Category = require("../models/Categories");
@@ -22,13 +22,12 @@ const createProduct = async (data) => {
   try {
     if (brandId) {
       const brandExists = await Brand.exists({ _id: brandId });
-      if (!brandExists) throw new Error({ message: "Brand không tồn tại" });
+      if (!brandExists) throw new Error("Brand không tồn tại");
     }
 
     if (categoryId) {
       const categoryExists = await Category.exists({ _id: categoryId });
-      if (!categoryExists)
-        throw new Error({ message: "Category không tồn tại" });
+      if (!categoryExists) throw new Error("Category không tồn tại");
     }
 
     const product = new Product({
@@ -64,19 +63,17 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
       } else {
         query.$or = [{ deletedAt: { $exists: false } }, { deletedAt: null }];
       }
+
       const filters = JSON.parse(filter);
       if (filters.name) {
         query.name = { $regex: filters.name, $options: "i" };
       }
-
       if (filters.categoryId) {
         query.categoryId = filters.categoryId;
       }
-
       if (filters.brandId) {
         query.brandId = filters.brandId;
       }
-
       if (filters.priceFrom || filters.priceTo) {
         query.price = {};
         if (filters.priceFrom) query.price.$gte = filters.priceFrom;
@@ -84,7 +81,6 @@ const getAllProducts = (limit = 10, page = 0, filter, isListProductRemoved) => {
       }
 
       const totalProduct = await Product.countDocuments(query);
-
       const allProduct = await Product.find(query)
         .populate("brandId")
         .populate("categoryId")
@@ -119,6 +115,7 @@ const relationProduct = async (categoryId, brandId, id) => {
     throw new Error(e.message);
   }
 };
+
 const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -133,12 +130,6 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
         sortOption = { minPrice: 1 };
       }
 
-      if (filter.brandId) {
-        filter.brandId = new mongoose.Types.ObjectId(filter.brandId);
-      }
-      if (filter.categoryId) {
-        filter.categoryId = new mongoose.Types.ObjectId(filter.categoryId);
-      }
       if (filter.keyword) {
         filter.name = { $regex: filter.keyword, $options: "i" };
         delete filter.keyword;
@@ -151,7 +142,6 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
 
       const result = await Product.aggregate([
         { $match: matchCondition },
-
         {
           $addFields: {
             minPrice: {
@@ -170,7 +160,6 @@ const getProducts = (limit = 20, page = 0, filter = {}, sort = "createdAt") => {
             },
           },
         },
-
         {
           $facet: {
             data: [
@@ -258,18 +247,15 @@ const updateProduct = async (productId, data) => {
       throw new Error("Sản phẩm không tồn tại.");
     }
 
-    // ✅ Kiểm tra brand và category
     if (brandId) {
       const brandExists = await Brand.exists({ _id: brandId });
       if (!brandExists) throw new Error("Brand không tồn tại.");
     }
-
     if (categoryId) {
       const categoryExists = await Category.exists({ _id: categoryId });
       if (!categoryExists) throw new Error("Category không tồn tại.");
     }
 
-    // ✅ Cập nhật các field
     product.name = name ?? product.name;
     product.image = image ?? product.image;
     product.srcImages = srcImages ?? product.srcImages;
@@ -298,8 +284,6 @@ const deleteProduct = async (id) => {
       throw new Error("Không tìm thấy sản phẩm.");
     }
     await Product.findByIdAndUpdate(id, { deletedAt: Date.now() });
-    // await product.save();
-    // return product;
     return true;
   } catch (error) {
     throw new Error(error.message);

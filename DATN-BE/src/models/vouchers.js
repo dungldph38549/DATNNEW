@@ -104,3 +104,7 @@ VoucherSchema.methods.isUsable = function () {
 
 const Voucher = mongoose.model("Voucher", VoucherSchema);
 module.exports = Voucher;
+<<<<<<< HEAD
+
+=======
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2

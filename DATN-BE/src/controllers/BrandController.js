@@ -12,12 +12,21 @@ exports.create = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
+<<<<<<< HEAD
+    try {
+        const brands =  await Brand.find({ status: 'active' });
+        return successResponse({ res, data: brands });
+    } catch (err) {
+        return errorResponse({ res, message: err.message, statusCode: 500 });
+    }
+=======
   try {
     const brands = await Brand.find({ status: "active" });
     return successResponse({ res, data: brands });
   } catch (err) {
     return errorResponse({ res, message: err.message, statusCode: 500 });
   }
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
 };
 
 exports.getOne = async (req, res) => {

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import React, { useState } from 'react';
+=======
 import React, { useState } from "react";
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
 import {
   Table,
   Tag,
@@ -89,6 +93,17 @@ export default function Categories() {
 
   const handleDelete = (record) => {
     Modal.confirm({
+<<<<<<< HEAD
+      title: 'Xác nhận xoá',
+      content: `Bạn có chắc chắn muốn xoá thương hiệu "${record.name}" không?`,
+      okText: 'Xoá',
+      okType: 'danger',
+      cancelText: 'Huỷ',
+      onOk: () => {
+        updateMutation.mutate({
+          id: record._id,
+          data: { status: 'inactive' },
+=======
       title: "Xác nhận xoá",
       content: `Bạn có chắc chắn muốn xoá thương hiệu "${record.name}" không?`,
       okText: "Xoá",
@@ -98,6 +113,7 @@ export default function Categories() {
         updateMutation.mutate({
           id: record._id,
           data: { status: "inactive" },
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
         });
       },
     });
@@ -119,9 +135,15 @@ export default function Categories() {
         ),
     },
     {
+<<<<<<< HEAD
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+=======
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
       render: (date) =>
         new Date(date).toLocaleDateString("vi-VN", {
           year: "numeric",
@@ -130,6 +152,15 @@ export default function Categories() {
         }),
     },
     {
+<<<<<<< HEAD
+      title: 'Hành động',
+      key: 'action',
+      width: 200,
+      render: (_, record) => (
+        <div className="flex space-x-2">
+          <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
+          <Button type="link" danger onClick={() => handleDelete(record)}>Xoá</Button>
+=======
       title: "Hành động",
       key: "action",
       width: 200,
@@ -141,6 +172,7 @@ export default function Categories() {
           <Button type="link" danger onClick={() => handleDelete(record)}>
             Xoá
           </Button>
+>>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
         </div>
       ),
     },
