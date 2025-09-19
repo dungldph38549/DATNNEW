@@ -7,6 +7,7 @@ import Brands from "./Brands";
 import Dashboard from "./Dashboard";
 import Users from "./Users";
 import Vouchers from "./Vouchers";
+import OrderReturn from "./OrderReturn";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser } from "../redux/user";
 
@@ -111,6 +112,13 @@ const AdminPage = () => {
       title: "Quản lý thương hiệu",
       description: "Quản lý các nhãn hiệu",
     },
+    {
+      key: "order-returns",
+      icon: "🏷️",
+      label: "Hoàn Hàng",
+      title: "Hoàn Hàng",
+      description: "Hoàn Hàng",
+    },
   ];
 
   const currentMenuItem = menuItems.find((item) => item.key === selectedMenu);
@@ -131,6 +139,8 @@ const AdminPage = () => {
         return <Brands />;
       case "categories":
         return <Categories />;
+      case "order-returns":
+        return <OrderReturn />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-96 text-center">

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { comfirmDelivery, getOrderById, updateOrder } from "../../api/index";
+import { confirmDelivery, getOrderById, updateOrder } from "../../api/index";
 import { ORDER_STATUS_LABELS } from "../../const/index.ts";
 import Swal from "sweetalert2";
 import { message, Table, Tag } from "antd";
@@ -105,7 +105,7 @@ const OrderDetailPage = () => {
   ];
 
   const updateMutation = useMutation({
-    mutationFn: ({ id }) => comfirmDelivery(id),
+    mutationFn: ({ id }) => confirmDelivery(id),
     onSuccess: () => {
       message.success("Cập nhật thành công");
       queryClient.invalidateQueries({ queryKey: ["list-order"] });
