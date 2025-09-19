@@ -121,8 +121,4 @@ exports.checkVoucherCode = async (req, res) => {
   } catch (err) {
     return errorResponse({ res, message: err.message, statusCode: 500 });
   }
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> dfcd3bfbe0d4fea861c27d8827345ccc5ef598c2
