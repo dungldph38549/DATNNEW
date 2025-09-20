@@ -1,5 +1,5 @@
 const Product = require("../models/ProductModel.js");
-const ProductService = require("../services/ProductSevice");
+const ProductService = require("../services/ProductService");
 const { successResponse, errorResponse } = require("../utils/response.js");
 
 exports.createProduct = async (req, res) => {
@@ -19,6 +19,7 @@ exports.getProducts = async (req, res) => {
     if (brandId) filter.brandId = brandId;
     if (categoryId) filter.categoryId = categoryId;
     if (keyword) filter.keyword = keyword;
+
     const products = await ProductService.getProducts(
       Number(limit) || 10,
       Number(page) || 0,
@@ -65,9 +66,6 @@ exports.relationProduct = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    //   return res.status(400).json({ message: "Invalid product ID" });
-    // }
 
     const product = await ProductService.getProductById(id);
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -90,9 +88,6 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    //   return res.status(400).json({ message: "Invalid product ID" });
-    // }
     const deleted = await ProductService.deleteProduct(id);
     if (!deleted) return res.status(404).json({ message: "Product not found" });
 
@@ -105,11 +100,9 @@ exports.deleteProductById = async (req, res) => {
 exports.restoreProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    //   return res.status(400).json({ message: "Invalid product ID" });
-    // }
-    const deleted = await ProductService.restoreProductById(id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    const restored = await ProductService.restoreProductById(id);
+    if (!restored)
+      return res.status(404).json({ message: "Product not found" });
 
     res.json({ message: "Product restored" });
   } catch (err) {
@@ -140,10 +133,11 @@ exports.uploadImage = async (req, res) => {
       return res.status(400).json({ message: "Invalid product ID" });
     }
 
-    const deleted = await ProductService.deleteProduct(id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    // TODO: Viết lại logic upload ảnh, hiện tại bạn đang gọi deleteProduct nhầm
+    // const result = await ProductService.uploadImage(id, req.file);
+    // return res.json({ message: "Upload thành công", data: result });
 
-    res.json({ message: "Product deleted successfully" });
+    res.status(400).json({ message: "Chưa implement uploadImage" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -152,8 +146,10 @@ exports.uploadImage = async (req, res) => {
 exports.getStock = async (req, res) => {
   try {
     const data = req.body || [];
-    if (!Array.isArray(data) && data.length === 0)
+    if (!Array.isArray(data) || data.length === 0) {
       return res.status(400).json({ message: "Invalid data" });
+    }
+
     const results = await Promise.all(
       data.map(async (item) => {
         const { productId, sku } = item;

@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import {
   Table,
-  Tag,
   Spin,
   Modal,
   Button,
   Form,
   Input,
   message,
-  Switch,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -118,16 +116,6 @@ export default function Brands() {
           />
         ),
     },
-    // {
-    //   title: 'Trạng thái',
-    //   dataIndex: 'status',
-    //   key: 'status',
-    //   render: (s) => (
-    //     <Tag color={s === 'active' ? 'green' : 'red'}>
-    //       {s}
-    //     </Tag>
-    //   ),
-    // },
     {
       title: "Ngày tạo",
       dataIndex: "createdAt",
@@ -205,10 +193,6 @@ export default function Brands() {
           )}
         </div>
 
-        {/* <Form.Item label="Trạng thái" name="status" valuePropName="checked">
-          <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-        </Form.Item> */}
-
         <Form.Item>
           <Button
             type="primary"
@@ -276,10 +260,6 @@ export default function Brands() {
           )}
         </div>
 
-        {/* <Form.Item label="Trạng thái" name="status" valuePropName="checked">
-          <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-        </Form.Item> */}
-
         <Form.Item>
           <Button
             type="primary"
@@ -308,7 +288,7 @@ export default function Brands() {
   return (
     <div className="bg-white p-4 rounded-xl shadow">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">Danh sách</h2>
+        <h2 className="text-2xl font-semibold">Danh sách thương hiệu</h2>
         <Button
           type="primary"
           onClick={() => {
@@ -329,7 +309,7 @@ export default function Brands() {
       />
 
       <Modal
-        title="Chỉnh sửa"
+        title="Chỉnh sửa thương hiệu"
         open={isEditModalVisible}
         onCancel={() => setIsEditModalVisible(false)}
         footer={null}
@@ -339,7 +319,7 @@ export default function Brands() {
       </Modal>
 
       <Modal
-        title="Tạo mới"
+        title="Tạo mới thương hiệu"
         open={isCreateModalVisible}
         onCancel={() => setIsCreateModalVisible(false)}
         footer={null}

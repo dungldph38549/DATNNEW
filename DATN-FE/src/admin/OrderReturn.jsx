@@ -1,9 +1,10 @@
+// src/pages/ReturnOrders.jsx
 import { Table, Spin, Button, message } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { orderReturn, acceptOrRejectReturn } from "../api/index";
 import Swal from "sweetalert2";
 
-export default function Brands() {
+export default function ReturnOrders() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
@@ -17,7 +18,7 @@ export default function Brands() {
       acceptOrRejectReturn({ id, note, status }),
     onSuccess: () => {
       message.success("Thành công");
-      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["return-orders"] });
     },
     onError: (err) => {
       message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
@@ -56,9 +57,7 @@ export default function Brands() {
       title: "Mã đơn hàng",
       dataIndex: "orderId",
       key: "orderId",
-      render: (order) => {
-        return order._id;
-      },
+      render: (order) => order._id,
     },
     {
       title: "Hình ảnh",
@@ -71,7 +70,7 @@ export default function Brands() {
             src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${img}`}
             alt="Ảnh"
             width={120}
-            height={"auto"}
+            height="auto"
             className="object-cover rounded"
           />
         ),
@@ -80,9 +79,6 @@ export default function Brands() {
       title: "Lý do",
       dataIndex: "note",
       key: "note",
-      render: (note) => {
-        return note;
-      },
     },
     {
       title: "Ngày tạo",
@@ -99,27 +95,23 @@ export default function Brands() {
       title: "Hành động",
       key: "action",
       width: 150,
-      render: (_, record) => {
-        console.log(record);
-
-        return (
-          <>
-            <Button
-              type="link"
-              onClick={() => handleAcceptReject(record.orderId._id, "accepted")}
-            >
-              Đồng ý
-            </Button>
-            <Button
-              type="link"
-              danger
-              onClick={() => handleAcceptReject(record.orderId._id, "rejected")}
-            >
-              Từ chối
-            </Button>
-          </>
-        );
-      },
+      render: (_, record) => (
+        <>
+          <Button
+            type="link"
+            onClick={() => handleAcceptReject(record.orderId._id, "accepted")}
+          >
+            Đồng ý
+          </Button>
+          <Button
+            type="link"
+            danger
+            onClick={() => handleAcceptReject(record.orderId._id, "rejected")}
+          >
+            Từ chối
+          </Button>
+        </>
+      ),
     },
   ];
 

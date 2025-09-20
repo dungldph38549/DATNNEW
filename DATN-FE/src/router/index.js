@@ -6,16 +6,13 @@ import HomePages from "../pages/HomePages/HomePages.jsx";
 import Login from "../pages/Login/Login.jsx";
 import Register from "../pages/Register/Register.jsx";
 import CartPage from "../pages/CartPage/CartPage.jsx";
-import AdminPage from "../admin/AdminPage.tsx";
+import AdminPage from "../admin/AdminPage.jsx";
 import CheckoutPage from "../pages/CheckoutPage/checkOutPage.jsx";
 import OrderPage from "../pages/OrderPage/OrderPage.jsx";
 import OrderDetailPage from "../pages/OrderDetailPage/OrderDetailPage.jsx";
 import AdminOrderDetailPage from "../admin/AdminOrderDetail.jsx";
 import ReturnPayment from "../pages/ReturnPayment/ReturnPayment.jsx";
 import CustommerPage from "../pages/CustommerPage/CustommerPage.jsx";
-import ReturnOrdersPage from "../pages/ReturnOrdersPage/ReturnOrdersPage.jsx";
-import ReturnOrderDetailPage from "../pages/ReturnOrderDetailPage/ReturnOrderDetailPage.jsx";
-
 export const routers = [
   {
     path: "/",
@@ -91,15 +88,5 @@ export const routers = [
     path: "/admin/order/:id",
     page: AdminOrderDetailPage,
     isShowHeader: false,
-  },
-  {
-    path: "/return-orders",
-    page: ReturnOrdersPage,
-    isShowHeader: true,
-  },
-  {
-    path: "/return-orders/:returnId",
-    page: ReturnOrderDetailPage,
-    isShowHeader: true,
   },
 ];

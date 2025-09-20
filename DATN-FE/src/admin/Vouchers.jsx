@@ -1,21 +1,11 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-  Table,
-  Tag,
-  Spin,
-  Modal,
-  Button,
-  Form,
-  Input,
-  message,
-  Switch,
-  DatePicker,
-  InputNumber,
-  Select,
-} from "antd";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAllVouchers, updateVoucher, createVoucher } from "../api/index";
-import dayjs from "dayjs";
+  Table, Tag, Spin, Modal, Button, Form,
+  Input, message, Switch, DatePicker, InputNumber, Select
+} from 'antd';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAllVouchers, updateVoucher, createVoucher } from '../api/index';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -29,7 +19,7 @@ const Vouchers = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-voucher", page],
+    queryKey: ['admin-voucher', page],
     queryFn: () => getAllVouchers({ page, limit }),
     keepPreviousData: true,
   });
@@ -37,24 +27,24 @@ const Vouchers = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => updateVoucher({ id, ...data }),
     onSuccess: () => {
-      message.success("Cập nhật voucher thành công");
-      queryClient.invalidateQueries({ queryKey: ["admin-voucher"] });
+      message.success('Cập nhật voucher thành công');
+      queryClient.invalidateQueries({ queryKey: ['admin-voucher'] });
       setIsEditModalVisible(false);
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || "Lỗi khi cập nhật");
+      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật');
     },
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => createVoucher(data),
     onSuccess: () => {
-      message.success("Tạo voucher thành công");
-      queryClient.invalidateQueries({ queryKey: ["admin-voucher"] });
+      message.success('Tạo voucher thành công');
+      queryClient.invalidateQueries({ queryKey: ['admin-voucher'] });
       setIsCreateModalVisible(false);
     },
     onError: (err) => {
-      message.error(err?.response?.data?.message || "Lỗi khi tạo voucher");
+      message.error(err?.response?.data?.message || 'Lỗi khi tạo voucher');
     },
   });
 
@@ -67,7 +57,7 @@ const Vouchers = () => {
     ...values,
     startDate: values.dateRange[0].toISOString(),
     endDate: values.dateRange[1].toISOString(),
-    status: values.status ? "active" : "inactive",
+    status: values.status ? 'active' : 'inactive',
   });
 
   const handleUpdateSubmit = (values) => {
@@ -82,61 +72,51 @@ const Vouchers = () => {
   };
 
   const columns = [
-    { title: "Tên", dataIndex: "name", key: "name" },
-    { title: "Mã", dataIndex: "code", key: "code" },
-    { title: "Giảm", dataIndex: "value", key: "value" },
+    { title: 'Tên', dataIndex: 'name', key: 'name' },
+    { title: 'Mã', dataIndex: 'code', key: 'code' },
+    { title: 'Giảm', dataIndex: 'value', key: 'value' },
     {
-      title: "Loại",
-      dataIndex: "type",
-      key: "type",
-      render: (type) => (type === "percentage" ? "Phần trăm" : "Cố định"),
+      title: 'Loại', dataIndex: 'type', key: 'type',
+      render: (type) => type === 'percentage' ? 'Phần trăm' : 'Cố định'
     },
-    { title: "Số lượng", dataIndex: "count", key: "count" },
-    { title: "Đã dùng", dataIndex: "usedCount", key: "usedCount" },
+    { title: 'Số lượng', dataIndex: 'count', key: 'count' },
+    { title: 'Đã dùng', dataIndex: 'usedCount', key: 'usedCount' },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (s) => <Tag color={s === "active" ? "green" : "red"}>{s}</Tag>,
+      title: 'Trạng thái', dataIndex: 'status', key: 'status',
+      render: (s) => <Tag color={s === 'active' ? 'green' : 'red'}>{s}</Tag>
     },
     {
-      title: "Bắt đầu",
-      dataIndex: "startDate",
-      key: "startDate",
-      render: (d) => new Date(d).toLocaleDateString("vi-VN"),
+      title: 'Bắt đầu', dataIndex: 'startDate', key: 'startDate',
+      render: (d) => new Date(d).toLocaleDateString('vi-VN')
     },
     {
-      title: "Kết thúc",
-      dataIndex: "endDate",
-      key: "endDate",
-      render: (d) => new Date(d).toLocaleDateString("vi-VN"),
+      title: 'Kết thúc', dataIndex: 'endDate', key: 'endDate',
+      render: (d) => new Date(d).toLocaleDateString('vi-VN')
     },
     {
-      title: "Hành động",
-      key: "action",
+      title: 'Hành động',
+      key: 'action',
       render: (_, record) => (
-        <Button type="link" onClick={() => handleEdit(record)}>
-          Sửa
-        </Button>
+        <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
       ),
     },
   ];
 
   const renderForm = (initialValues = {}, onFinish, loading = false) => {
+
     return (
       <Form
         layout="vertical"
         initialValues={{
-          name: initialValues.name || "",
-          code: initialValues.code || "",
+          name: initialValues.name || '',
+          code: initialValues.code || '',
           value: initialValues.value || 0,
-          type: initialValues.type || "percentage",
-          dateRange:
-            initialValues.startDate && initialValues.endDate
-              ? [dayjs(initialValues.startDate), dayjs(initialValues.endDate)]
-              : undefined,
+          type: initialValues.type || 'percentage',
+          dateRange: initialValues.startDate && initialValues.endDate
+            ? [dayjs(initialValues.startDate), dayjs(initialValues.endDate)]
+            : undefined,
           count: initialValues.count || 0,
-          status: initialValues.status === "active",
+          status: initialValues.status === 'active',
         }}
         onFinish={onFinish}
       >
@@ -146,11 +126,7 @@ const Vouchers = () => {
         <Form.Item label="Mã voucher" name="code" rules={[{ required: true }]}>
           <Input disabled={!!initialValues.code} />
         </Form.Item>
-        <Form.Item
-          label="Giá trị giảm"
-          name="value"
-          rules={[{ required: true }]}
-        >
+        <Form.Item label="Giá trị giảm" name="value" rules={[{ required: true }]}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
         <Form.Item label="Loại giảm" name="type" rules={[{ required: true }]}>
@@ -159,11 +135,7 @@ const Vouchers = () => {
             <Option value="fixed">Cố định</Option>
           </Select>
         </Form.Item>
-        <Form.Item
-          label="Khoảng thời gian"
-          name="dateRange"
-          rules={[{ required: true }]}
-        >
+        <Form.Item label="Khoảng thời gian" name="dateRange" rules={[{ required: true }]}>
           <DatePicker.RangePicker className="w-full" />
         </Form.Item>
         <Form.Item label="Số lượng" name="count">
@@ -182,19 +154,10 @@ const Vouchers = () => {
   };
 
   if (isLoading)
-    return (
-      <Spin
-        tip="Đang tải danh sách voucher..."
-        className="mt-10 block text-center"
-      />
-    );
+    return <Spin tip="Đang tải danh sách voucher..." className="mt-10 block text-center" />;
 
   if (isError || !data)
-    return (
-      <div className="text-center text-red-500">
-        Lỗi khi tải danh sách voucher.
-      </div>
-    );
+    return <div className="text-center text-red-500">Lỗi khi tải danh sách voucher.</div>;
 
   return (
     <div className="bg-white p-4 rounded-xl shadow">
@@ -225,11 +188,7 @@ const Vouchers = () => {
         destroyOnClose
       >
         {selectedVoucher &&
-          renderForm(
-            selectedVoucher,
-            handleUpdateSubmit,
-            updateMutation.isPending
-          )}
+          renderForm(selectedVoucher, handleUpdateSubmit, updateMutation.isPending)}
       </Modal>
 
       <Modal

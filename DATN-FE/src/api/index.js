@@ -1,11 +1,13 @@
 import axiosInstance from "./axiosConfig";
 
+// ================== Upload ==================
 export const uploadImage = async (payload) => {
   const res = await axiosInstance.post("/upload", payload, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
 };
+
 export const uploadImages = async (payload) => {
   const res = await axiosInstance.post("/uploads/multiple", payload, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -13,23 +15,24 @@ export const uploadImages = async (payload) => {
   return res.data;
 };
 
-// User
+// ================== User ==================
 export const loginUser = async (payload) => {
   const res = await axiosInstance.post("/user/login", payload);
   return res.data;
 };
+
 export const registerUser = async (payload) => {
   const res = await axiosInstance.post("/user/register", payload);
   return res.data;
 };
 
 export const getUserById = async (id) => {
-  const res = await axiosInstance.get("/user/" + id);
+  const res = await axiosInstance.get(`/user/${id}`);
   return res.data;
 };
 
 export const updateUserById = async (id, payload) => {
-  const res = await axiosInstance.put("/user/update/" + id, payload);
+  const res = await axiosInstance.put(`/user/update/${id}`, payload);
   return res.data;
 };
 
@@ -43,19 +46,19 @@ export const getAllUser = async (page, limit) => {
   return res.data;
 };
 
-// Product
+// ================== Product ==================
 export const fetchProducts = async (payload) => {
-  const res = await axiosInstance.post(`/product/user/list`, payload);
+  const res = await axiosInstance.post("/product/user/list", payload);
   return res.data;
 };
 
 export const getStocks = async (payload) => {
-  const res = await axiosInstance.post(`/product/stocks`, payload);
+  const res = await axiosInstance.post("/product/stocks", payload);
   return res.data;
 };
 
 export const relationProduct = async (brandId, categoryId, id) => {
-  const res = await axiosInstance.post(`/product/relationProduct`, {
+  const res = await axiosInstance.post("/product/relationProduct", {
     brandId,
     categoryId,
     id,
@@ -64,7 +67,7 @@ export const relationProduct = async (brandId, categoryId, id) => {
 };
 
 export const getProductById = async (id) => {
-  const res = await axiosInstance.get("/product/" + id);
+  const res = await axiosInstance.get(`/product/${id}`);
   return res.data;
 };
 
@@ -76,7 +79,7 @@ export const createProduct = async (payload) => {
 
 export const updateProduct = async ({ id, payload }) => {
   // admin
-  const res = await axiosInstance.put("/product/update/" + id, payload);
+  const res = await axiosInstance.put(`/product/update/${id}`, payload);
   return res.data;
 };
 
@@ -87,24 +90,24 @@ export const getAllProducts = async ({
   filter,
 }) => {
   const res = await axiosInstance.get(
-    `/product/getAll?page=${page}&limit=${limit}&isListProductRemoved=${isListProductRemoved}&filter=${JSON.stringify(
-      filter
+    `/product/getAll?page=${page}&limit=${limit}&isListProductRemoved=${isListProductRemoved}&filter=${encodeURIComponent(
+      JSON.stringify(filter)
     )}`
   );
   return res.data;
 };
 
 export const deleteProductById = async ({ id }) => {
-  const res = await axiosInstance.delete("/product/delete/" + id);
+  const res = await axiosInstance.delete(`/product/delete/${id}`);
   return res.data;
 };
 
 export const restoreProductById = async ({ id }) => {
-  const res = await axiosInstance.put("/product/restore/" + id);
+  const res = await axiosInstance.put(`/product/restore/${id}`);
   return res.data;
 };
 
-// Order
+// ================== Order ==================
 export const createOrder = async (payload) => {
   const res = await axiosInstance.post("/order", payload);
   return res.data;
@@ -116,17 +119,17 @@ export const orderReturn = async () => {
 };
 
 export const returnOrder = async (payload) => {
-  const res = await axiosInstance.post(`/order/returnOrderRequest/`, payload);
+  const res = await axiosInstance.post("/order/returnOrderRequest", payload);
   return res.data;
 };
 
 export const acceptOrRejectReturn = async (payload) => {
-  const res = await axiosInstance.post(`/order/acceptOrRejectReturn/`, payload);
+  const res = await axiosInstance.post("/order/acceptOrRejectReturn", payload);
   return res.data;
 };
 
 export const checkPayment = async (payload) => {
-  const res = await axiosInstance.get("/order/return-payment?" + payload);
+  const res = await axiosInstance.get(`/order/return-payment?${payload}`);
   return res.data;
 };
 
@@ -148,8 +151,8 @@ export const updateOrder = async (id, payload) => {
   return res.data;
 };
 
-export const comfirmDelivery = async (id) => {
-  const res = await axiosInstance.post(`/order/comfirmDelivery/${id}`);
+export const confirmDelivery = async (id) => {
+  const res = await axiosInstance.post(`/order/confirmDelivery/${id}`);
   return res.data;
 };
 
@@ -170,7 +173,7 @@ export const updateOrderInfo = async (id, data) => {
   return res.data;
 };
 
-// brand
+// ================== Brand ==================
 export const createBrand = async (payload) => {
   const res = await axiosInstance.post("/brand/admin/create", payload);
   return res.data;
@@ -189,16 +192,18 @@ export const updateBrand = async (payload) => {
 };
 
 export const deleteBrand = async ({ ids }) => {
-  const res = await axiosInstance.delete("/brand/admin/delete", { ids });
+  const res = await axiosInstance.delete("/brand/admin/delete", {
+    data: { ids },
+  });
   return res.data;
 };
 
 export const getBrandById = async (id) => {
-  const res = await axiosInstance.get("/brand/admin/detail/" + id);
+  const res = await axiosInstance.get(`/brand/admin/detail/${id}`);
   return res.data;
 };
 
-// category
+// ================== Category ==================
 export const createCategory = async (payload) => {
   const res = await axiosInstance.post("/category/admin/create", payload);
   return res.data;
@@ -217,11 +222,13 @@ export const updateCategory = async (payload) => {
 };
 
 export const deleteCategory = async ({ ids }) => {
-  const res = await axiosInstance.delete("/category/admin/delete", { ids });
+  const res = await axiosInstance.delete("/category/admin/delete", {
+    data: { ids },
+  });
   return res.data;
 };
 
-// voucher
+// ================== Voucher ==================
 export const createVoucher = async (payload) => {
   const res = await axiosInstance.post("/voucher/admin/create", payload);
   return res.data;
@@ -233,7 +240,9 @@ export const updateVoucher = async (payload) => {
 };
 
 export const deleteVoucher = async ({ ids }) => {
-  const res = await axiosInstance.delete("/voucher/admin/delete", { ids });
+  const res = await axiosInstance.delete("/voucher/admin/delete", {
+    data: { ids },
+  });
   return res.data;
 };
 
@@ -252,17 +261,16 @@ export const checkVoucher = async (code) => {
 };
 
 export const getActiveVouchers = async () => {
-  const res = await axiosInstance.get(`/voucher/list`);
+  const res = await axiosInstance.get("/voucher/list");
   return res.data;
 };
 
 export const getVoucherById = async (id) => {
-  const res = await axiosInstance.get("/voucher/detail/" + id);
+  const res = await axiosInstance.get(`/voucher/detail/${id}`);
   return res.data;
 };
 
-// Review
-
+// ================== Review ==================
 export const createReview = async (payload) => {
   const res = await axiosInstance.post("/review/create", payload);
   return res.data;
@@ -273,7 +281,7 @@ export const repliesReview = async (payload) => {
   return res.data;
 };
 
-export const getreviewById = async (productId) => {
+export const getReviewById = async (productId) => {
   const res = await axiosInstance.get(`/review/${productId}`);
   return res.data;
 };

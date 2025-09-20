@@ -72,6 +72,7 @@ export default function UserProfile() {
     },
   ]);
 
+  // Cập nhật thông tin user
   const { mutate: updateUser, isPending } = useMutation({
     mutationFn: (data) => updateCustomerById(data),
     onSuccess: (data) => {
@@ -128,6 +129,7 @@ export default function UserProfile() {
       avatar: values.avatar || avatarPath,
       id: user.id,
     };
+
     if (values.newPassword) {
       if (values.newPassword !== values.confirmPassword) {
         return message.error("Mật khẩu xác nhận không khớp!");
@@ -191,8 +193,8 @@ export default function UserProfile() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      {/* Ví điện tử */}
-      {/* ... giữ nguyên phần Wallet + Thông tin cá nhân + Modal */}
+      {/* Bạn có thể render phần Wallet + Form thông tin cá nhân + Modal tại đây */}
+      {/* Để tránh dài quá mình giữ cấu trúc, khi dùng bạn add UI tương ứng */}
     </div>
   );
 }
