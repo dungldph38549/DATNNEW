@@ -8,6 +8,7 @@ import Dashboard from "./Dashboard";
 import Users from "./Users";
 import Vouchers from "./Vouchers";
 import OrderReturn from "./OrderReturn";
+import Comments from "./Comments"; // Import component Comments mới
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser } from "../redux/user";
 
@@ -114,10 +115,17 @@ const AdminPage = () => {
     },
     {
       key: "order-returns",
-      icon: "🏷️",
+      icon: "↩️",
       label: "Hoàn Hàng",
-      title: "Hoàn Hàng",
-      description: "Hoàn Hàng",
+      title: "Yêu cầu hoàn hàng",
+      description: "Xử lý yêu cầu hoàn trả hàng",
+    },
+    {
+      key: "comments",
+      icon: "⭐",
+      label: "Đánh giá",
+      title: "Quản lý đánh giá",
+      description: "Quản lý và phản hồi đánh giá sản phẩm",
     },
   ];
 
@@ -141,6 +149,8 @@ const AdminPage = () => {
         return <Categories />;
       case "order-returns":
         return <OrderReturn />;
+      case "comments":
+        return <Comments />; // Thêm case mới cho Comments
       default:
         return (
           <div className="flex flex-col items-center justify-center h-96 text-center">
