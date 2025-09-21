@@ -9,6 +9,8 @@ import Users from "./Users";
 import Vouchers from "./Vouchers";
 import OrderReturn from "./OrderReturn";
 import Comments from "./Comments"; // Import component Comments mới
+import InventoryManagement from "./InventoryManagement";
+import StaffManagement from "./StaffManagement";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser } from "../redux/user";
 
@@ -127,6 +129,20 @@ const AdminPage = () => {
       title: "Quản lý đánh giá",
       description: "Quản lý và phản hồi đánh giá sản phẩm",
     },
+    {
+      key: "inventory",
+      icon: "📦",
+      label: "Quản lý kho",
+      title: "Quản lý kho hàng",
+      description: "Nhập kho và theo dõi tồn kho",
+    },
+    {
+      key: "staff",
+      icon: "👥",
+      label: "Nhân viên",
+      title: "Quản lý nhân viên",
+      description: "Quản lý thông tin và phân quyền nhân viên",
+    },
   ];
 
   const currentMenuItem = menuItems.find((item) => item.key === selectedMenu);
@@ -151,6 +167,10 @@ const AdminPage = () => {
         return <OrderReturn />;
       case "comments":
         return <Comments />; // Thêm case mới cho Comments
+      case "inventory":
+        return <InventoryManagement />;
+      case "staff":
+        return <StaffManagement />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-96 text-center">
