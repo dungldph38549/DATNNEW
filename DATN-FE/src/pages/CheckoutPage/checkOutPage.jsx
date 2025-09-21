@@ -72,7 +72,7 @@ const CheckoutPage = () => {
       Swal.fire({
         title: "Thất bại!",
         text:
-          error?.response.data.message || "Có lỗi xảy ra, vui lòng thử lại.",
+          error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại.",
         icon: "error",
       });
     },
@@ -81,10 +81,6 @@ const CheckoutPage = () => {
   const { mutate: checkVoucherApi } = useMutation({
     mutationFn: checkVoucher,
     onSuccess: async (data) => {
-      setForm({
-        ...form,
-        voucherCode,
-      });
       setVoucherData(data.data);
       await Swal.fire({
         title: "Áp dụng mã giảm giá thành công!",
@@ -102,6 +98,7 @@ const CheckoutPage = () => {
   });
 
   const handleCheckVoucher = () => {
+    if (!voucherCode.trim()) return;
     checkVoucherApi(voucherCode);
   };
 
@@ -115,10 +112,10 @@ const CheckoutPage = () => {
           ? "Email không hợp lệ"
           : "",
       phone:
-        form?.phone === ""
+        form?.phone?.trim() === ""
           ? "Vui lòng nhập số điện thoại"
-          : !isValidVietnamesePhone(form.phone)
-          ? "Số điện thoại không hợp lệ"
+          : !/^0\d{9}$/.test(form.phone)
+          ? "Số điện thoại phải có 10 số và bắt đầu bằng 0"
           : "",
       address: form.address.trim() === "" ? "Vui lòng nhập địa chỉ" : "",
     };
@@ -208,10 +205,11 @@ const CheckoutPage = () => {
           </div>
           <div>
             <input
-              type="number"
+              type="text" // FIX: không dùng number nữa
               placeholder="Số điện thoại"
               value={form.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
+              maxLength={10}
               className={`p-2 border rounded-md w-full ${
                 errors.phone ? "border-red-500" : ""
               }`}

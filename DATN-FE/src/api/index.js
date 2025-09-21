@@ -285,3 +285,27 @@ export const getReviewById = async (productId) => {
   const res = await axiosInstance.get(`/review/${productId}`);
   return res.data;
 };
+export const getInventoryHistory = async (productId) => {
+  const res = await axiosInstance.get(`/inventory/history/${productId}`);
+  return res.data;
+};
+
+export const createInventoryTransaction = async (payload) => {
+  const res = await axiosInstance.post("/inventory/transaction", payload);
+  return res.data;
+};
+// Staff management APIs
+export const createUser = async (payload) => {
+  const res = await axiosInstance.post("/user/create", payload);
+  return res.data;
+};
+
+export const getStaffList = async (params) => {
+  const res = await axiosInstance.get("/user/staff", { params });
+  return res.data;
+};
+
+export const updateStaffRole = async (id, role) => {
+  const res = await axiosInstance.put(`/user/${id}/role`, { role });
+  return res.data;
+};
