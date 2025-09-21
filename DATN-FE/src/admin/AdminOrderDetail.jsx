@@ -12,7 +12,6 @@ import {
   Tag,
   Card,
   Divider,
-  Timeline,
   Spin,
   Avatar,
   Space,
@@ -54,8 +53,9 @@ const SHIPPING_METHOD = {
 const AdminOrderDetailPage = ({ id, onClose }) => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
+
+  // Các trạng thái luôn không cho sửa
   const NON_EDITABLE_STATUSES = [
-    "shipped",
     "delivered",
     "canceled",
     "return-request",
@@ -112,19 +112,46 @@ const AdminOrderDetailPage = ({ id, onClose }) => {
   });
 
   const handleSave = () => {
-    form.validateFields().then((values) => {
-      if (NON_EDITABLE_STATUSES.includes(order.status)) {
-        // Chỉ cập nhật status và note cho các đơn hàng đã xử lý
-        const updatedInfo = {
-          status: values.status,
-          note: values.note,
-        };
-        infoMutation.mutate(updatedInfo);
-      } else {
-        infoMutation.mutate(values);
-      }
-    });
-  };
+  form.validateFields().then((values) => {
+    // Chỉ chặn khi đang giao mà chưa thanh toán
+    if (order.status === "shipped" && order.paymentStatus !== "paid") {
+      Swal.fire({
+        icon: "warning", 
+        title: "Không thể cập nhật",
+        text: "Đơn hàng đang giao nhưng chưa thanh toán, không thể chỉnh sửa!",
+      });
+      return;
+    }
+
+    // Các trạng thái đặc biệt chỉ cho sửa status + note
+    if (NON_EDITABLE_STATUSES.includes(order.status) || 
+        (order.status === "shipped" && order.paymentStatus === "paid")) {
+      const updatedInfo = {
+        status: values.status,
+        note: values.note,
+      };
+      infoMutation.mutate(updatedInfo);
+    } else {
+      // Cho phép sửa tất cả thông tin
+      infoMutation.mutate(values);
+    }
+  });
+};
+
+  // Check quyền chỉnh sửa
+const isEditable = () => {
+  if (!order) return false;
+
+  // Các trạng thái hoàn toàn không cho sửa
+  if (NON_EDITABLE_STATUSES.includes(order.status)) return false;
+
+  // Chỉ chặn khi đang giao NHƯNG chưa thanh toán
+  if (order.status === "shipped" && order.paymentStatus !== "paid") {
+    return false;
+  }
+
+  return true;
+};
 
   const getStatusColor = (status) => {
     const colorMap = {
@@ -258,7 +285,7 @@ const AdminOrderDetailPage = ({ id, onClose }) => {
             >
               {ORDER_STATUS_LABELS[order.status]}
             </Tag>
-            {!NON_EDITABLE_STATUSES.includes(order.status) && (
+            {isEditable() && (
               <Button
                 type={editMode ? "default" : "primary"}
                 icon={editMode ? <SaveOutlined /> : <EditOutlined />}
