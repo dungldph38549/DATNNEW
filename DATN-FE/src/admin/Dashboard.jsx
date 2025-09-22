@@ -12,12 +12,17 @@ import {
   CartesianGrid,
 } from "recharts";
 import dayjs from "dayjs";
-import axiosInstance from "../api/axiosConfig";
 import isBetween from "dayjs/plugin/isBetween";
+import axiosInstance from "../api/axiosConfig";
+
 dayjs.extend(isBetween);
 
 const Dashboard = () => {
-  const [overview, setOverview] = useState(null);
+  const [overview, setOverview] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    canceledOrders: 0,
+  });
   const [revenue, setRevenue] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [topVariants, setTopVariants] = useState([]);
@@ -28,6 +33,7 @@ const Dashboard = () => {
     dayjs(),
   ]);
 
+  // Xác định đơn vị thời gian để vẽ chart
   const determineTimeUnit = (start, end) => {
     const diff = end.diff(start, "day");
     if (diff > 365) return "year";
@@ -37,6 +43,7 @@ const Dashboard = () => {
     return "hour";
   };
 
+  // Gọi API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -74,31 +81,29 @@ const Dashboard = () => {
             }),
           ]);
 
-        // Safe extract
-        const overviewData = overviewRes.data?.data || overviewRes.data || {};
-        const revenueData = revenueRes.data?.data || revenueRes.data || [];
-        const paymentData = paymentRes.data?.data || paymentRes.data || [];
-        const topVariantsData =
-          topVariantRes.data?.data || topVariantRes.data || [];
+        // Lấy dữ liệu an toàn
+        const overviewData = overviewRes.data?.data || {};
+        const revenueData = revenueRes.data?.data || [];
+        const paymentData = paymentRes.data?.data || [];
+        const topVariantsData = topVariantRes.data?.data || [];
 
         setOverview({
           totalOrders: overviewData.totalOrders || 0,
           totalRevenue: overviewData.totalRevenue || 0,
           canceledOrders: overviewData.canceledOrders || 0,
         });
-
         setRevenue(Array.isArray(revenueData) ? revenueData : []);
         setPaymentMethods(Array.isArray(paymentData) ? paymentData : []);
         setTopVariants(Array.isArray(topVariantsData) ? topVariantsData : []);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
-        const errorMessage =
+        setError(
           err?.response?.data?.message ||
-          err?.message ||
-          "Không thể tải dữ liệu dashboard";
-        setError(errorMessage);
+            err?.message ||
+            "Không thể tải dữ liệu dashboard"
+        );
 
-        // fallback
+        // fallback an toàn
         setOverview({ totalOrders: 0, totalRevenue: 0, canceledOrders: 0 });
         setRevenue([]);
         setPaymentMethods([]);
@@ -111,6 +116,7 @@ const Dashboard = () => {
     fetchData();
   }, [dateRange]);
 
+  // Loading UI
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -122,7 +128,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Error Alert */}
+      {/* Thông báo lỗi */}
       {error && (
         <Alert
           message="Thông báo"
@@ -157,14 +163,14 @@ const Dashboard = () => {
         <Card className="shadow-md bg-blue-50 hover:shadow-lg transition-shadow">
           <Statistic
             title="Tổng đơn hàng"
-            value={overview?.totalOrders || 0}
+            value={overview.totalOrders}
             valueStyle={{ color: "#1890ff" }}
           />
         </Card>
         <Card className="shadow-md bg-green-50 hover:shadow-lg transition-shadow">
           <Statistic
             title="Tổng doanh thu"
-            value={(overview?.totalRevenue || 0).toLocaleString("vi-VN")}
+            value={overview.totalRevenue.toLocaleString("vi-VN")}
             suffix="₫"
             valueStyle={{ color: "#52c41a" }}
           />
@@ -172,23 +178,20 @@ const Dashboard = () => {
         <Card className="shadow-md bg-red-50 hover:shadow-lg transition-shadow">
           <Statistic
             title="Đơn bị hủy"
-            value={overview?.canceledOrders || 0}
+            value={overview.canceledOrders}
             valueStyle={{ color: "#f5222d" }}
           />
         </Card>
       </div>
 
-      {/* Doanh thu */}
+      {/* Biểu đồ doanh thu */}
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-gray-800">
           Biểu đồ doanh thu
         </h2>
-        {revenue && revenue.length > 0 ? (
+        {revenue.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart
-              data={revenue}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
+            <LineChart data={revenue}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis
@@ -205,8 +208,8 @@ const Dashboard = () => {
                 type="monotone"
                 dataKey="totalRevenue"
                 stroke="#10b981"
-                name="Doanh thu"
                 strokeWidth={3}
+                name="Doanh thu"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -217,17 +220,14 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Đơn hàng */}
+      {/* Biểu đồ đơn hàng */}
       <div className="bg-white p-4 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-gray-800">
           Biểu đồ đơn hàng
         </h2>
-        {revenue && revenue.length > 0 ? (
+        {revenue.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart
-              data={revenue}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
+            <LineChart data={revenue}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -237,8 +237,8 @@ const Dashboard = () => {
                 type="monotone"
                 dataKey="totalOrders"
                 stroke="#3b82f6"
-                name="Số đơn hàng"
                 strokeWidth={3}
+                name="Số đơn hàng"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -300,7 +300,7 @@ const Dashboard = () => {
           rowKey={(record, index) =>
             `${record?.sku || index}-${record?.productName || index}`
           }
-          dataSource={topVariants || []}
+          dataSource={topVariants}
           columns={[
             {
               title: "Sản phẩm",
@@ -326,18 +326,18 @@ const Dashboard = () => {
               title: "Thuộc tính",
               dataIndex: "attributes",
               key: "attributes",
-              render: (attrs) => (
-                <div className="flex flex-wrap gap-1">
-                  {Object.entries(attrs || {}).map(([key, value]) => (
-                    <Tag key={key} color="blue" className="mb-1 text-xs">
-                      {key}: {value}
-                    </Tag>
-                  ))}
-                  {(!attrs || Object.keys(attrs).length === 0) && (
-                    <span className="text-gray-400 text-xs">Không có</span>
-                  )}
-                </div>
-              ),
+              render: (attrs) =>
+                attrs && Object.keys(attrs).length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {Object.entries(attrs).map(([key, value]) => (
+                      <Tag key={key} color="blue" className="mb-1 text-xs">
+                        {key}: {value}
+                      </Tag>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-400 text-xs">Không có</span>
+                ),
             },
             {
               title: "Số lượng bán",

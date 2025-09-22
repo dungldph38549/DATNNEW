@@ -32,7 +32,7 @@ import { GET_IMAGE } from "../../const/index.ts";
 import { useMutation } from "@tanstack/react-query";
 import { updateUserInfo } from "../../redux/user/index.js";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export default function UserProfile() {
   const user = useSelector((state) => state.user);
@@ -42,7 +42,6 @@ export default function UserProfile() {
   const [isEdit, setIsEdit] = useState(false);
   const [avatarPath, setAvatarPath] = useState(user.avatar || "");
   const [isRechargeModalVisible, setIsRechargeModalVisible] = useState(false);
-  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
   const [walletBalance, setWalletBalance] = useState(user.walletBalance || 0);
   const [walletHistory, setWalletHistory] = useState([
@@ -193,8 +192,146 @@ export default function UserProfile() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      {/* Bạn có thể render phần Wallet + Form thông tin cá nhân + Modal tại đây */}
-      {/* Để tránh dài quá mình giữ cấu trúc, khi dùng bạn add UI tương ứng */}
+      {/* Thông tin cá nhân */}
+      <Card>
+        <Row gutter={16}>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <Avatar size={100} src={GET_IMAGE(avatarPath)} />
+            <Upload showUploadList={false} customRequest={handleUploadFile}>
+              <Button icon={<UploadOutlined />} style={{ marginTop: 10 }}>
+                Đổi ảnh
+              </Button>
+            </Upload>
+          </Col>
+
+          <Col span={18}>
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={{
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                address: user.address,
+                avatar: user.avatar,
+              }}
+              onFinish={onEditInfo}
+            >
+              <Form.Item label="Tên" name="name">
+                <Input disabled={!isEdit} />
+              </Form.Item>
+              <Form.Item label="Email" name="email">
+                <Input disabled={!isEdit} />
+              </Form.Item>
+              <Form.Item label="Số điện thoại" name="phone">
+                <Input disabled={!isEdit} />
+              </Form.Item>
+              <Form.Item label="Địa chỉ" name="address">
+                <Input disabled={!isEdit} />
+              </Form.Item>
+
+              {isEdit && (
+                <>
+                  <Form.Item label="Mật khẩu mới" name="newPassword">
+                    <Input.Password />
+                  </Form.Item>
+                  <Form.Item label="Xác nhận mật khẩu" name="confirmPassword">
+                    <Input.Password />
+                  </Form.Item>
+                </>
+              )}
+
+              <Space>
+                {isEdit ? (
+                  <>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={isPending}
+                    >
+                      Lưu
+                    </Button>
+                    <Button onClick={() => setIsEdit(false)}>Hủy</Button>
+                  </>
+                ) : (
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => setIsEdit(true)}
+                  >
+                    Chỉnh sửa
+                  </Button>
+                )}
+              </Space>
+            </Form>
+          </Col>
+        </Row>
+      </Card>
+
+      <Divider />
+
+      {/* Ví điện tử */}
+      <Card
+        title="Ví điện tử"
+        extra={
+          <Button
+            type="primary"
+            icon={<WalletOutlined />}
+            onClick={() => setIsRechargeModalVisible(true)}
+          >
+            Nạp tiền
+          </Button>
+        }
+      >
+        <Statistic
+          title="Số dư"
+          value={walletBalance}
+          formatter={(value) => formatCurrency(value)}
+        />
+        <List
+          header={<div>Lịch sử giao dịch</div>}
+          dataSource={walletHistory}
+          renderItem={(item) => (
+            <List.Item>
+              <Tag color={getTransactionColor(item.type)}>
+                {getTransactionIcon(item.type)} {item.type}
+              </Tag>
+              <Text>{item.description}</Text>
+              <Text strong style={{ marginLeft: "auto" }}>
+                {formatCurrency(item.amount)}
+              </Text>
+            </List.Item>
+          )}
+        />
+      </Card>
+
+      {/* Modal nạp tiền */}
+      <Modal
+        title="Nạp tiền"
+        open={isRechargeModalVisible}
+        onCancel={() => setIsRechargeModalVisible(false)}
+        footer={null}
+      >
+        <Form form={rechargeForm} layout="vertical" onFinish={handleRecharge}>
+          <Form.Item
+            label="Số tiền"
+            name="amount"
+            rules={[{ required: true, message: "Vui lòng nhập số tiền" }]}
+          >
+            <InputNumber min={10000} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="Phương thức"
+            name="method"
+            rules={[{ required: true, message: "Vui lòng chọn phương thức" }]}
+          >
+            <Input placeholder="VD: MoMo, ZaloPay, ..." />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={isRecharging}>
+            Xác nhận
+          </Button>
+        </Form>
+      </Modal>
     </div>
   );
 }
