@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
 const staffController = require("../controllers/staffController");
-const { authenticateToken, requireRole } = require("../middleware/auth");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../middleware/authMiddleware");
 
 // Validation rules
 const createStaffValidation = [

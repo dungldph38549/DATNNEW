@@ -305,21 +305,47 @@ export const createInventoryTransaction = async (payload) => {
   const res = await axiosInstance.post("/inventory/transaction", payload);
   return res.data;
 };
-// Staff management APIs
-export const createUser = async (payload) => {
-  const res = await axiosInstance.post("/user/create", payload);
+export const getAllStaff = async (params) => {
+  const res = await axiosInstance.get("/staff", { params });
   return res.data;
 };
 
-export const getStaffList = async (params) => {
-  const res = await axiosInstance.get("/user/staff", { params });
+export const getStaffById = async (id) => {
+  const res = await axiosInstance.get(`/staff/${id}`);
   return res.data;
 };
 
-export const updateStaffRole = async (id, role) => {
-  const res = await axiosInstance.put(`/user/${id}/role`, { role });
+export const createStaff = async (payload) => {
+  const res = await axiosInstance.post("/staff", payload);
   return res.data;
 };
+
+export const updateStaff = async (id, payload) => {
+  const res = await axiosInstance.put(`/staff/${id}`, payload);
+  return res.data;
+};
+
+export const deleteStaff = async (id) => {
+  const res = await axiosInstance.delete(`/staff/${id}`);
+  return res.data;
+};
+
+export const getStaffStats = async () => {
+  const res = await axiosInstance.get("/staff/stats");
+  return res.data;
+};
+
+export const recordAttendance = async (staffId, payload) => {
+  const res = await axiosInstance.post(`/staff/${staffId}/attendance`, payload);
+  return res.data;
+};
+
+export const updateStaffSalary = async (staffId, payload) => {
+  const res = await axiosInstance.post(`/staff/${staffId}/salary`, payload);
+  return res.data;
+};
+export { getStaffStats as getStaffStatistics };
+
 // Lấy sản phẩm theo category
 export const getProductsByCategory = async (categoryId) => {
   const res = await axiosInstance.get(`/product/category/${categoryId}`);
@@ -334,6 +360,8 @@ export const getProductsByBrand = async (brandId) => {
 
 // Lấy sản phẩm theo brand + category
 export const getProductsByBrandAndCategory = async (brandId, categoryId) => {
-  const res = await axiosInstance.get(`/product/filter`, { params: { brandId, categoryId } });
+  const res = await axiosInstance.get(`/product/filter`, {
+    params: { brandId, categoryId },
+  });
   return res.data;
 };
