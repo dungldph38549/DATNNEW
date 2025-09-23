@@ -326,3 +326,35 @@ export const getProductsByBrandAndCategory = async (brandId, categoryId) => {
   const res = await axiosInstance.get(`/product/filter`, { params: { brandId, categoryId } });
   return res.data;
 };
+// ================== Staff ==================
+export const getAllStaff = async (params = {}) => {
+  const res = await axiosInstance.get("/staff", { params });
+  return res.data;
+};
+
+export const getStaffById = async (id) => {
+  const res = await axiosInstance.get(`/staff/${id}`);
+  return res.data;
+};
+
+export const createStaff = async (payload) => {
+  const res = await axiosInstance.post("/staff", payload);
+  return res.data;
+};
+
+export const updateStaff = async (id, payload) => {
+  const res = await axiosInstance.put(`/staff/${id}`, payload);
+  return res.data;
+};
+
+export const deleteStaff = async (id) => {
+  const res = await axiosInstance.delete(`/staff/${id}`);
+  return res.data;
+};
+
+export const getStaffStatistics = async () => {
+  const res = await axiosInstance.get("/staff/statistics");
+  return res.data;
+};
+
+ 
