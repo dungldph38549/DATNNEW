@@ -1,5 +1,5 @@
-// src/pages/admin/StaffManagement.jsx
-import { useState } from "react";
+// src/pages/admin/StaffManagement.jsx - Updated component với Staff API
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -12,7 +12,6 @@ import {
   Select,
   DatePicker,
   Switch,
-  Upload,
   message,
   Tabs,
   Space,
@@ -34,11 +33,17 @@ import {
   TeamOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  UploadOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { getAllUser, updateUserById, uploadImage } from "../api/index";
+import {
+  getAllStaff,
+  createStaff,
+  updateStaff,
+  deleteStaff,
+  getStaffById,
+  getStaffStatistics,
+} from "../api/index";
 import dayjs from "dayjs";
 
 const { TabPane } = Tabs;
@@ -57,26 +62,46 @@ export default function StaffManagement() {
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
 
-  // Fetch staff data
+  // Fetch staff data với API mới
   const {
-    data: staffData,
+    data: staffResponse,
     isLoading: staffLoading,
     refetch: refetchStaff,
   } = useQuery({
-    queryKey: ["staff-management"],
-    queryFn: () => getAllUser(1, 1000),
+    queryKey: [
+      "staff-management",
+      searchText,
+      roleFilter,
+      statusFilter,
+      departmentFilter,
+    ],
+    queryFn: () =>
+      getAllStaff({
+        search: searchText,
+        role: roleFilter,
+        status: statusFilter,
+        department: departmentFilter,
+        limit: 1000,
+      }),
     staleTime: 2 * 60 * 1000,
+  });
+
+  // Fetch staff statistics
+  const { data: statisticsResponse, isLoading: statisticsLoading } = useQuery({
+    queryKey: ["staff-statistics"],
+    queryFn: getStaffStatistics,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Create/Update staff mutation
   const staffMutation = useMutation({
     mutationFn: (payload) => {
       if (isEditing && selectedStaff) {
-        return updateUserById(selectedStaff._id, payload);
+        return updateStaff(selectedStaff._id, payload);
       }
-      // Note: You might need a createUser API endpoint
-      return updateUserById("new", payload);
+      return createStaff(payload);
     },
     onSuccess: () => {
       message.success(
@@ -89,50 +114,43 @@ export default function StaffManagement() {
       setIsEditing(false);
       form.resetFields();
       queryClient.invalidateQueries({ queryKey: ["staff-management"] });
+      queryClient.invalidateQueries({ queryKey: ["staff-statistics"] });
     },
     onError: (error) => {
-      message.error(error?.response?.data?.message || "Có lỗi xảy ra");
+      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra";
+      message.error(errorMessage);
+    },
+  });
+
+  // Delete staff mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteStaff,
+    onSuccess: () => {
+      message.success("Xóa nhân viên thành công");
+      queryClient.invalidateQueries({ queryKey: ["staff-management"] });
+      queryClient.invalidateQueries({ queryKey: ["staff-statistics"] });
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra";
+      message.error(errorMessage);
     },
   });
 
   // Process staff data
-  const allStaff = staffData?.data || [];
-  const staffOnly = allStaff.filter((user) => user.role !== "customer"); // Exclude customers
+  const allStaff = staffResponse?.data || [];
+  const statistics = statisticsResponse?.data?.overview || {};
 
-  // Calculate statistics
-  const totalStaff = staffOnly.length;
-  const activeStaff = staffOnly.filter(
-    (staff) => staff.isActive !== false
-  ).length;
-  const adminCount = staffOnly.filter(
-    (staff) => staff.isAdmin || staff.role === "admin"
-  ).length;
-  const managerCount = staffOnly.filter(
-    (staff) => staff.role === "manager"
-  ).length;
-
-  // Filter staff
-  const filteredStaff = staffOnly.filter((staff) => {
-    const matchesSearch =
-      staff.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-      staff.email?.toLowerCase().includes(searchText.toLowerCase());
-
-    const matchesRole =
-      roleFilter === "all" ||
-      (roleFilter === "admin" && (staff.isAdmin || staff.role === "admin")) ||
-      (roleFilter === "manager" && staff.role === "manager") ||
-      (roleFilter === "staff" &&
-        !staff.isAdmin &&
-        staff.role !== "admin" &&
-        staff.role !== "manager");
-
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && staff.isActive !== false) ||
-      (statusFilter === "inactive" && staff.isActive === false);
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  // Calculate statistics với fallback values
+  const totalStaff = statistics.total || allStaff.length;
+  const activeStaff =
+    statistics.active ||
+    allStaff.filter((staff) => staff.isActive !== false).length;
+  const adminCount =
+    statistics.admins ||
+    allStaff.filter((staff) => staff.isAdmin || staff.role === "admin").length;
+  const managerCount =
+    statistics.managers ||
+    allStaff.filter((staff) => staff.role === "manager").length;
 
   // Handle staff modal
   const handleAddStaff = () => {
@@ -147,7 +165,7 @@ export default function StaffManagement() {
     setIsEditing(true);
     setStaffModalVisible(true);
 
-    // Pre-fill form
+    // Pre-fill form với dữ liệu từ staff
     form.setFieldsValue({
       name: staff.name,
       email: staff.email,
@@ -171,12 +189,73 @@ export default function StaffManagement() {
       cancelText: "Hủy",
       okType: "danger",
       onOk: () => {
-        // Set inactive instead of delete
-        staffMutation.mutate({
-          ...staff,
-          isActive: false,
-        });
+        deleteMutation.mutate(staff._id);
       },
+    });
+  };
+
+  const handleViewStaff = (staff) => {
+    Modal.info({
+      title: "Thông tin nhân viên",
+      width: 600,
+      content: (
+        <div className="space-y-4">
+          <div className="flex items-center mb-4">
+            <Avatar
+              size={60}
+              src={
+                staff.avatar
+                  ? `${process.env.REACT_APP_API_URL_BACKEND}/image/${staff.avatar}`
+                  : null
+              }
+              icon={<UserOutlined />}
+              className="mr-4"
+            />
+            <div>
+              <h3 className="text-lg font-semibold">{staff.name}</h3>
+              {getRoleTag(staff)}
+              {getStatusBadge(staff.isActive)}
+            </div>
+          </div>
+
+          <Divider />
+
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <strong>Email:</strong> {staff.email}
+            </Col>
+            <Col span={12}>
+              <strong>Điện thoại:</strong> {staff.phone || "Chưa cập nhật"}
+            </Col>
+            <Col span={12}>
+              <strong>Chức vụ:</strong> {staff.position || "Chưa cập nhật"}
+            </Col>
+            <Col span={12}>
+              <strong>Phòng ban:</strong> {getDepartmentLabel(staff.department)}
+            </Col>
+            <Col span={12}>
+              <strong>Lương:</strong>{" "}
+              {staff.salary
+                ? `${staff.salary.toLocaleString()}₫`
+                : "Chưa cập nhật"}
+            </Col>
+            <Col span={12}>
+              <strong>Ngày vào làm:</strong>{" "}
+              {staff.startDate
+                ? dayjs(staff.startDate).format("DD/MM/YYYY")
+                : "Chưa cập nhật"}
+            </Col>
+            <Col span={24}>
+              <strong>Địa chỉ:</strong> {staff.address || "Chưa cập nhật"}
+            </Col>
+            {staff.notes && (
+              <Col span={24}>
+                <strong>Ghi chú:</strong> {staff.notes}
+              </Col>
+            )}
+          </Row>
+        </div>
+      ),
     });
   };
 
@@ -213,6 +292,26 @@ export default function StaffManagement() {
     );
   };
 
+  // Get department label
+  const getDepartmentLabel = (department) => {
+    const labels = {
+      sales: "Bán hàng",
+      warehouse: "Kho",
+      "customer-service": "Chăm sóc khách hàng",
+      marketing: "Marketing",
+      admin: "Hành chính",
+      finance: "Tài chính",
+      hr: "Nhân sự",
+      it: "IT",
+    };
+    return labels[department] || department || "Chưa cập nhật";
+  };
+
+  // Auto refetch khi filter thay đổi
+  useEffect(() => {
+    refetchStaff();
+  }, [searchText, roleFilter, statusFilter, departmentFilter, refetchStaff]);
+
   // Table columns
   const staffColumns = [
     {
@@ -245,20 +344,6 @@ export default function StaffManagement() {
       key: "role",
       width: 120,
       render: (_, record) => getRoleTag(record),
-      filters: [
-        { text: "Admin", value: "admin" },
-        { text: "Manager", value: "manager" },
-        { text: "Staff", value: "staff" },
-      ],
-      onFilter: (value, record) => {
-        if (value === "admin") return record.isAdmin || record.role === "admin";
-        if (value === "manager") return record.role === "manager";
-        return (
-          !record.isAdmin &&
-          record.role !== "admin" &&
-          record.role !== "manager"
-        );
-      },
     },
     {
       title: "Chức vụ",
@@ -273,8 +358,7 @@ export default function StaffManagement() {
       dataIndex: "department",
       key: "department",
       width: 120,
-      render: (department) =>
-        department || <span className="text-gray-400">Chưa cập nhật</span>,
+      render: (department) => getDepartmentLabel(department),
     },
     {
       title: "Lương",
@@ -319,75 +403,7 @@ export default function StaffManagement() {
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => {
-                Modal.info({
-                  title: "Thông tin nhân viên",
-                  width: 600,
-                  content: (
-                    <div className="space-y-4">
-                      <div className="flex items-center mb-4">
-                        <Avatar
-                          size={60}
-                          src={
-                            record.avatar
-                              ? `${process.env.REACT_APP_API_URL_BACKEND}/image/${record.avatar}`
-                              : null
-                          }
-                          icon={<UserOutlined />}
-                          className="mr-4"
-                        />
-                        <div>
-                          <h3 className="text-lg font-semibold">
-                            {record.name}
-                          </h3>
-                          {getRoleTag(record)}
-                        </div>
-                      </div>
-
-                      <Divider />
-
-                      <Row gutter={[16, 16]}>
-                        <Col span={12}>
-                          <strong>Email:</strong> {record.email}
-                        </Col>
-                        <Col span={12}>
-                          <strong>Điện thoại:</strong>{" "}
-                          {record.phone || "Chưa cập nhật"}
-                        </Col>
-                        <Col span={12}>
-                          <strong>Chức vụ:</strong>{" "}
-                          {record.position || "Chưa cập nhật"}
-                        </Col>
-                        <Col span={12}>
-                          <strong>Phòng ban:</strong>{" "}
-                          {record.department || "Chưa cập nhật"}
-                        </Col>
-                        <Col span={12}>
-                          <strong>Lương:</strong>{" "}
-                          {record.salary
-                            ? `${record.salary.toLocaleString()}₫`
-                            : "Chưa cập nhật"}
-                        </Col>
-                        <Col span={12}>
-                          <strong>Ngày vào làm:</strong>{" "}
-                          {record.startDate
-                            ? dayjs(record.startDate).format("DD/MM/YYYY")
-                            : "Chưa cập nhật"}
-                        </Col>
-                        <Col span={24}>
-                          <strong>Địa chỉ:</strong>{" "}
-                          {record.address || "Chưa cập nhật"}
-                        </Col>
-                        {record.notes && (
-                          <Col span={24}>
-                            <strong>Ghi chú:</strong> {record.notes}
-                          </Col>
-                        )}
-                      </Row>
-                    </div>
-                  ),
-                });
-              }}
+              onClick={() => handleViewStaff(record)}
             />
           </Tooltip>
           <Tooltip title="Chỉnh sửa">
@@ -404,6 +420,7 @@ export default function StaffManagement() {
               danger
               icon={<DeleteOutlined />}
               onClick={() => handleDeleteStaff(record)}
+              loading={deleteMutation.isLoading}
             />
           </Tooltip>
         </Space>
@@ -426,7 +443,7 @@ export default function StaffManagement() {
       {/* Statistics Cards */}
       <Row gutter={[16, 16]} className="mb-6">
         <Col xs={12} sm={6}>
-          <Card>
+          <Card loading={statisticsLoading}>
             <Statistic
               title="Tổng nhân viên"
               value={totalStaff}
@@ -436,7 +453,7 @@ export default function StaffManagement() {
           </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <Card>
+          <Card loading={statisticsLoading}>
             <Statistic
               title="Đang hoạt động"
               value={activeStaff}
@@ -446,7 +463,7 @@ export default function StaffManagement() {
           </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <Card>
+          <Card loading={statisticsLoading}>
             <Statistic
               title="Admin"
               value={adminCount}
@@ -456,7 +473,7 @@ export default function StaffManagement() {
           </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <Card>
+          <Card loading={statisticsLoading}>
             <Statistic
               title="Manager"
               value={managerCount}
@@ -503,6 +520,20 @@ export default function StaffManagement() {
               </Select>
 
               <Select
+                placeholder="Phòng ban"
+                value={departmentFilter}
+                onChange={setDepartmentFilter}
+                style={{ width: 150 }}
+              >
+                <Option value="all">Tất cả</Option>
+                <Option value="sales">Bán hàng</Option>
+                <Option value="warehouse">Kho</Option>
+                <Option value="customer-service">CSKH</Option>
+                <Option value="marketing">Marketing</Option>
+                <Option value="admin">Hành chính</Option>
+              </Select>
+
+              <Select
                 placeholder="Trạng thái"
                 value={statusFilter}
                 onChange={setStatusFilter}
@@ -525,7 +556,7 @@ export default function StaffManagement() {
             {/* Staff Table */}
             <Table
               columns={staffColumns}
-              dataSource={filteredStaff.map((staff) => ({
+              dataSource={allStaff.map((staff) => ({
                 ...staff,
                 key: staff._id,
               }))}
@@ -572,7 +603,7 @@ export default function StaffManagement() {
           setIsEditing(false);
           form.resetFields();
         }}
-        confirmLoading={staffMutation.isPending}
+        confirmLoading={staffMutation.isLoading}
         width={800}
       >
         <Form form={form} onFinish={onFinishStaff} layout="vertical">
@@ -635,6 +666,9 @@ export default function StaffManagement() {
                   <Option value="customer-service">Chăm sóc khách hàng</Option>
                   <Option value="marketing">Marketing</Option>
                   <Option value="admin">Hành chính</Option>
+                  <Option value="finance">Tài chính</Option>
+                  <Option value="hr">Nhân sự</Option>
+                  <Option value="it">IT</Option>
                 </Select>
               </Form.Item>
             </Col>
