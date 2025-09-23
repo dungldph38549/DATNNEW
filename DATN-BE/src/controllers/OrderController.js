@@ -559,6 +559,7 @@ exports.deleteOrder = async (req, res) => {
   }
 };
 
+// Dashboard tổng quan - Updated version
 exports.dashboard = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -567,78 +568,121 @@ exports.dashboard = async (req, res) => {
       : new Date(new Date().getFullYear(), 0, 1);
     const end = endDate ? new Date(endDate) : new Date();
 
-    const [totalOrders, totalRevenue, canceledOrders] = await Promise.all([
-      Order.countDocuments({
-        createdAt: { $gte: start, $lte: end },
-      }),
-      Order.aggregate([
-        {
-          $match: {
-            createdAt: { $gte: start, $lte: end },
-            // paymentStatus: 'paid'
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: "$totalAmount" },
-          },
-        },
-      ]),
-      Order.countDocuments({
-        createdAt: { $gte: start, $lte: end },
-        status: "canceled",
-      }),
-    ]);
+    console.log("Dashboard query range:", { start, end });
 
-    res.status(200).json({
-      totalOrders,
+    const [totalOrders, totalRevenue, canceledOrders, deliveredOrders] =
+      await Promise.all([
+        Order.countDocuments({
+          createdAt: { $gte: start, $lte: end },
+        }),
+        Order.aggregate([
+          {
+            $match: {
+              createdAt: { $gte: start, $lte: end },
+              // Tính cả paid và COD delivered
+              $or: [
+                { paymentStatus: "paid" },
+                { paymentMethod: "cod", status: "delivered" },
+              ],
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$totalAmount" },
+            },
+          },
+        ]),
+        Order.countDocuments({
+          createdAt: { $gte: start, $lte: end },
+          status: "canceled",
+        }),
+        Order.countDocuments({
+          createdAt: { $gte: start, $lte: end },
+          status: "delivered",
+        }),
+      ]);
+
+    const result = {
+      totalOrders: totalOrders || 0,
       totalRevenue: totalRevenue[0]?.total || 0,
-      canceledOrders,
+      canceledOrders: canceledOrders || 0,
+      deliveredOrders: deliveredOrders || 0,
+      successRate:
+        totalOrders > 0
+          ? ((deliveredOrders / totalOrders) * 100).toFixed(2)
+          : 0,
+    };
+
+    console.log("Dashboard result:", result);
+
+    // Trả về format giống như code cũ nhưng có thêm data
+    res.status(200).json({
+      status: "ok",
+      message: "Successfully fetched dashboard data",
+      data: result,
+      // Backward compatibility với code cũ
+      totalOrders: result.totalOrders,
+      totalRevenue: result.totalRevenue,
+      canceledOrders: result.canceledOrders,
     });
   } catch (err) {
-    errorResponse({ res, message: err?.message, statusCode: 500 });
+    console.error("Dashboard error:", err);
+    res.status(500).json({
+      status: "error",
+      message: err?.message || "Internal server error",
+    });
   }
 };
 
+// Báo cáo doanh thu theo thời gian - Updated version
 exports.revenue = async (req, res) => {
   try {
     const { startDate, endDate, unit = "day" } = req.query;
 
     if (!startDate || !endDate) {
-      return res.status(400).json({ message: "Missing startDate or endDate" });
+      return res.status(400).json({
+        status: "error",
+        message: "Missing startDate or endDate",
+      });
     }
 
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    console.log("Revenue query:", { start, end, unit });
+
     let groupId;
-    let format;
 
     switch (unit) {
       case "year":
         groupId = { $year: "$createdAt" };
-        format = "YYYY";
         break;
       case "month":
-        groupId = { $month: "$createdAt" }; // Số tháng từ 1 đến 12
-        format = "MM";
+        groupId = {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+        };
         break;
       case "week":
-        groupId = { $isoWeek: "$createdAt" }; // Tuần ISO (1 - 53)
-        format = "WW";
+        groupId = {
+          year: { $year: "$createdAt" },
+          week: { $isoWeek: "$createdAt" },
+        };
         break;
       case "day":
         groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-        format = "D/M";
         break;
       case "hour":
-        groupId = { $hour: "$createdAt" }; // giờ 0–23
-        format = "HH:00";
+        groupId = {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" },
+          hour: { $hour: "$createdAt" },
+        };
         break;
       default:
         groupId = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-        format = "D/M";
     }
 
     const results = await Order.aggregate([
@@ -657,26 +701,32 @@ exports.revenue = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
+    // Format kết quả giống code cũ
     const formattedResults = results.map((item) => {
       let name = "";
-      switch (unit) {
-        case "month":
-          name = `Tháng ${item._id}`;
-          break;
-        case "week":
-          name = `Tuần ${item._id}`;
-          break;
-        case "year":
-          name = `${item._id}`;
-          break;
-        case "hour":
-          name = `${String(item._id).padStart(2, "0")}:00`;
-          break;
-        case "day":
-          name = moment(item._id).format("D/M");
-          break;
-        default:
-          name = moment(item._id).format("D/M");
+
+      if (unit === "day" && typeof item._id === "string") {
+        // Format YYYY-MM-DD thành D/M
+        const date = new Date(item._id);
+        name = `${date.getDate()}/${date.getMonth() + 1}`;
+      } else {
+        // Xử lý các unit khác
+        switch (unit) {
+          case "year":
+            name = `${item._id}`;
+            break;
+          case "month":
+            name = `${item._id.month}/${item._id.year}`;
+            break;
+          case "week":
+            name = `Tuần ${item._id.week}/${item._id.year}`;
+            break;
+          case "hour":
+            name = `${String(item._id.hour).padStart(2, "0")}:00`;
+            break;
+          default:
+            name = item._id?.toString() || "N/A";
+        }
       }
 
       return {
@@ -684,24 +734,40 @@ exports.revenue = async (req, res) => {
         name,
       };
     });
-    res.status(200).json(formattedResults);
+
+    console.log("Revenue results:", formattedResults.length, "items");
+
+    // Trả về format giống code cũ
+    res.status(200).json({
+      status: "ok",
+      message: "Successfully fetched revenue data",
+      data: formattedResults,
+    });
   } catch (err) {
-    errorResponse({ res, message: err?.message, statusCode: 500 });
+    console.error("Revenue error:", err);
+    res.status(500).json({
+      status: "error",
+      message: err?.message || "Internal server error",
+    });
   }
 };
 
+// Top sản phẩm bán chạy - Updated version
 exports.topSelling = async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, limit = 10 } = req.query;
     const start = startDate
       ? new Date(startDate)
       : new Date(new Date().getFullYear(), 0, 1);
     const end = endDate ? new Date(endDate) : new Date();
 
+    console.log("TopSelling query range:", { start, end });
+
     const result = await Order.aggregate([
       {
         $match: {
           createdAt: { $gte: start, $lte: end },
+          status: { $ne: "canceled" }, // Không tính đơn bị hủy
         },
       },
       { $unwind: "$products" },
@@ -716,7 +782,7 @@ exports.topSelling = async (req, res) => {
         },
       },
       { $sort: { totalQuantity: -1 } },
-      { $limit: 10 },
+      { $limit: parseInt(limit) },
       {
         $lookup: {
           from: "products",
@@ -725,22 +791,39 @@ exports.topSelling = async (req, res) => {
           as: "product",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
       {
         $project: {
-          productName: "$product.name",
-          sku: "$_id.sku",
-          attributes: "$_id.attributes",
+          productName: { $ifNull: ["$product.name", "Unknown Product"] },
+          productPrice: { $ifNull: ["$product.price", 0] },
+          sku: { $ifNull: ["$_id.sku", "N/A"] },
+          attributes: { $ifNull: ["$_id.attributes", {}] },
           totalQuantity: 1,
+          totalRevenue: {
+            $multiply: ["$totalQuantity", { $ifNull: ["$product.price", 0] }],
+          },
         },
       },
     ]);
-    res.status(200).json(result);
+
+    console.log("TopSelling results:", result.length, "items");
+
+    // Trả về format giống code cũ
+    res.status(200).json({
+      status: "ok",
+      message: "Successfully fetched top selling products",
+      data: result,
+    });
   } catch (err) {
-    errorResponse({ res, message: err?.message, statusCode: 500 });
+    console.error("TopSelling error:", err);
+    res.status(500).json({
+      status: "error",
+      message: err?.message || "Internal server error",
+    });
   }
 };
 
+// Thống kê phương thức thanh toán - Updated version
 exports.paymentMethod = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -748,17 +831,78 @@ exports.paymentMethod = async (req, res) => {
       ? new Date(startDate)
       : new Date(new Date().getFullYear(), 0, 1);
     const end = endDate ? new Date(endDate) : new Date();
+
+    console.log("PaymentMethod query range:", { start, end });
+
     const result = await Order.aggregate([
       {
         $match: {
           createdAt: { $gte: start, $lte: end },
         },
       },
-      { $group: { _id: "$paymentMethod", count: { $sum: 1 } } },
+      {
+        $group: {
+          _id: "$paymentMethod",
+          count: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { count: -1 } },
     ]);
-    res.json(result);
+
+    // Enhanced format với thêm thông tin
+    const formattedResult = result.map((item) => {
+      let method;
+      switch (item._id) {
+        case "cod":
+          method = "COD";
+          break;
+        case "vnpay":
+          method = "VNPay";
+          break;
+        case "momo":
+          method = "MoMo";
+          break;
+        case "wallet":
+          method = "Ví điện tử";
+          break;
+        default:
+          method = item._id || "Unknown";
+      }
+
+      return {
+        _id: item._id,
+        method,
+        count: item.count,
+        totalAmount: item.totalAmount,
+        percentage: 0, // Sẽ tính sau
+      };
+    });
+
+    // Tính phần trăm
+    const totalCount = formattedResult.reduce(
+      (sum, item) => sum + item.count,
+      0
+    );
+    formattedResult.forEach((item) => {
+      item.percentage =
+        totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(2) : 0;
+    });
+
+    console.log("PaymentMethod results:", formattedResult);
+
+    // Trả về format giống code cũ
+    res.status(200).json({
+      status: "ok",
+      message: "Successfully fetched payment method statistics",
+      data: formattedResult,
+    });
   } catch (err) {
-    errorResponse({ res, message: err?.message, statusCode: 500 });
+    console.error("PaymentMethod error:", err);
+    res.status(500).json({
+      status: "error",
+      message: err?.message || "Internal server error",
+    });
   }
 };
 

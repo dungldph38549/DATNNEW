@@ -173,9 +173,13 @@ export const updateOrderInfo = async (id, data) => {
   return res.data;
 };
 
-// ================== Brand ==================
+// ===== Brand API =====
 export const createBrand = async (payload) => {
-  const res = await axiosInstance.post("/brand/admin/create", payload);
+  const res = await axiosInstance.post("/brand/admin/create", {
+    name: payload.name,
+    image: payload.image,
+    status: payload.status,
+  });
   return res.data;
 };
 
@@ -186,8 +190,12 @@ export const getAllBrands = async (status) => {
   return res.data;
 };
 
-export const updateBrand = async (payload) => {
-  const res = await axiosInstance.put("/brand/admin/update", payload);
+export const updateBrand = async ({ id, data }) => {
+  const res = await axiosInstance.put(`/brand/admin/update/${id}`, {
+    name: data.name,
+    image: data.image,
+    status: data.status,
+  });
   return res.data;
 };
 
@@ -308,4 +316,152 @@ export const getStaffList = async (params) => {
 export const updateStaffRole = async (id, role) => {
   const res = await axiosInstance.put(`/user/${id}/role`, { role });
   return res.data;
+};
+
+// Base URL cho staff API
+const STAFF_API_BASE = "/staff";
+
+// Lấy danh sách tất cả nhân viên
+export const getAllStaff = async (params = {}) => {
+  try {
+    const {
+      page = 1,
+      limit = 1000,
+      search = "",
+      role = "all",
+      status = "all",
+      department = "all",
+      position = "all",
+    } = params;
+
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(search && { search }),
+      ...(role !== "all" && { role }),
+      ...(status !== "all" && { status }),
+      ...(department !== "all" && { department }),
+      ...(position !== "all" && { position }),
+    });
+
+    const response = await axiosInstance.get(
+      `${STAFF_API_BASE}?${queryParams}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Get all staff error:", error);
+    throw error;
+  }
+};
+
+// Tạo nhân viên mới
+export const createStaff = async (staffData) => {
+  try {
+    const response = await axiosInstance.post(STAFF_API_BASE, staffData);
+    return response.data;
+  } catch (error) {
+    console.error("Create staff error:", error);
+    throw error;
+  }
+};
+
+// Cập nhật thông tin nhân viên
+export const updateStaff = async (staffId, updateData) => {
+  try {
+    const response = await axiosInstance.put(
+      `${STAFF_API_BASE}/${staffId}`,
+      updateData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Update staff error:", error);
+    throw error;
+  }
+};
+
+// Xóa nhân viên (soft delete)
+export const deleteStaff = async (staffId) => {
+  try {
+    const response = await axiosInstance.delete(`${STAFF_API_BASE}/${staffId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete staff error:", error);
+    throw error;
+  }
+};
+
+// Lấy chi tiết nhân viên
+export const getStaffById = async (staffId) => {
+  try {
+    const response = await axiosInstance.get(`${STAFF_API_BASE}/${staffId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Get staff by id error:", error);
+    throw error;
+  }
+};
+
+// Lấy thống kê nhân viên
+export const getStaffStatistics = async () => {
+  try {
+    const response = await axiosInstance.get(`${STAFF_API_BASE}/statistics`);
+    return response.data;
+  } catch (error) {
+    console.error("Get staff statistics error:", error);
+    throw error;
+  }
+};
+
+// Tìm kiếm nhân viên
+export const searchStaff = async (searchTerm, filters = {}) => {
+  try {
+    const params = {
+      search: searchTerm,
+      ...filters,
+    };
+    return await getAllStaff(params);
+  } catch (error) {
+    console.error("Search staff error:", error);
+    throw error;
+  }
+};
+
+// Lọc nhân viên theo phòng ban
+export const getStaffByDepartment = async (department) => {
+  try {
+    return await getAllStaff({ department });
+  } catch (error) {
+    console.error("Get staff by department error:", error);
+    throw error;
+  }
+};
+
+// Lọc nhân viên theo vai trò
+export const getStaffByRole = async (role) => {
+  try {
+    return await getAllStaff({ role });
+  } catch (error) {
+    console.error("Get staff by role error:", error);
+    throw error;
+  }
+};
+
+// Lấy nhân viên đang hoạt động
+export const getActiveStaff = async () => {
+  try {
+    return await getAllStaff({ status: "active" });
+  } catch (error) {
+    console.error("Get active staff error:", error);
+    throw error;
+  }
+};
+
+// Lấy nhân viên đã ngưng hoạt động
+export const getInactiveStaff = async () => {
+  try {
+    return await getAllStaff({ status: "inactive" });
+  } catch (error) {
+    console.error("Get inactive staff error:", error);
+    throw error;
+  }
 };

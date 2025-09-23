@@ -8,14 +8,16 @@ import Swal from "sweetalert2";
 export default function ReturnOrders() {
   const queryClient = useQueryClient();
 
+  // Lấy danh sách yêu cầu hoàn hàng
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["return-orders"],
     queryFn: () => orderReturn(),
     keepPreviousData: true,
     retry: 3,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
+  // Chấp nhận / từ chối yêu cầu hoàn hàng
   const acceptOrRejectMutation = useMutation({
     mutationFn: ({ id, note, status }) =>
       acceptOrRejectReturn({ id, note, status }),
@@ -32,12 +34,13 @@ export default function ReturnOrders() {
     },
   });
 
+  // Làm mới dữ liệu
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["return-orders"] });
   };
 
+  // Xử lý chấp nhận / từ chối
   const handleAcceptReject = async (id, status) => {
-    // Prevent multiple clicks during processing
     if (acceptOrRejectMutation.isPending) return;
 
     const isReject = status === "rejected";
@@ -55,10 +58,7 @@ export default function ReturnOrders() {
       confirmButtonText: isReject ? "Từ chối" : "Chấp nhận",
       cancelButtonText: "Hủy bỏ",
       confirmButtonColor: isReject ? "#d33" : "#3085d6",
-      inputAttributes: {
-        maxlength: 500,
-        rows: 4,
-      },
+      inputAttributes: { maxlength: 500, rows: 4 },
       inputValidator: (value) => {
         if (!value?.trim()) {
           return "Vui lòng nhập ghi chú để tiếp tục!";
@@ -78,6 +78,7 @@ export default function ReturnOrders() {
     }
   };
 
+  // Render trạng thái
   const getStatusTag = (status) => {
     const statusConfig = {
       pending: { text: "Chờ xử lý", color: "processing" },
@@ -85,10 +86,14 @@ export default function ReturnOrders() {
       rejected: { text: "Đã từ chối", color: "error" },
     };
 
-    const config = statusConfig[status] || { text: status, color: "default" };
+    const config = statusConfig[status] || {
+      text: "Không xác định",
+      color: "default",
+    };
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
+  // Định nghĩa cột bảng
   const columns = [
     {
       title: "Mã đơn hàng",
@@ -114,7 +119,7 @@ export default function ReturnOrders() {
             className="object-cover rounded border"
             style={{ maxHeight: "80px" }}
             onError={(e) => {
-              e.target.src = "/placeholder-image.png"; // fallback image
+              e.target.src = "/placeholder-image.png";
             }}
           />
         ) : (
@@ -144,7 +149,7 @@ export default function ReturnOrders() {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      width: 120,
+      width: 150,
       render: (date) =>
         date
           ? new Date(date).toLocaleDateString("vi-VN", {
@@ -162,48 +167,51 @@ export default function ReturnOrders() {
       width: 160,
       fixed: "right",
       render: (_, record) => {
-        const isPending = record.status === "pending";
         const isProcessing = acceptOrRejectMutation.isPending;
 
-        if (!isPending) {
+        if (record.status === "pending") {
           return (
-            <Tag color={record.status === "accepted" ? "success" : "error"}>
-              {record.status === "accepted" ? "Đã xử lý" : "Đã từ chối"}
-            </Tag>
+            <Space>
+              <Button
+                type="primary"
+                size="small"
+                loading={isProcessing}
+                disabled={isProcessing}
+                onClick={() =>
+                  handleAcceptReject(record.orderId?._id, "accepted")
+                }
+              >
+                Đồng ý
+              </Button>
+              <Button
+                danger
+                size="small"
+                loading={isProcessing}
+                disabled={isProcessing}
+                onClick={() =>
+                  handleAcceptReject(record.orderId?._id, "rejected")
+                }
+              >
+                Từ chối
+              </Button>
+            </Space>
           );
         }
 
-        return (
-          <Space>
-            <Button
-              type="primary"
-              size="small"
-              loading={isProcessing}
-              disabled={isProcessing}
-              onClick={() =>
-                handleAcceptReject(record.orderId?._id, "accepted")
-              }
-            >
-              Đồng ý
-            </Button>
-            <Button
-              danger
-              size="small"
-              loading={isProcessing}
-              disabled={isProcessing}
-              onClick={() =>
-                handleAcceptReject(record.orderId?._id, "rejected")
-              }
-            >
-              Từ chối
-            </Button>
-          </Space>
-        );
+        // Khi đã xử lý
+        if (record.status === "accepted") {
+          return <Tag color="success">Đã xử lý</Tag>;
+        }
+        if (record.status === "rejected") {
+          return <Tag color="error">Đã từ chối</Tag>;
+        }
+
+        return <Tag color="default">Không xác định</Tag>;
       },
     },
   ];
 
-  // Loading state
+  // Loading
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -212,7 +220,7 @@ export default function ReturnOrders() {
     );
   }
 
-  // Error state
+  // Error
   if (isError || !data) {
     return (
       <div className="bg-white p-8 rounded-xl shadow text-center">
@@ -237,6 +245,7 @@ export default function ReturnOrders() {
     ? data.map((item) => ({
         ...item,
         key: item._id || Math.random().toString(),
+        status: item.status || "pending", // đảm bảo luôn có trạng thái
       }))
     : [];
 
@@ -288,7 +297,7 @@ export default function ReturnOrders() {
         rowClassName={(record) => {
           if (record.status === "accepted") return "bg-green-50";
           if (record.status === "rejected") return "bg-red-50";
-          return "bg-yellow-50";
+          return "bg-yellow-50"; // pending
         }}
       />
     </div>

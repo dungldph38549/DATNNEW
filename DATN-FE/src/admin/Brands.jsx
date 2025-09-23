@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  Table,
-  Spin,
-  Modal,
-  Button,
-  Form,
-  Input,
-  message,
-} from "antd";
+import { Table, Spin, Modal, Button, Form, Input, message } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllBrands,
@@ -28,16 +20,18 @@ export default function Brands() {
   const [form] = Form.useForm(); // Edit form
   const [createForm] = Form.useForm(); // Create form
 
+  // ================== Fetch danh sách ==================
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin-brands"],
     queryFn: () => getAllBrands("all"),
     keepPreviousData: true,
   });
 
+  // ================== Mutation ==================
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updateBrand({ id, ...data }),
+    mutationFn: ({ id, data }) => updateBrand({ id, data }),
     onSuccess: () => {
-      message.success("Cập nhật thành công");
+      message.success("Cập nhật thương hiệu thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-brands"] });
       setIsEditModalVisible(false);
     },
@@ -49,7 +43,7 @@ export default function Brands() {
   const createMutation = useMutation({
     mutationFn: createBrand,
     onSuccess: () => {
-      message.success("Tạo thành công");
+      message.success("Tạo thương hiệu thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-brands"] });
       setIsCreateModalVisible(false);
     },
@@ -58,8 +52,10 @@ export default function Brands() {
     },
   });
 
+  // ================== Helper ==================
   const transformFormValues = (values) => ({
-    ...values,
+    name: values.name,
+    image: values.image,
     status: values.status ? "active" : "inactive",
   });
 
@@ -71,7 +67,9 @@ export default function Brands() {
   };
 
   const handleCreateSubmit = (values) => {
-    createMutation.mutate(transformFormValues(values));
+    const payload = transformFormValues(values);
+    console.log("🚀 Tạo mới brand payload:", payload);
+    createMutation.mutate(payload);
   };
 
   const handleDelete = (record) => {
@@ -101,6 +99,7 @@ export default function Brands() {
     setIsEditModalVisible(true);
   };
 
+  // ================== Table Columns ==================
   const columns = [
     { title: "Tên", dataIndex: "name", key: "name" },
     {
@@ -144,7 +143,7 @@ export default function Brands() {
     },
   ];
 
-  // ========================== Edit Form ==========================
+  // ================== Edit Form ==================
   const renderEditForm = () => {
     const handleChangeImg = async (e) => {
       const file = e.target.files[0];
@@ -206,7 +205,7 @@ export default function Brands() {
     );
   };
 
-  // ========================== Create Form ==========================
+  // ================== Create Form ==================
   const renderCreateForm = () => {
     const handleChangeImg = async (e) => {
       const file = e.target.files[0];
@@ -273,6 +272,7 @@ export default function Brands() {
     );
   };
 
+  // ================== Render ==================
   if (isLoading) {
     return (
       <Spin tip="Đang tải danh sách ..." className="mt-10 block text-center" />
