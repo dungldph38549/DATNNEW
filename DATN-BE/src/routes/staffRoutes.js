@@ -1,7 +1,7 @@
 // routes/staffRoutes.js - Routes quản lý nhân viên
 const express = require("express");
 const router = express.Router();
-const staffController = require("../controllers/StaffController.js");
+const staffController = require("../controllers/staffController.js");
 const {
   authMiddleware,
   authAdminMiddleware,

@@ -25,7 +25,12 @@ export default function ReturnOrders() {
       const actionText =
         variables.status === "accepted" ? "chấp nhận" : "từ chối";
       message.success(`Đã ${actionText} yêu cầu hoàn hàng thành công`);
-      queryClient.invalidateQueries({ queryKey: ["return-orders"] });
+
+      // ✅ Xóa đơn khỏi danh sách ngay sau khi xử lý
+      queryClient.setQueryData(["return-orders"], (oldData) => {
+        if (!Array.isArray(oldData)) return [];
+        return oldData.filter((item) => item.orderId?._id !== variables.id);
+      });
     },
     onError: (err) => {
       message.error(
@@ -78,21 +83,6 @@ export default function ReturnOrders() {
     }
   };
 
-  // Render trạng thái
-  const getStatusTag = (status) => {
-    const statusConfig = {
-      pending: { text: "Chờ xử lý", color: "processing" },
-      accepted: { text: "Đã chấp nhận", color: "success" },
-      rejected: { text: "Đã từ chối", color: "error" },
-    };
-
-    const config = statusConfig[status] || {
-      text: "Không xác định",
-      color: "default",
-    };
-    return <Tag color={config.color}>{config.text}</Tag>;
-  };
-
   // Định nghĩa cột bảng
   const columns = [
     {
@@ -143,7 +133,18 @@ export default function ReturnOrders() {
       dataIndex: "status",
       key: "status",
       width: 120,
-      render: (status) => getStatusTag(status),
+      render: (status) => {
+        const statusConfig = {
+          pending: { text: "Chờ xử lý", color: "processing" },
+          accepted: { text: "Đã chấp nhận", color: "success" },
+          rejected: { text: "Đã từ chối", color: "error" },
+        };
+        const config = statusConfig[status] || {
+          text: "Không xác định",
+          color: "default",
+        };
+        return <Tag color={config.color}>{config.text}</Tag>;
+      },
     },
     {
       title: "Ngày tạo",
@@ -198,15 +199,7 @@ export default function ReturnOrders() {
           );
         }
 
-        // Khi đã xử lý
-        if (record.status === "accepted") {
-          return <Tag color="success">Đã xử lý</Tag>;
-        }
-        if (record.status === "rejected") {
-          return <Tag color="error">Đã từ chối</Tag>;
-        }
-
-        return <Tag color="default">Không xác định</Tag>;
+        return <Tag color="default">Đã xử lý</Tag>;
       },
     },
   ];
@@ -245,7 +238,7 @@ export default function ReturnOrders() {
     ? data.map((item) => ({
         ...item,
         key: item._id || Math.random().toString(),
-        status: item.status || "pending", // đảm bảo luôn có trạng thái
+        status: item.status || "pending",
       }))
     : [];
 

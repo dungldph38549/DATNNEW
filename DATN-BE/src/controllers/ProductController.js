@@ -179,11 +179,30 @@ exports.getStock = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const products = await ProductService.getProductsByCategory(categoryId);
+
+    successResponse({
+      res,
+      message: "Lấy sản phẩm theo danh mục thành công",
+      data: products,
+    });
+  } catch (error) {
+    errorResponse({ res, message: error.message, statusCode: 500 });
+  }
+};
+
 // Lấy sản phẩm theo category
 exports.getByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const products = await Product.find({ category: categoryId, status: "active" });
+    const products = await Product.find({
+      category: categoryId,
+      status: "active",
+    });
     successResponse({ res, data: products });
   } catch (err) {
     errorResponse({ res, message: err.message, statusCode: 500 });

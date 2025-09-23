@@ -302,6 +302,21 @@ const restoreProductById = async (id) => {
     throw new Error("Khôi phục sản phẩm thất bại.");
   }
 };
+// Lấy sản phẩm theo categoryId
+const getProductsByCategory = async (categoryId) => {
+  try {
+    return await Product.find({
+      categoryId,
+      deletedAt: null,
+      status: "active",
+      isActive: true,
+    })
+      .populate("brandId")
+      .populate("categoryId");
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 module.exports = {
   createProduct,
@@ -312,4 +327,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   relationProduct,
+  getProductsByCategory,
 };
