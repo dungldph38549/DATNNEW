@@ -60,10 +60,15 @@ export default function Categories() {
     },
   });
 
-  const transformFormValues = (values) => ({
-    ...values,
-    status: values.status ? "active" : "inactive",
-  });
+const transformFormValues = (values) => ({
+  ...values,
+  status:
+    values.status === undefined
+      ? "active" // nếu không có status thì mặc định là active
+      : values.status
+      ? "active"
+      : "inactive",
+});
 
   const handleUpdateSubmit = (values) => {
     updateMutation.mutate({

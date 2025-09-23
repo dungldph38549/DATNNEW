@@ -11,6 +11,13 @@ router.post("/stocks", ProductController.getStock);
 router.get("/:id", ProductController.getProductById);
 router.post("/relationProduct", ProductController.relationProduct);
 router.put("/update/:id", authAdminMiddleware, ProductController.updateProduct);
+router.get("/by-category/:categoryId", ProductController.getByCategory);
+
+// Lọc theo brand
+router.get("/by-brand/:brandId", ProductController.getByBrand);
+
+// Lọc kết hợp brand + category
+router.get("/filter", ProductController.getByBrandAndCategory);
 router.delete(
   "/delete/:id",
   authAdminMiddleware,

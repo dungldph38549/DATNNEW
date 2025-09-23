@@ -16,6 +16,7 @@ import { GET_IMAGE } from "../../const/index.ts";
 import { addProduct } from "../../redux/cart/cartSlice";
 import { addProduct as addProductCheckout } from "../../redux/checkout/checkoutSlice";
 const { TextArea } = Input;
+
 const Detail = () => {
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const Detail = () => {
 
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null); // state ảnh lớn hiện tại
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["product-detail", id],
@@ -33,14 +34,10 @@ const Detail = () => {
 
   useEffect(() => {
     if (!data) return;
-
-    // Đặt ảnh mặc định là ảnh chính sản phẩm
     setSelectedImage(data.image);
 
     if (!data.hasVariants) return;
-
-    // Tìm variant còn hàng đầu tiên để mặc định chọn
-    const inStockVariant = data.variants.find((v) => v.stock > 0);
+    const inStockVariant = (data.variants || []).find((v) => v.stock > 0);
     if (inStockVariant) {
       const attrs = {};
       for (const [key, value] of Object.entries(inStockVariant.attributes)) {
@@ -55,7 +52,7 @@ const Detail = () => {
     const updatedAttrs = { ...selectedAttributes, [attrName]: value };
     setSelectedAttributes(updatedAttrs);
 
-    const matched = data.variants?.find((variant) =>
+    const matched = (data?.variants || []).find((variant) =>
       Object.entries(updatedAttrs).every(
         ([key, val]) => variant.attributes?.[key] === val
       )
@@ -154,7 +151,7 @@ const Detail = () => {
   });
 
   const averageRating = useMemo(() => {
-    if (!reviews) return 0;
+    if (!reviews?.data) return 0;
     const totalRating = reviews.data.reduce(
       (acc, review) => acc + review.rating,
       0
@@ -163,7 +160,7 @@ const Detail = () => {
   }, [reviews]);
 
   const totalReviews = useMemo(() => {
-    if (!reviews) return 0;
+    if (!reviews?.data) return 0;
     return reviews.data.length;
   }, [reviews]);
 
@@ -203,6 +200,7 @@ const Detail = () => {
       message.error("Lỗi khi phản hồi");
     }
   };
+
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error</div>;
 
@@ -213,27 +211,25 @@ const Detail = () => {
         <div className="md:col-span-10 space-y-6">
           <div className="bg-white rounded-lg shadow p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-4 flex flex-col items-center">
-              {/* Ảnh lớn sử dụng selectedImage */}
               <img
                 src={GET_IMAGE(selectedImage)}
                 alt={data?.name}
                 className="w-64 h-64 object-cover rounded-lg mb-4"
               />
-              {/* Ảnh con, click thay đổi ảnh lớn */}
               <div className="flex space-x-2">
-                {data?.srcImages.map((image, index) => (
+                {(data?.srcImages || []).map((image, index) => (
                   <img
                     key={index}
                     src={GET_IMAGE(image)}
                     alt={data?.name}
                     onClick={() => setSelectedImage(image)}
                     className={`w-12 h-12 object-cover border-2 rounded cursor-pointer transition
-                                            ${
-                                              selectedImage === image
-                                                ? "border-blue-500"
-                                                : "border-white"
-                                            }
-                                            hover:border-blue-400`}
+                      ${
+                        selectedImage === image
+                          ? "border-blue-500"
+                          : "border-white"
+                      }
+                      hover:border-blue-400`}
                   />
                 ))}
               </div>
@@ -277,9 +273,9 @@ const Detail = () => {
               </div>
 
               {data.hasVariants &&
-                data.attributes.map((attr) => {
+                (data.attributes || []).map((attr) => {
                   const values = [
-                    ...new Set(data.variants.map((v) => v.attributes[attr])),
+                    ...new Set((data.variants || []).map((v) => v.attributes[attr])),
                   ];
 
                   return (
@@ -291,7 +287,7 @@ const Detail = () => {
                             ...selectedAttributes,
                             [attr]: val,
                           };
-                          const variantExists = data.variants?.some(
+                          const variantExists = (data.variants || []).some(
                             (variant) =>
                               Object.entries(tempAttrs).every(
                                 ([k, v]) => variant.attributes?.[k] === v
@@ -305,17 +301,16 @@ const Detail = () => {
                               disabled={!variantExists}
                               onClick={() => handleSelectAttribute(attr, val)}
                               className={`px-3 py-1 rounded border text-sm
-                                                            ${
-                                                              isSelected
-                                                                ? "bg-blue-500 text-white border-blue-500"
-                                                                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                                                            }
-                                                            ${
-                                                              !variantExists
-                                                                ? "opacity-50 cursor-not-allowed"
-                                                                : ""
-                                                            }
-                                                        `}
+                                ${
+                                  isSelected
+                                    ? "bg-blue-500 text-white border-blue-500"
+                                    : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                                }
+                                ${
+                                  !variantExists
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
                             >
                               {val}
                             </button>
@@ -439,10 +434,9 @@ const Detail = () => {
                   </Form>
                 </Modal>
 
-                {/* Danh sách đánh giá */}
                 <List
                   itemLayout="vertical"
-                  dataSource={Array.isArray(reviews.data) ? reviews.data : []}
+                  dataSource={Array.isArray(reviews?.data) ? reviews.data : []}
                   renderItem={(review) => (
                     <Comment
                       key={review._id}
@@ -474,7 +468,7 @@ const Detail = () => {
                         ),
                       ]}
                     >
-                      {review.replies?.map((reply, index) => (
+                      {(review.replies || []).map((reply, index) => (
                         <Comment
                           key={index}
                           author={`${reply?.userId?.name} (${
@@ -530,7 +524,7 @@ const Detail = () => {
                 </div>
               )}
 
-              {products?.map((product) => {
+              {(products || []).map((product) => {
                 const item = product.hasVariants
                   ? product.variants.reduce(
                       (max, v) => ((v.sold || 0) > (max.sold || 0) ? v : max),

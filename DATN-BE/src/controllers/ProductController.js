@@ -194,3 +194,43 @@ exports.getProductsByCategory = async (req, res) => {
     errorResponse({ res, message: error.message, statusCode: 500 });
   }
 };
+
+// Lấy sản phẩm theo category
+exports.getByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const products = await Product.find({
+      category: categoryId,
+      status: "active",
+    });
+    successResponse({ res, data: products });
+  } catch (err) {
+    errorResponse({ res, message: err.message, statusCode: 500 });
+  }
+};
+
+// Lấy sản phẩm theo brand
+exports.getByBrand = async (req, res) => {
+  try {
+    const { brandId } = req.params;
+    const products = await Product.find({ brand: brandId, status: "active" });
+    successResponse({ res, data: products });
+  } catch (err) {
+    errorResponse({ res, message: err.message, statusCode: 500 });
+  }
+};
+
+// Lấy sản phẩm theo cả brand & category
+exports.getByBrandAndCategory = async (req, res) => {
+  try {
+    const { brandId, categoryId } = req.query; // dùng query cho tiện: /product/filter?brandId=xxx&categoryId=yyy
+    const filter = {};
+    if (brandId) filter.brand = brandId;
+    if (categoryId) filter.category = categoryId;
+
+    const products = await Product.find(filter).where({ status: "active" });
+    successResponse({ res, data: products });
+  } catch (err) {
+    errorResponse({ res, message: err.message, statusCode: 500 });
+  }
+};
