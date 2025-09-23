@@ -309,6 +309,7 @@ export const updateStaffRole = async (id, role) => {
   const res = await axiosInstance.put(`/user/${id}/role`, { role });
   return res.data;
 };
+
 // Lấy sản phẩm theo category
 export const getProductsByCategory = async (categoryId) => {
   const res = await axiosInstance.get(`/product/category/${categoryId}`);
