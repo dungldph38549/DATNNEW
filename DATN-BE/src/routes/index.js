@@ -6,6 +6,7 @@ const BrandRouter = require("./BrandRouter");
 const CategoryRouter = require("./CategoryRouter");
 const VoucherRouter = require("./VoucherRouter");
 const ReviewRouter = require("./ReviewRouter");
+const StaffRouter = require("./staffRoutes");
 
 // Import routes mới cho return system
 const ReturnRouter = require("./returnRouter");
@@ -22,6 +23,8 @@ const routes = (app) => {
 
   // New return routes
   app.use("/api/order/return", ReturnRouter);
+
+  app.use("/api/staff", StaffRouter);
 
   // Health check và documentation
   app.get("/api/health", (req, res) => {
