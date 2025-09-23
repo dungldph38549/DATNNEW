@@ -309,3 +309,20 @@ export const updateStaffRole = async (id, role) => {
   const res = await axiosInstance.put(`/user/${id}/role`, { role });
   return res.data;
 };
+// Lấy sản phẩm theo category
+export const getProductsByCategory = async (categoryId) => {
+  const res = await axiosInstance.get(`/product/category/${categoryId}`);
+  return res.data;
+};
+
+// Lấy sản phẩm theo brand
+export const getProductsByBrand = async (brandId) => {
+  const res = await axiosInstance.get(`/product/brand/${brandId}`);
+  return res.data;
+};
+
+// Lấy sản phẩm theo brand + category
+export const getProductsByBrandAndCategory = async (brandId, categoryId) => {
+  const res = await axiosInstance.get(`/product/filter`, { params: { brandId, categoryId } });
+  return res.data;
+};

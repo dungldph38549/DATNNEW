@@ -58,10 +58,16 @@ export default function Brands() {
     },
   });
 
-  const transformFormValues = (values) => ({
-    ...values,
-    status: values.status ? "active" : "inactive",
-  });
+const transformFormValues = (values) => ({
+  ...values,
+  status:
+    values.status === undefined
+      ? "active"
+      : values.status
+      ? "active"
+      : "inactive",
+});
+
 
   const handleUpdateSubmit = (values) => {
     updateMutation.mutate({
