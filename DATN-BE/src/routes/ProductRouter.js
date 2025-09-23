@@ -29,5 +29,6 @@ router.put(
   ProductController.restoreProductById
 );
 router.delete("/delete", authAdminMiddleware, ProductController.deleteProduct);
+router.get("/category/:categoryId", ProductController.getProductsByCategory);
 
 module.exports = router;

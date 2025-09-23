@@ -13,6 +13,7 @@ import OrderDetailPage from "../pages/OrderDetailPage/OrderDetailPage.jsx";
 import AdminOrderDetailPage from "../admin/AdminOrderDetail.jsx";
 import ReturnPayment from "../pages/ReturnPayment/ReturnPayment.jsx";
 import CustommerPage from "../pages/CustommerPage/CustommerPage.jsx";
+import OrderHistoryPage from "../pages/OrderHistoryPage/OrderHistoryPage.jsx";
 export const routers = [
   {
     path: "/",
@@ -77,6 +78,11 @@ export const routers = [
   {
     path: "/orders",
     page: OrderPage,
+    isShowHeader: true,
+  },
+  {
+    path: "/orders-history",
+    page: OrderHistoryPage,
     isShowHeader: true,
   },
   {

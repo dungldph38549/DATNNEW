@@ -172,6 +172,17 @@ export const updateOrderInfo = async (id, data) => {
   const res = await axiosInstance.put(`/order/${id}`, data);
   return res.data;
 };
+export const getUserOrders = async ({ page, limit, status, userId }) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    ...(status && { status }),
+    userId,
+  });
+
+  const response = await fetch(`/api/orders/user?${params}`);
+  return response.json();
+};
 
 // ================== Brand ==================
 export const createBrand = async (payload) => {
@@ -294,40 +305,7 @@ export const createInventoryTransaction = async (payload) => {
   const res = await axiosInstance.post("/inventory/transaction", payload);
   return res.data;
 };
-// Staff management APIs
-export const createUser = async (payload) => {
-  const res = await axiosInstance.post("/user/create", payload);
-  return res.data;
-};
-
-export const getStaffList = async (params) => {
-  const res = await axiosInstance.get("/user/staff", { params });
-  return res.data;
-};
-
-export const updateStaffRole = async (id, role) => {
-  const res = await axiosInstance.put(`/user/${id}/role`, { role });
-  return res.data;
-};
-// Lấy sản phẩm theo category
-export const getProductsByCategory = async (categoryId) => {
-  const res = await axiosInstance.get(`/product/category/${categoryId}`);
-  return res.data;
-};
-
-// Lấy sản phẩm theo brand
-export const getProductsByBrand = async (brandId) => {
-  const res = await axiosInstance.get(`/product/brand/${brandId}`);
-  return res.data;
-};
-
-// Lấy sản phẩm theo brand + category
-export const getProductsByBrandAndCategory = async (brandId, categoryId) => {
-  const res = await axiosInstance.get(`/product/filter`, { params: { brandId, categoryId } });
-  return res.data;
-};
-// ================== Staff ==================
-export const getAllStaff = async (params = {}) => {
+export const getAllStaff = async (params) => {
   const res = await axiosInstance.get("/staff", { params });
   return res.data;
 };
@@ -352,9 +330,38 @@ export const deleteStaff = async (id) => {
   return res.data;
 };
 
-export const getStaffStatistics = async () => {
-  const res = await axiosInstance.get("/staff/statistics");
+export const getStaffStats = async () => {
+  const res = await axiosInstance.get("/staff/stats");
   return res.data;
 };
 
- 
+export const recordAttendance = async (staffId, payload) => {
+  const res = await axiosInstance.post(`/staff/${staffId}/attendance`, payload);
+  return res.data;
+};
+
+export const updateStaffSalary = async (staffId, payload) => {
+  const res = await axiosInstance.post(`/staff/${staffId}/salary`, payload);
+  return res.data;
+};
+export { getStaffStats as getStaffStatistics };
+
+// Lấy sản phẩm theo category
+export const getProductsByCategory = async (categoryId) => {
+  const res = await axiosInstance.get(`/product/category/${categoryId}`);
+  return res.data;
+};
+
+// Lấy sản phẩm theo brand
+export const getProductsByBrand = async (brandId) => {
+  const res = await axiosInstance.get(`/product/brand/${brandId}`);
+  return res.data;
+};
+
+// Lấy sản phẩm theo brand + category
+export const getProductsByBrandAndCategory = async (brandId, categoryId) => {
+  const res = await axiosInstance.get(`/product/filter`, {
+    params: { brandId, categoryId },
+  });
+  return res.data;
+};

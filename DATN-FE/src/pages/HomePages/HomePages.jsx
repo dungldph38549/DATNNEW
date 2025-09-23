@@ -1,32 +1,42 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import { fetchProducts, getActiveVouchers, getAllBrands, getAllCategories } from '../../api/index';
-import dayjs from 'dayjs';
+import {
+  fetchProducts,
+  getActiveVouchers,
+  getAllBrands,
+  getAllCategories,
+} from "../../api/index";
+import dayjs from "dayjs";
 
 const HomePages = () => {
   const navigate = useNavigate();
   // const dispatch = useDispatch();
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
-  const [brandSelected, setBrandSelected] = useState('');
-  const [categorySelected, setCategorySelected] = useState('');
-  const keyword = useSelector(state => state.general.keyword);
-  const [sort, setSort] = useState('createdAt');
-  const {
-    data: products,
-    isLoading,
-  } = useQuery({
-    queryKey: ['list-products', page, brandSelected, categorySelected, keyword, sort],
-    queryFn: () => fetchProducts({
+  const [brandSelected, setBrandSelected] = useState("");
+  const [categorySelected, setCategorySelected] = useState("");
+  const keyword = useSelector((state) => state.general.keyword);
+  const [sort, setSort] = useState("createdAt");
+  const { data: products, isLoading } = useQuery({
+    queryKey: [
+      "list-products",
       page,
-      limit: 50,
-      brandId: brandSelected,
-      categoryId: categorySelected,
-      sort,
+      brandSelected,
+      categorySelected,
       keyword,
-    }),
+      sort,
+    ],
+    queryFn: () =>
+      fetchProducts({
+        page,
+        limit: 50,
+        brandId: brandSelected,
+        categoryId: categorySelected,
+        sort,
+        keyword,
+      }),
     keepPreviousData: true,
   });
 
@@ -37,42 +47,88 @@ const HomePages = () => {
 
   useEffect(() => {
     if (products?.data) {
-      setData(prev => {
+      setData((prev) => {
         if (page === 0) return products.data;
-        const existingIds = new Set(prev.map(p => p._id));
-        const newData = products.data.filter(p => !existingIds.has(p._id));
+        const existingIds = new Set(prev.map((p) => p._id));
+        const newData = products.data.filter((p) => !existingIds.has(p._id));
         return [...prev, ...newData];
       });
     }
   }, [products, page]);
 
-  const handleLoadMore = () => setPage(prev => prev + 1);
+  const handleLoadMore = () => setPage((prev) => prev + 1);
 
   const { data: brands } = useQuery({
-    queryKey: ['brands'],
-    queryFn: () => getAllBrands('active'),
+    queryKey: ["brands"],
+    queryFn: () => getAllBrands("active"),
     keepPreviousData: true,
   });
 
   const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => getAllCategories('active'),
+    queryKey: ["categories"],
+    queryFn: () => getAllCategories("active"),
     keepPreviousData: true,
   });
 
   const { data: vouchers } = useQuery({
-    queryKey: ['vouchers'],
+    queryKey: ["vouchers"],
     queryFn: () => getActiveVouchers(),
     keepPreviousData: true,
   });
 
+  // Banner PSG images
   const bannerImages = [
-    "https://cf.shopee.vn/file/vn-50009109-727a24a85a60935da5ccb9008298f681",
-    "https://shopthearena.com/cdn/shop/files/auto-paris-saint-germain-collection-mobile_800x.jpg?v=1614601115",
-    "https://cf.shopee.vn/file/vn-50009109-727a24a85a60935da5ccb9008298f681",
-    "https://cf.shopee.vn/file/vn-11134258-7ras8-mbow8y1dv1qm87",
+    "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3", // PSG training
+    "https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3", // Football stadium
+    "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3", // PSG style banner
+    "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3", // Football match
   ];
+
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Sample news data
+  const newsData = [
+    {
+      id: 1,
+      title: "PSG thắng vang dội trong trận đấu cuối tuần",
+      description:
+        "Đội bóng Paris Saint-Germain đã có chiến thắng ấn tượng 3-0 trước đối thủ trong trận đấu vừa qua...",
+      image:
+        "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1993&auto=format&fit=crop&ixlib=rb-4.0.3",
+      date: "2024-03-15",
+      category: "Bóng đá",
+    },
+    {
+      id: 2,
+      title: "Cầu thủ mới gia nhập đội hình PSG",
+      description:
+        "PSG chính thức công bố việc chiêu mộ thành công cầu thủ tài năng mới cho đội hình mùa giải này...",
+      image:
+        "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3",
+      date: "2024-03-12",
+      category: "Chuyển nhượng",
+    },
+    {
+      id: 3,
+      title: "Lịch thi đấu Champions League sắp tới",
+      description:
+        "PSG chuẩn bị cho những trận đấu quan trọng tại Champions League với đội hình mạnh nhất...",
+      image:
+        "https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3",
+      date: "2024-03-10",
+      category: "Cúp C1",
+    },
+    {
+      id: 4,
+      title: "Kỷ lục mới của PSG trong mùa giải",
+      description:
+        "Câu lạc bộ Paris Saint-Germain đã thiết lập nhiều kỷ lục mới trong mùa giải hiện tại...",
+      image:
+        "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3",
+      date: "2024-03-08",
+      category: "Thống kê",
+    },
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -84,19 +140,85 @@ const HomePages = () => {
 
   return (
     <div className="px-6 bg-gray-100 pt-8">
+      {/* Banner Section */}
       <div>
-        <div className="relative w-full h-64 md:h-96 overflow-hidden">
+        <div className="relative w-full h-64 md:h-96 overflow-hidden rounded-lg shadow-lg">
           {bannerImages.map((url, index) => (
             <img
               key={index}
               src={url}
-              alt={`Banner ${index}`}
-              className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                }`}
+              alt={`PSG Banner ${index}`}
+              className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                currentSlide === index ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
             />
           ))}
+          {/* Banner overlay với thông tin */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">
+              Paris Saint-Germain Official Store
+            </h2>
+            <p className="text-sm md:text-base opacity-90">
+              Sản phẩm chính hãng - Chất lượng cao - Giao hàng toàn quốc
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* News Section */}
+      <section className="py-8">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <span className="w-1 h-6 bg-blue-600 mr-3"></span>
+            Tin tức mới nhất
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {newsData.map((news) => (
+              <article
+                key={news.id}
+                className="group cursor-pointer hover:shadow-lg transition-shadow duration-300"
+              >
+                <div className="relative overflow-hidden rounded-lg">
+                  <img
+                    src={news.image}
+                    alt={news.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-blue-600 text-white px-2 py-1 text-xs rounded-full">
+                      {news.category}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    {news.title}
+                  </h3>
+                  <p className="text-gray-600 text-xs mb-3 line-clamp-3">
+                    {news.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      {dayjs(news.date).format("DD/MM/YYYY")}
+                    </span>
+                    <span className="text-xs text-blue-600 group-hover:underline">
+                      Đọc tiếp →
+                    </span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="text-center mt-6">
+            <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors">
+              Xem tất cả tin tức
+            </button>
+          </div>
+        </div>
+      </section>
 
       <main className="grid grid-cols-1 md:grid-cols-4 gap-6 py-8 bg-gray-100">
         {/* Sidebar */}
@@ -104,19 +226,25 @@ const HomePages = () => {
           {/* Brands */}
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-3">Thương hiệu</h2>
-            <ul className="space-y-2 text-sm text-gray-700" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <ul
+              className="space-y-2 text-sm text-gray-700"
+              style={{ maxHeight: "300px", overflowY: "auto" }}
+            >
               {brands?.data?.map((brand) => (
                 <div
                   key={brand._id}
                   onClick={() => setBrandSelected(brand._id)}
-                  style={{ backgroundColor: brandSelected === brand._id ? '#e5e7eb' : 'white' }}
-                  className='px-3 py-2 flex items-center rounded cursor-pointer hover:text-blue-600'
+                  style={{
+                    backgroundColor:
+                      brandSelected === brand._id ? "#e5e7eb" : "white",
+                  }}
+                  className="px-3 py-2 flex items-center rounded cursor-pointer hover:text-blue-600"
                 >
                   <img
                     src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${brand.image}`}
                     alt={brand.name}
                     className="rounded mr-3"
-                    style={{ width: '20px', height: '20px' }}
+                    style={{ width: "20px", height: "20px" }}
                   />
                   <span>{brand.name}</span>
                 </div>
@@ -127,19 +255,25 @@ const HomePages = () => {
           {/* Categories */}
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-3">Danh mục</h2>
-            <ul className="text-sm text-gray-600 space-y-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <ul
+              className="text-sm text-gray-600 space-y-2"
+              style={{ maxHeight: "300px", overflowY: "auto" }}
+            >
               {categories?.data?.map((category) => (
                 <div
                   key={category._id}
                   onClick={() => setCategorySelected(category._id)}
-                  style={{ backgroundColor: categorySelected === category._id ? '#e5e7eb' : 'white' }}
-                  className='px-3 py-2 flex items-center rounded cursor-pointer hover:text-blue-600'
+                  style={{
+                    backgroundColor:
+                      categorySelected === category._id ? "#e5e7eb" : "white",
+                  }}
+                  className="px-3 py-2 flex items-center rounded cursor-pointer hover:text-blue-600"
                 >
                   <img
                     src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${category.image}`}
                     alt={category.name}
                     className="rounded mr-3"
-                    style={{ width: '24px', height: '24px' }}
+                    style={{ width: "24px", height: "24px" }}
                   />
                   <span>{category.name}</span>
                 </div>
@@ -150,20 +284,46 @@ const HomePages = () => {
           {/* voucher */}
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-3">Mã giảm giá</h2>
-            <ul className="text-sm text-gray-600 space-y-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <ul
+              className="text-sm text-gray-600 space-y-2"
+              style={{ maxHeight: "300px", overflowY: "auto" }}
+            >
               {vouchers?.data?.map((voucher) => (
                 <div
                   key={voucher._id}
-                  className='px-3 py-2 flex rounded cursor-pointer border'
+                  className="px-3 py-2 flex rounded cursor-pointer border"
                 >
-                  <img className='rounded' style={{ width: '65px', height: '65px', backgroundColor: '#ee4d2d', marginRight: '10px' }} alt="voucher" src="https://down-vn.img.susercontent.com/file/vn-11134004-7ras8-m4re2imocx9s72" />
+                  <img
+                    className="rounded"
+                    style={{
+                      width: "65px",
+                      height: "65px",
+                      backgroundColor: "#ee4d2d",
+                      marginRight: "10px",
+                    }}
+                    alt="voucher"
+                    src="https://down-vn.img.susercontent.com/file/vn-11134004-7ras8-m4re2imocx9s72"
+                  />
                   <div>
-                    <p className='font-bold' style={{fontSize: '20px'}}>Giảm {voucher.type === 'fixed' ? voucher.value + 'đ' : voucher.value + '%'}</p>
-                    <p className='font-medium mt-1' style={{fontSize: '16px'}}>{voucher.code}</p>
-                    <p className='opacity-50' style={{fontSize: '14px'}}>{dayjs(voucher.startDate).format('DD/MM/YYYY')} - {dayjs(voucher.endDate).format('DD/MM/YYYY')}</p>
+                    <p className="font-bold" style={{ fontSize: "20px" }}>
+                      Giảm{" "}
+                      {voucher.type === "fixed"
+                        ? voucher.value + "đ"
+                        : voucher.value + "%"}
+                    </p>
+                    <p
+                      className="font-medium mt-1"
+                      style={{ fontSize: "16px" }}
+                    >
+                      {voucher.code}
+                    </p>
+                    <p className="opacity-50" style={{ fontSize: "14px" }}>
+                      {dayjs(voucher.startDate).format("DD/MM/YYYY")} -{" "}
+                      {dayjs(voucher.endDate).format("DD/MM/YYYY")}
+                    </p>
                   </div>
                 </div>
-              ))} 
+              ))}
             </ul>
           </div>
         </aside>
@@ -171,18 +331,56 @@ const HomePages = () => {
         {/* Main Content */}
         <section className="md:col-span-3 space-y-10">
           <div className="space-y-4">
-            <div className='md:flex align-center pb-3'>
-              <h2 className="text-xl font-bold text-gray-800 mr-10">Sắp xếp theo:</h2>
-              <button className={` ${sort === 'createdAt' ? 'bg-blue-500 text-white' : 'bg-white text-black'} mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`} onClick={() => { setSort('createdAt') }}>
+            <div className="md:flex align-center pb-3">
+              <h2 className="text-xl font-bold text-gray-800 mr-10">
+                Sắp xếp theo:
+              </h2>
+              <button
+                className={` ${
+                  sort === "createdAt"
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-black"
+                } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
+                onClick={() => {
+                  setSort("createdAt");
+                }}
+              >
                 Mới nhất
               </button>
-              <button className={` ${sort === 'sold' ? 'bg-blue-500 text-white' : 'bg-white text-black'} mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`} onClick={() => { setSort('sold') }}>
+              <button
+                className={` ${
+                  sort === "sold"
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-black"
+                } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
+                onClick={() => {
+                  setSort("sold");
+                }}
+              >
                 Bán chạy
               </button>
-              <button className={` ${sort === 'priceIncre' ? 'bg-blue-500 text-white' : 'bg-white text-black'} mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`} onClick={() => { setSort('priceIncre') }}>
+              <button
+                className={` ${
+                  sort === "priceIncre"
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-black"
+                } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
+                onClick={() => {
+                  setSort("priceIncre");
+                }}
+              >
                 Giá từ thấp đến cao
               </button>
-              <button className={` ${sort === 'priceDecre' ? 'bg-blue-500 text-white' : 'bg-white text-black'} mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`} onClick={() => { setSort('priceDecre') }}>
+              <button
+                className={` ${
+                  sort === "priceDecre"
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-black"
+                } mr-4 px-4 py-2 rounded hover:bg-blue-500 hover:text-white shadow`}
+                onClick={() => {
+                  setSort("priceDecre");
+                }}
+              >
                 Giá từ cao đến thấp
               </button>
             </div>
@@ -195,36 +393,44 @@ const HomePages = () => {
 
               {data?.map((product) => {
                 const item = product.hasVariants
-                  ? (product.variants.reduce((max, v) => (v.sold || 0) > (max.sold || 0)
-                    ? v
-                    : max, product.variants[0]))
+                  ? product.variants.reduce(
+                      (max, v) => ((v.sold || 0) > (max.sold || 0) ? v : max),
+                      product.variants[0]
+                    )
                   : product;
                 return (
                   <div
                     key={product._id}
                     onClick={() => navigate(`/detail/${product._id}`)}
                     className="group relative bg-white border rounded-lg overflow-hidden shadow hover:shadow-lg transition cursor-pointer hover:-translate-y-1 duration-200"
-                    style={{ height: '320px' }}
+                    style={{ height: "320px" }}
                   >
                     <img
                       src={`${process.env.REACT_APP_API_URL_BACKEND}/image/${product.image}`}
                       alt={product.name}
                       loading="lazy"
-                      style={{ height: '230px', width: '100%', objectFit: 'cover' }}
+                      style={{
+                        height: "230px",
+                        width: "100%",
+                        objectFit: "cover",
+                      }}
                     />
-                    <div className="p-3 flex flex-col justify-between" style={{ height: '90px' }}>
+                    <div
+                      className="p-3 flex flex-col justify-between"
+                      style={{ height: "90px" }}
+                    >
                       <h3 className="text-gray-800 font-semibold text-sm line-clamp-2">
                         {product.name}
                       </h3>
                       <div className="flex justify-between text-sm mt-1">
-                        <p className="text-blue-600 font-bold">{item.price.toLocaleString()}₫</p>
-                        <p className="text-gray-600">Đã bán: {(item.sold || 0).toLocaleString('vi-VN')}</p>
+                        <p className="text-blue-600 font-bold">
+                          {item.price.toLocaleString()}₫
+                        </p>
+                        <p className="text-gray-600">
+                          Đã bán: {(item.sold || 0).toLocaleString("vi-VN")}
+                        </p>
                       </div>
                     </div>
-                    {/* <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity duration-300">
-                      <button className="bg-white text-sm px-3 py-1 rounded hover:bg-blue-600 hover:text-white">Mua ngay</button>
-                      <button className="bg-white text-sm px-3 py-1 rounded hover:bg-red-600 hover:text-white">Thêm vào giỏ hàng</button>
-                    </div> */}
                   </div>
                 );
               })}

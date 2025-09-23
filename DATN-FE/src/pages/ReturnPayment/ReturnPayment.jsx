@@ -1,7 +1,7 @@
 // src/pages/PaymentResult.js
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { checkPayment } from "../../api";
+import { checkPayment } from "../../api/index";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle, XCircle } from "lucide-react"; // icon đẹp hơn
 
@@ -24,7 +24,9 @@ const PaymentResult = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
         {isLoading ? (
-          <p className="text-lg font-medium text-gray-500">Đang tải kết quả...</p>
+          <p className="text-lg font-medium text-gray-500">
+            Đang tải kết quả...
+          </p>
         ) : (
           <>
             <div className="flex justify-center mb-4">
@@ -49,11 +51,18 @@ const PaymentResult = () => {
               {queryObject.vnp_Amount && (
                 <p>
                   <span className="font-semibold">Số tiền:</span>{" "}
-                  {(Number(queryObject.vnp_Amount) / 100).toLocaleString("vi-VN")} VND
+                  {(Number(queryObject.vnp_Amount) / 100).toLocaleString(
+                    "vi-VN"
+                  )}{" "}
+                  VND
                 </p>
               )}
               {data?.message && (
-                <p className={`font-medium ${isSuccess ? "text-green-600" : "text-red-600"}`}>
+                <p
+                  className={`font-medium ${
+                    isSuccess ? "text-green-600" : "text-red-600"
+                  }`}
+                >
                   {data.message}
                 </p>
               )}
