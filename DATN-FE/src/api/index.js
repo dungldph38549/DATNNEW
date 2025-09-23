@@ -172,6 +172,17 @@ export const updateOrderInfo = async (id, data) => {
   const res = await axiosInstance.put(`/order/${id}`, data);
   return res.data;
 };
+export const getUserOrders = async ({ page, limit, status, userId }) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    ...(status && { status }),
+    userId,
+  });
+
+  const response = await fetch(`/api/orders/user?${params}`);
+  return response.json();
+};
 
 // ===== Brand API =====
 export const createBrand = async (payload) => {
